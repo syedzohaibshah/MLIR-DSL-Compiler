@@ -1,0 +1,15 @@
+matmul(
+    A : Tensor[f32, (M, K)],
+    B : Tensor[f32, (K, N)],
+    C : Tensor[f32, (M, N)]
+) -> [C] {
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64) {
+            for k in loop(K, tile=32, unroll=4) {
+                if i < M and j < N {
+                    C[i, j] += A[i, k] * B[k, j]
+                }
+            }
+        }
+    }
+}

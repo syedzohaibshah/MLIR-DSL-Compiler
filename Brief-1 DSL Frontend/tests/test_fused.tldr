@@ -1,0 +1,80 @@
+fused_gemm_bias_layernorm(
+    A : Tensor[f32, (M, K)],
+    B : Tensor[f32, (K, N)],
+    bias : Tensor[f32, (N,)],
+    gamma : Tensor[f32, (N,)],
+    beta : Tensor[f32, (N,)],
+    epsilon : f32,
+    threshold : f32
+) -> [C] {
+    C_local : Tensor[f32, (64, 64)]
+    sum_val : Tensor[f32, (64,)]
+    sum_sq : Tensor[f32, (64,)]
+    mean : Tensor[f32, (64,)]
+    variance : Tensor[f32, (64,)]
+    C : Tensor[f32, (M, N)]
+
+    for i in loop(64) {
+        for j in loop(64) {
+            C_local[i, j] = 0.0
+        }
+        sum_val[i] = 0.0
+        sum_sq[i] = 0.0
+        mean[i] = 0.0
+        variance[i] = 0.0
+    }
+
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64) {
+            for k in loop(K, tile=32, unroll=4) {
+                for ii in loop(64, unroll=4) {
+                    for jj in loop(64, unroll=2) {
+                        C_local[ii, jj] += A[i+ii, k] * B[k, j+jj]
+                    }
+                }
+            }
+        }
+    }
+
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64) {
+            for jj in loop(64, unroll=8) {
+                C_local[i, jj] = C_local[i, jj] + bias[j+jj]
+                sum_val[i] += C_local[i, jj]
+                sum_sq[i] += C_local[i, jj] * C_local[i, jj]
+            }
+        }
+    }
+
+    for i in loop(M, tile=32, unroll=2) {
+        mean[i] = sum_val[i] * epsilon
+        variance[i] = sum_sq[i] * epsilon - mean[i] * mean[i]
+    }
+
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64, unroll=4) {
+            for jj in loop(64, unroll=2) {
+                C[i, jj] = (C_local[i, jj] - mean[i]) * gamma[j+jj] + beta[j+jj]
+                C[i, jj] = C[i, jj] * threshold
+            }
+        }
+    }
+
+    for i in loop(M, tile=128, unroll=4) {
+        for j in loop(N, tile=128, unroll=4) {
+            for jj in loop(128, unroll=2) {
+                C[i, jj] += A[i, jj] * epsilon
+            }
+        }
+    }
+
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=32, unroll=8) {
+            for jj in loop(32, unroll=4) {
+                C[i, jj] = C[i, jj] + beta[j]
+                C[i, jj] = C[i, jj] * gamma[j]
+            }
+        }
+    }
+    return C
+}

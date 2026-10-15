@@ -1,0 +1,32 @@
+digraph AST {
+    node [fontname="Helvetica"];
+    node0 [label="Func: justafunction\nreturns: C", shape=box, style=filled, fillcolor=lightyellow];
+    node1 [label="Param: A (f32 [M, K])", shape=box, style=filled, fillcolor=lightcyan];
+    node0 -> node1;
+    node2 [label="Param: B (f32 [K, N])", shape=box, style=filled, fillcolor=lightcyan];
+    node0 -> node2;
+    node3 [label="Param: C (f32 [M, N])", shape=box, style=filled, fillcolor=lightcyan];
+    node0 -> node3;
+    node4 [label="Tensor: A (i32)", shape=box, style=filled, fillcolor=pink];
+    node0 -> node4;
+    node5 [label="Tensor: B (i32)", shape=box, style=filled, fillcolor=pink];
+    node0 -> node5;
+    node6 [label="Assign: =", shape=box, style=filled, fillcolor=yellow];
+    node7 [label="Var: C", shape=box, style=filled, fillcolor=lightgreen];
+    node6 -> node7;
+    node8 [label="softmax", shape=box, style=filled, fillcolor=lightblue];
+    node9 [label="Var: A", shape=box, style=filled, fillcolor=lightgreen];
+    node8 -> node9;
+    node10 [label="Var: x", shape=box, style=filled, fillcolor=lightgreen];
+    node8 -> node10;
+    node6 -> node8;
+    node0 -> node6;
+    node11 [label="Assign: =", shape=box, style=filled, fillcolor=yellow];
+    node12 [label="Var: D", shape=box, style=filled, fillcolor=lightgreen];
+    node11 -> node12;
+    node13 [label="relu", shape=box, style=filled, fillcolor=lightblue];
+    node14 [label="Var: A", shape=box, style=filled, fillcolor=lightgreen];
+    node13 -> node14;
+    node11 -> node13;
+    node0 -> node11;
+}

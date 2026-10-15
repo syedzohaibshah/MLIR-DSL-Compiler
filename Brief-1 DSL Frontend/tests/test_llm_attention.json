@@ -1,0 +1,328 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 3,
+            "name": "q",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 4,
+            "name": "k",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 5,
+            "name": "v",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 6,
+            "name": "attn",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 10,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 10,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 10,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 10,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 10,
+                                        "value": "q"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 10,
+                                        "value": 0.5
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 11,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 11,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 11,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 11,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 11,
+                                        "value": "k"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 11,
+                                        "value": 0.25
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 12,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 12,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 12,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 12,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 12,
+                                        "value": "v"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 12,
+                                        "value": 1.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 13,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 13,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 13,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 28,
+                                                "kind": "Variable",
+                                                "line": 13,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 13,
+                                        "value": "attn"
+                                    },
+                                    "value": {
+                                        "col": 33,
+                                        "kind": "Constant",
+                                        "line": 13,
+                                        "value": 0.0
+                                    }
+                                }
+                            ],
+                            "bound": "8",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 9,
+                            "size": 0,
+                            "type": "",
+                            "var": "x"
+                        }
+                    ],
+                    "bound": "8",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 8,
+                    "size": 0,
+                    "type": "",
+                    "var": "j"
+                }
+            ],
+            "bound": "8",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 7,
+            "size": 0,
+            "type": "",
+            "var": "i"
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 17,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 17,
+                "name": "attn"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 26,
+                        "kind": "Variable",
+                        "line": 17,
+                        "name": "q"
+                    },
+                    {
+                        "col": 29,
+                        "kind": "Variable",
+                        "line": 17,
+                        "name": "k"
+                    },
+                    {
+                        "col": 32,
+                        "kind": "Variable",
+                        "line": 17,
+                        "name": "v"
+                    }
+                ],
+                "col": 12,
+                "kind": "BuiltinCall",
+                "line": 17,
+                "op": "mha_attention"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 18,
+            "value": {
+                "args": [
+                    {
+                        "col": 25,
+                        "kind": "Variable",
+                        "line": 18,
+                        "name": "q"
+                    },
+                    {
+                        "col": 28,
+                        "kind": "Variable",
+                        "line": 18,
+                        "name": "k"
+                    },
+                    {
+                        "col": 31,
+                        "kind": "Variable",
+                        "line": 18,
+                        "name": "v"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 18,
+                "op": "mha_attention"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 19,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 19,
+                "name": "attn"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 2,
+    "params": [],
+    "returns": [
+        "attn"
+    ]
+}

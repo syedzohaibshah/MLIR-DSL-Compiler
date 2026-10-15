@@ -1,0 +1,9 @@
+# bad_relu_scalar_arg.tldr
+# relu only accepts tensor arguments; here the only argument is a scalar.
+# Expect: [Semantic Error] 'relu' expects tensor argument(s), but argument 1 is not a tensor
+
+main() -> [C] {
+    x : f32
+    C : Tensor[f32, (64, 64)]
+    C = relu(x)
+}

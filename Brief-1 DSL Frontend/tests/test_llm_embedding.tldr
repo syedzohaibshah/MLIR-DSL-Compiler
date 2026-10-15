@@ -1,0 +1,19 @@
+main() -> [hidden] {
+    ids : Tensor[i32, (8,)]
+    w : Tensor[f32, (8, 8, 8)]
+    hidden : Tensor[f32, (8, 8, 8)]
+    for i in loop(8) {
+        ids[i] = i
+    }
+    for i in loop(8) {
+        for j in loop(8) {
+            for x in loop(8) {
+                w[i, j, x] = 1.5
+                hidden[i, j, x] = 0.0
+            }
+        }
+    }
+    hidden = embedding(ids, w)
+    print(embedding(ids, w))
+    return hidden
+}

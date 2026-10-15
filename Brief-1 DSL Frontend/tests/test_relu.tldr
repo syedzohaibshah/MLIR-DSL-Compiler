@@ -1,0 +1,12 @@
+relu(
+    A : Tensor[f32, (N,)],
+    B : Tensor[f32, (N,)]
+) {
+    for i in loop(N, tile=128, unroll=4) {
+        if A[i] > 0 {
+            B[i] = A[i]
+        } else {
+            B[i] = 0
+        }
+    }
+}

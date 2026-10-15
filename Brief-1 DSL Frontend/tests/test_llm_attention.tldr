@@ -1,0 +1,20 @@
+# Llama 3.1 8B - attention block using the builtin mha_attention op.
+main() -> [attn] {
+    q : Tensor[f32, (8, 8, 8)]
+    k : Tensor[f32, (8, 8, 8)]
+    v : Tensor[f32, (8, 8, 8)]
+    attn : Tensor[f32, (8, 8, 8)]
+    for i in loop(8) {
+        for j in loop(8) {
+            for x in loop(8) {
+                q[i, j, x] = 0.5
+                k[i, j, x] = 0.25
+                v[i, j, x] = 1.0
+                attn[i, j, x] = 0.0
+            }
+        }
+    }
+    attn = mha_attention(q, k, v)
+    print(mha_attention(q, k, v))
+    return attn
+}

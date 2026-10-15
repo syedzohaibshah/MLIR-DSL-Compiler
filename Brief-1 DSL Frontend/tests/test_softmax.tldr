@@ -1,0 +1,27 @@
+softmax(
+    A : Tensor[f32, (M, N)],
+    B : Tensor[f32, (M, N)],
+    max_val : Tensor[f32, (M,)],
+    sum_exp : Tensor[f32, (M,)]
+) {
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64, unroll=4) {
+            if A[i, j] > max_val[i] {
+                max_val[i] = A[i, j]
+            }
+        }
+    }
+
+    for i in loop(M, tile=64) {
+        sum_exp[i] = 0;
+        for j in loop(N, tile=64, unroll=4) {
+            sum_exp[i] += A[i, j] - max_val[i]
+        }
+    }
+
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64, unroll=4) {
+            B[i, j] = A[i, j] - max_val[i] - sum_exp[i]
+        }
+    }
+}

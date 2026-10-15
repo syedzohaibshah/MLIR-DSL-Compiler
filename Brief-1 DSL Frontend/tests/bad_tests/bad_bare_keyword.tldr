@@ -1,0 +1,5 @@
+
+main() {
+    A : Tensor[f32, (64, 64)]
+    A = embedding
+}

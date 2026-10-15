@@ -1,0 +1,181 @@
+{
+    "body": [
+        {
+            "col": 1,
+            "data": {
+                "col": 28,
+                "elements": [
+                    {
+                        "col": 29,
+                        "elements": [
+                            {
+                                "col": 30,
+                                "elements": [
+                                    {
+                                        "col": 31,
+                                        "kind": "Constant",
+                                        "line": 7,
+                                        "value": 1
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 7
+                            }
+                        ],
+                        "kind": "List",
+                        "line": 7
+                    }
+                ],
+                "kind": "List",
+                "line": 7
+            },
+            "dtype": "i32",
+            "kind": "Tensor",
+            "line": 7,
+            "name": "A",
+            "shape": [
+                1,
+                1,
+                1
+            ]
+        },
+        {
+            "col": 1,
+            "data": {
+                "col": 28,
+                "elements": [
+                    {
+                        "col": 29,
+                        "elements": [
+                            {
+                                "col": 30,
+                                "elements": [
+                                    {
+                                        "col": 31,
+                                        "kind": "Constant",
+                                        "line": 8,
+                                        "value": 1
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 8
+                            }
+                        ],
+                        "kind": "List",
+                        "line": 8
+                    }
+                ],
+                "kind": "List",
+                "line": 8
+            },
+            "dtype": "i32",
+            "kind": "Tensor",
+            "line": 8,
+            "name": "B",
+            "shape": [
+                1,
+                1,
+                1
+            ]
+        },
+        {
+            "col": 1,
+            "kind": "Assign",
+            "line": 9,
+            "op": "=",
+            "target": {
+                "col": 1,
+                "kind": "Variable",
+                "line": 9,
+                "name": "C"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 13,
+                        "kind": "Variable",
+                        "line": 9,
+                        "name": "A"
+                    },
+                    {
+                        "col": 16,
+                        "kind": "Variable",
+                        "line": 9,
+                        "name": "x"
+                    }
+                ],
+                "col": 5,
+                "kind": "BuiltinCall",
+                "line": 9,
+                "op": "softmax"
+            }
+        },
+        {
+            "col": 1,
+            "kind": "Assign",
+            "line": 10,
+            "op": "=",
+            "target": {
+                "col": 1,
+                "kind": "Variable",
+                "line": 10,
+                "name": "D"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 10,
+                        "kind": "Variable",
+                        "line": 10,
+                        "name": "A"
+                    }
+                ],
+                "col": 5,
+                "kind": "BuiltinCall",
+                "line": 10,
+                "op": "relu"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "justafunction",
+    "line": 1,
+    "params": [
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 2,
+            "name": "A",
+            "shape": [
+                "M",
+                "K"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 3,
+            "name": "B",
+            "shape": [
+                "K",
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 4,
+            "name": "C",
+            "shape": [
+                "M",
+                "N"
+            ]
+        }
+    ],
+    "returns": [
+        "C"
+    ]
+}

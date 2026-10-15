@@ -1,0 +1,15 @@
+# bad_empty_tensor_arg.tldr
+# A tensor with a zero-sized dimension holds no elements; custom operators
+# must not receive empty tensors.
+# Expect: [Semantic Error] 'softmax' does not accept empty tensors, ...
+# Expect: [Semantic Error] 'embedding' does not accept empty tensors, ...
+
+main() {
+    A : Tensor[f32, (64, 64)]
+    Z : Tensor[f32, (0, 64)]
+    ids : Tensor[i32, (0,)]
+    w : Tensor[f32, (10000, 64)]
+    emb : Tensor[f32, (0, 64)]
+    print(softmax(A, Z))
+    emb = embedding(ids, w)
+}

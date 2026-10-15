@@ -1,0 +1,36 @@
+layernorm(
+    X : Tensor[f32, (M, N)],
+    gamma : Tensor[f32, (N,)],
+    beta : Tensor[f32, (N,)],
+    out : Tensor[f32, (M, N)]
+) -> [out] {
+    for i in loop(M, tile=64) {
+        for j in loop(N, tile=64, unroll=4) {
+            out[i, j] = X[i, j] * gamma[j] + beta[j]
+        }
+    }
+}
+
+main() -> [out] {
+    X : Tensor[f32, (64, 128)]
+    gamma : Tensor[f32, (128,)]
+    beta : Tensor[f32, (128,)]
+    out : Tensor[f32, (64, 128)]
+    for i in loop(64, tile=64) {
+        for j in loop(128, tile=128) {
+            X[i, j] = 1.0
+        }
+    }
+    for i in loop(128, tile=128) {
+        gamma[i] = 1.0
+        beta[i] = 0.0
+    }
+    for i in loop(64, tile=64) {
+        for j in loop(128, tile=128) {
+            out[i, j] = 0.0
+        }
+    }
+    out = layernorm(X, gamma, beta, out)
+    print(layernorm(X, gamma, beta, out))
+    return out
+}

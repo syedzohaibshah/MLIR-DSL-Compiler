@@ -1,0 +1,11 @@
+justafunction(
+    A : Tensor[f32, (M, K)],
+    B : Tensor[f32, (K, N)],
+    C : Tensor[f32, (M, N)]
+) -> [C] {
+
+A : Tensor[i32, (1,1,1)] = [[[1]]]
+B : Tensor[i32, (1,1,1)] = [[[1]]]
+C = softmax(A, x)
+D = relu(A)
+}

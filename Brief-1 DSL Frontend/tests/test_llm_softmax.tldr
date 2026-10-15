@@ -1,0 +1,15 @@
+# Llama 3.1 8B - final output head using the builtin softmax op.
+# logits: 8x8 dummy raw output scores; probs: softmax-normalized probabilities.
+main() -> [probs] {
+    logits : Tensor[f32, (8, 8)]
+    probs : Tensor[f32, (8, 8)]
+    for i in loop(8) {
+        for j in loop(8) {
+            logits[i, j] = 2.0
+            probs[i, j] = 0.0
+        }
+    }
+    probs = softmax(logits, probs)
+    print(softmax(logits, probs))
+    return probs
+}

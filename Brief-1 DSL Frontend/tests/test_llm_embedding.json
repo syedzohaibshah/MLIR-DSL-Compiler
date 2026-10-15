@@ -1,0 +1,294 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": {
+                "col": 31,
+                "elements": [
+                    {
+                        "col": 32,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 0
+                    },
+                    {
+                        "col": 35,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 1
+                    },
+                    {
+                        "col": 38,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 2
+                    },
+                    {
+                        "col": 41,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 3
+                    },
+                    {
+                        "col": 44,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 4
+                    },
+                    {
+                        "col": 47,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 5
+                    },
+                    {
+                        "col": 50,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 6
+                    },
+                    {
+                        "col": 53,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 7
+                    }
+                ],
+                "kind": "List",
+                "line": 5
+            },
+            "dtype": "i32",
+            "kind": "Tensor",
+            "line": 5,
+            "name": "ids",
+            "shape": [
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 47,
+                "kind": "Binary",
+                "left": {
+                    "col": 34,
+                    "elements": [
+                        {
+                            "col": 44,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 35,
+                                "elements": [
+                                    {
+                                        "col": 41,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 36,
+                                            "elements": [
+                                                {
+                                                    "col": 37,
+                                                    "kind": "Constant",
+                                                    "line": 6,
+                                                    "value": 1.5
+                                                }
+                                            ],
+                                            "kind": "List",
+                                            "line": 6
+                                        },
+                                        "line": 6,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 42,
+                                            "kind": "Constant",
+                                            "line": 6,
+                                            "value": 8
+                                        }
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 6
+                            },
+                            "line": 6,
+                            "op": "*",
+                            "right": {
+                                "col": 45,
+                                "kind": "Constant",
+                                "line": 6,
+                                "value": 8
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 6
+                },
+                "line": 6,
+                "op": "*",
+                "right": {
+                    "col": 48,
+                    "kind": "Constant",
+                    "line": 6,
+                    "value": 8
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 6,
+            "name": "w",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 52,
+                "kind": "Binary",
+                "left": {
+                    "col": 39,
+                    "elements": [
+                        {
+                            "col": 49,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 40,
+                                "elements": [
+                                    {
+                                        "col": 46,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 41,
+                                            "elements": [
+                                                {
+                                                    "col": 42,
+                                                    "kind": "Constant",
+                                                    "line": 7,
+                                                    "value": 0.0
+                                                }
+                                            ],
+                                            "kind": "List",
+                                            "line": 7
+                                        },
+                                        "line": 7,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 47,
+                                            "kind": "Constant",
+                                            "line": 7,
+                                            "value": 8
+                                        }
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 7
+                            },
+                            "line": 7,
+                            "op": "*",
+                            "right": {
+                                "col": 50,
+                                "kind": "Constant",
+                                "line": 7,
+                                "value": 8
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 7
+                },
+                "line": 7,
+                "op": "*",
+                "right": {
+                    "col": 53,
+                    "kind": "Constant",
+                    "line": 7,
+                    "value": 8
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 7,
+            "name": "hidden",
+            "shape": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 8,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 8,
+                "name": "hidden"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 24,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "ids"
+                    },
+                    {
+                        "col": 29,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "w"
+                    }
+                ],
+                "col": 14,
+                "kind": "BuiltinCall",
+                "line": 8,
+                "op": "embedding"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 9,
+            "value": {
+                "args": [
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 9,
+                        "name": "ids"
+                    },
+                    {
+                        "col": 26,
+                        "kind": "Variable",
+                        "line": 9,
+                        "name": "w"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 9,
+                "op": "embedding"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 10,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 10,
+                "name": "hidden"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 4,
+    "params": [],
+    "returns": [
+        "hidden"
+    ]
+}

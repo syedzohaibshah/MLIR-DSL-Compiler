@@ -1,0 +1,1263 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": {
+                "col": 47,
+                "kind": "Binary",
+                "left": {
+                    "col": 39,
+                    "elements": [
+                        {
+                            "col": 43,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 40,
+                                "elements": [
+                                    {
+                                        "col": 41,
+                                        "kind": "Constant",
+                                        "line": 10,
+                                        "value": 0
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 10
+                            },
+                            "line": 10,
+                            "op": "*",
+                            "right": {
+                                "col": 44,
+                                "kind": "Constant",
+                                "line": 10,
+                                "value": 64
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 10
+                },
+                "line": 10,
+                "op": "*",
+                "right": {
+                    "col": 48,
+                    "kind": "Constant",
+                    "line": 10,
+                    "value": 64
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 10,
+            "name": "C_local",
+            "shape": [
+                64,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 39,
+                "kind": "Binary",
+                "left": {
+                    "col": 36,
+                    "elements": [
+                        {
+                            "col": 37,
+                            "kind": "Constant",
+                            "line": 11,
+                            "value": 0
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 11
+                },
+                "line": 11,
+                "op": "*",
+                "right": {
+                    "col": 40,
+                    "kind": "Constant",
+                    "line": 11,
+                    "value": 64
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 11,
+            "name": "sum_val",
+            "shape": [
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 38,
+                "kind": "Binary",
+                "left": {
+                    "col": 35,
+                    "elements": [
+                        {
+                            "col": 36,
+                            "kind": "Constant",
+                            "line": 12,
+                            "value": 0
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 12
+                },
+                "line": 12,
+                "op": "*",
+                "right": {
+                    "col": 39,
+                    "kind": "Constant",
+                    "line": 12,
+                    "value": 64
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 12,
+            "name": "sum_sq",
+            "shape": [
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 36,
+                "kind": "Binary",
+                "left": {
+                    "col": 33,
+                    "elements": [
+                        {
+                            "col": 34,
+                            "kind": "Constant",
+                            "line": 13,
+                            "value": 0
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 13
+                },
+                "line": 13,
+                "op": "*",
+                "right": {
+                    "col": 37,
+                    "kind": "Constant",
+                    "line": 13,
+                    "value": 64
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 13,
+            "name": "mean",
+            "shape": [
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 40,
+                "kind": "Binary",
+                "left": {
+                    "col": 37,
+                    "elements": [
+                        {
+                            "col": 38,
+                            "kind": "Constant",
+                            "line": 14,
+                            "value": 0
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 14
+                },
+                "line": 14,
+                "op": "*",
+                "right": {
+                    "col": 41,
+                    "kind": "Constant",
+                    "line": 14,
+                    "value": 64
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 14,
+            "name": "variance",
+            "shape": [
+                64
+            ]
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "body": [
+                                        {
+                                            "body": [
+                                                {
+                                                    "col": 25,
+                                                    "kind": "Assign",
+                                                    "line": 21,
+                                                    "op": "+=",
+                                                    "target": {
+                                                        "col": 25,
+                                                        "indices": [
+                                                            {
+                                                                "col": 33,
+                                                                "kind": "Variable",
+                                                                "line": 21,
+                                                                "name": "ii"
+                                                            },
+                                                            {
+                                                                "col": 37,
+                                                                "kind": "Variable",
+                                                                "line": 21,
+                                                                "name": "jj"
+                                                            }
+                                                        ],
+                                                        "kind": "Subscript",
+                                                        "line": 21,
+                                                        "value": "C_local"
+                                                    },
+                                                    "value": {
+                                                        "col": 55,
+                                                        "kind": "Binary",
+                                                        "left": {
+                                                            "col": 44,
+                                                            "indices": [
+                                                                {
+                                                                    "col": 47,
+                                                                    "kind": "Binary",
+                                                                    "left": {
+                                                                        "col": 46,
+                                                                        "kind": "Variable",
+                                                                        "line": 21,
+                                                                        "name": "i"
+                                                                    },
+                                                                    "line": 21,
+                                                                    "op": "+",
+                                                                    "right": {
+                                                                        "col": 48,
+                                                                        "kind": "Variable",
+                                                                        "line": 21,
+                                                                        "name": "ii"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "col": 52,
+                                                                    "kind": "Variable",
+                                                                    "line": 21,
+                                                                    "name": "k"
+                                                                }
+                                                            ],
+                                                            "kind": "Subscript",
+                                                            "line": 21,
+                                                            "value": "A"
+                                                        },
+                                                        "line": 21,
+                                                        "op": "*",
+                                                        "right": {
+                                                            "col": 57,
+                                                            "indices": [
+                                                                {
+                                                                    "col": 59,
+                                                                    "kind": "Variable",
+                                                                    "line": 21,
+                                                                    "name": "k"
+                                                                },
+                                                                {
+                                                                    "col": 63,
+                                                                    "kind": "Binary",
+                                                                    "left": {
+                                                                        "col": 62,
+                                                                        "kind": "Variable",
+                                                                        "line": 21,
+                                                                        "name": "j"
+                                                                    },
+                                                                    "line": 21,
+                                                                    "op": "+",
+                                                                    "right": {
+                                                                        "col": 64,
+                                                                        "kind": "Variable",
+                                                                        "line": 21,
+                                                                        "name": "jj"
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "kind": "Subscript",
+                                                            "line": 21,
+                                                            "value": "B"
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "bound": "64",
+                                            "col": 21,
+                                            "kind": "For Loop",
+                                            "line": 20,
+                                            "size": 2,
+                                            "type": "unroll",
+                                            "var": "jj"
+                                        }
+                                    ],
+                                    "bound": "64",
+                                    "col": 17,
+                                    "kind": "For Loop",
+                                    "line": 19,
+                                    "size": 4,
+                                    "type": "unroll",
+                                    "var": "ii"
+                                }
+                            ],
+                            "bound": "K",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 18,
+                            "size": 4,
+                            "type": "unroll",
+                            "var": "k"
+                        }
+                    ],
+                    "bound": "N",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 17,
+                    "size": 64,
+                    "type": "tile",
+                    "var": "j"
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 16,
+            "size": 64,
+            "type": "tile",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 31,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 31,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 28,
+                                                "kind": "Variable",
+                                                "line": 31,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 31,
+                                        "value": "C_local"
+                                    },
+                                    "value": {
+                                        "col": 49,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 34,
+                                            "indices": [
+                                                {
+                                                    "col": 42,
+                                                    "kind": "Variable",
+                                                    "line": 31,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 45,
+                                                    "kind": "Variable",
+                                                    "line": 31,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 31,
+                                            "value": "C_local"
+                                        },
+                                        "line": 31,
+                                        "op": "+",
+                                        "right": {
+                                            "col": 51,
+                                            "indices": [
+                                                {
+                                                    "col": 57,
+                                                    "kind": "Binary",
+                                                    "left": {
+                                                        "col": 56,
+                                                        "kind": "Variable",
+                                                        "line": 31,
+                                                        "name": "j"
+                                                    },
+                                                    "line": 31,
+                                                    "op": "+",
+                                                    "right": {
+                                                        "col": 58,
+                                                        "kind": "Variable",
+                                                        "line": 31,
+                                                        "name": "jj"
+                                                    }
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 31,
+                                            "value": "bias"
+                                        }
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 32,
+                                    "op": "+=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "i"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 32,
+                                        "value": "sum_val"
+                                    },
+                                    "value": {
+                                        "col": 31,
+                                        "indices": [
+                                            {
+                                                "col": 39,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 42,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 32,
+                                        "value": "C_local"
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 33,
+                                    "op": "+=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 24,
+                                                "kind": "Variable",
+                                                "line": 33,
+                                                "name": "i"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 33,
+                                        "value": "sum_sq"
+                                    },
+                                    "value": {
+                                        "col": 45,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 30,
+                                            "indices": [
+                                                {
+                                                    "col": 38,
+                                                    "kind": "Variable",
+                                                    "line": 33,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 41,
+                                                    "kind": "Variable",
+                                                    "line": 33,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 33,
+                                            "value": "C_local"
+                                        },
+                                        "line": 33,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 47,
+                                            "indices": [
+                                                {
+                                                    "col": 55,
+                                                    "kind": "Variable",
+                                                    "line": 33,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 58,
+                                                    "kind": "Variable",
+                                                    "line": 33,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 33,
+                                            "value": "C_local"
+                                        }
+                                    }
+                                }
+                            ],
+                            "bound": "64",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 30,
+                            "size": 8,
+                            "type": "unroll",
+                            "var": "jj"
+                        }
+                    ],
+                    "bound": "N",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 29,
+                    "size": 64,
+                    "type": "tile",
+                    "var": "j"
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 28,
+            "size": 64,
+            "type": "tile",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 39,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 14,
+                                "kind": "Variable",
+                                "line": 39,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 39,
+                        "value": "mean"
+                    },
+                    "value": {
+                        "col": 30,
+                        "kind": "Binary",
+                        "left": {
+                            "col": 19,
+                            "indices": [
+                                {
+                                    "col": 27,
+                                    "kind": "Variable",
+                                    "line": 39,
+                                    "name": "i"
+                                }
+                            ],
+                            "kind": "Subscript",
+                            "line": 39,
+                            "value": "sum_val"
+                        },
+                        "line": 39,
+                        "op": "*",
+                        "right": {
+                            "col": 32,
+                            "kind": "Variable",
+                            "line": 39,
+                            "name": "epsilon"
+                        }
+                    }
+                },
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 40,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 18,
+                                "kind": "Variable",
+                                "line": 40,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 40,
+                        "value": "variance"
+                    },
+                    "value": {
+                        "col": 43,
+                        "kind": "Binary",
+                        "left": {
+                            "col": 33,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 23,
+                                "indices": [
+                                    {
+                                        "col": 30,
+                                        "kind": "Variable",
+                                        "line": 40,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 40,
+                                "value": "sum_sq"
+                            },
+                            "line": 40,
+                            "op": "*",
+                            "right": {
+                                "col": 35,
+                                "kind": "Variable",
+                                "line": 40,
+                                "name": "epsilon"
+                            }
+                        },
+                        "line": 40,
+                        "op": "-",
+                        "right": {
+                            "col": 53,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 45,
+                                "indices": [
+                                    {
+                                        "col": 50,
+                                        "kind": "Variable",
+                                        "line": 40,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 40,
+                                "value": "mean"
+                            },
+                            "line": 40,
+                            "op": "*",
+                            "right": {
+                                "col": 55,
+                                "indices": [
+                                    {
+                                        "col": 60,
+                                        "kind": "Variable",
+                                        "line": 40,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 40,
+                                "value": "mean"
+                            }
+                        }
+                    }
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 38,
+            "size": 2,
+            "type": "unroll",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 46,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 46,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 46,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 46,
+                                        "value": "C"
+                                    },
+                                    "value": {
+                                        "col": 69,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 55,
+                                            "kind": "Binary",
+                                            "left": {
+                                                "col": 44,
+                                                "kind": "Binary",
+                                                "left": {
+                                                    "col": 29,
+                                                    "indices": [
+                                                        {
+                                                            "col": 37,
+                                                            "kind": "Variable",
+                                                            "line": 46,
+                                                            "name": "i"
+                                                        },
+                                                        {
+                                                            "col": 40,
+                                                            "kind": "Variable",
+                                                            "line": 46,
+                                                            "name": "jj"
+                                                        }
+                                                    ],
+                                                    "kind": "Subscript",
+                                                    "line": 46,
+                                                    "value": "C_local"
+                                                },
+                                                "line": 46,
+                                                "op": "-",
+                                                "right": {
+                                                    "col": 46,
+                                                    "indices": [
+                                                        {
+                                                            "col": 51,
+                                                            "kind": "Variable",
+                                                            "line": 46,
+                                                            "name": "i"
+                                                        }
+                                                    ],
+                                                    "kind": "Subscript",
+                                                    "line": 46,
+                                                    "value": "mean"
+                                                }
+                                            },
+                                            "line": 46,
+                                            "op": "*",
+                                            "right": {
+                                                "col": 57,
+                                                "indices": [
+                                                    {
+                                                        "col": 64,
+                                                        "kind": "Binary",
+                                                        "left": {
+                                                            "col": 63,
+                                                            "kind": "Variable",
+                                                            "line": 46,
+                                                            "name": "j"
+                                                        },
+                                                        "line": 46,
+                                                        "op": "+",
+                                                        "right": {
+                                                            "col": 65,
+                                                            "kind": "Variable",
+                                                            "line": 46,
+                                                            "name": "jj"
+                                                        }
+                                                    }
+                                                ],
+                                                "kind": "Subscript",
+                                                "line": 46,
+                                                "value": "gamma"
+                                            }
+                                        },
+                                        "line": 46,
+                                        "op": "+",
+                                        "right": {
+                                            "col": 71,
+                                            "indices": [
+                                                {
+                                                    "col": 77,
+                                                    "kind": "Binary",
+                                                    "left": {
+                                                        "col": 76,
+                                                        "kind": "Variable",
+                                                        "line": 46,
+                                                        "name": "j"
+                                                    },
+                                                    "line": 46,
+                                                    "op": "+",
+                                                    "right": {
+                                                        "col": 78,
+                                                        "kind": "Variable",
+                                                        "line": 46,
+                                                        "name": "jj"
+                                                    }
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 46,
+                                            "value": "beta"
+                                        }
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 47,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 47,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 47,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 47,
+                                        "value": "C"
+                                    },
+                                    "value": {
+                                        "col": 37,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 28,
+                                            "indices": [
+                                                {
+                                                    "col": 30,
+                                                    "kind": "Variable",
+                                                    "line": 47,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 33,
+                                                    "kind": "Variable",
+                                                    "line": 47,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 47,
+                                            "value": "C"
+                                        },
+                                        "line": 47,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 39,
+                                            "kind": "Variable",
+                                            "line": 47,
+                                            "name": "threshold"
+                                        }
+                                    }
+                                }
+                            ],
+                            "bound": "64",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 45,
+                            "size": 2,
+                            "type": "unroll",
+                            "var": "jj"
+                        }
+                    ],
+                    "bound": "N",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 44,
+                    "size": 4,
+                    "type": "unroll",
+                    "var": "j"
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 43,
+            "size": 64,
+            "type": "tile",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 55,
+                                    "op": "+=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 55,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 55,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 55,
+                                        "value": "C"
+                                    },
+                                    "value": {
+                                        "col": 38,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 29,
+                                            "indices": [
+                                                {
+                                                    "col": 31,
+                                                    "kind": "Variable",
+                                                    "line": 55,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 34,
+                                                    "kind": "Variable",
+                                                    "line": 55,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 55,
+                                            "value": "A"
+                                        },
+                                        "line": 55,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 40,
+                                            "kind": "Variable",
+                                            "line": 55,
+                                            "name": "epsilon"
+                                        }
+                                    }
+                                }
+                            ],
+                            "bound": "128",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 54,
+                            "size": 2,
+                            "type": "unroll",
+                            "var": "jj"
+                        }
+                    ],
+                    "bound": "N",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 53,
+                    "size": 4,
+                    "type": "unroll",
+                    "var": "j"
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 52,
+            "size": 4,
+            "type": "unroll",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 63,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 63,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 63,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 63,
+                                        "value": "C"
+                                    },
+                                    "value": {
+                                        "col": 37,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 28,
+                                            "indices": [
+                                                {
+                                                    "col": 30,
+                                                    "kind": "Variable",
+                                                    "line": 63,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 33,
+                                                    "kind": "Variable",
+                                                    "line": 63,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 63,
+                                            "value": "C"
+                                        },
+                                        "line": 63,
+                                        "op": "+",
+                                        "right": {
+                                            "col": 39,
+                                            "indices": [
+                                                {
+                                                    "col": 44,
+                                                    "kind": "Variable",
+                                                    "line": 63,
+                                                    "name": "j"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 63,
+                                            "value": "beta"
+                                        }
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 64,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 64,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 64,
+                                                "name": "jj"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 64,
+                                        "value": "C"
+                                    },
+                                    "value": {
+                                        "col": 37,
+                                        "kind": "Binary",
+                                        "left": {
+                                            "col": 28,
+                                            "indices": [
+                                                {
+                                                    "col": 30,
+                                                    "kind": "Variable",
+                                                    "line": 64,
+                                                    "name": "i"
+                                                },
+                                                {
+                                                    "col": 33,
+                                                    "kind": "Variable",
+                                                    "line": 64,
+                                                    "name": "jj"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 64,
+                                            "value": "C"
+                                        },
+                                        "line": 64,
+                                        "op": "*",
+                                        "right": {
+                                            "col": 39,
+                                            "indices": [
+                                                {
+                                                    "col": 45,
+                                                    "kind": "Variable",
+                                                    "line": 64,
+                                                    "name": "j"
+                                                }
+                                            ],
+                                            "kind": "Subscript",
+                                            "line": 64,
+                                            "value": "gamma"
+                                        }
+                                    }
+                                }
+                            ],
+                            "bound": "32",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 62,
+                            "size": 4,
+                            "type": "unroll",
+                            "var": "jj"
+                        }
+                    ],
+                    "bound": "N",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 61,
+                    "size": 8,
+                    "type": "unroll",
+                    "var": "j"
+                }
+            ],
+            "bound": "M",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 60,
+            "size": 64,
+            "type": "tile",
+            "var": "i"
+        }
+    ],
+    "col": 1,
+    "funcname": "fused_gemm_bias_layernorm",
+    "line": 1,
+    "params": [
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 2,
+            "name": "A",
+            "shape": [
+                "M",
+                "K"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 3,
+            "name": "B",
+            "shape": [
+                "K",
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 4,
+            "name": "bias",
+            "shape": [
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 5,
+            "name": "gamma",
+            "shape": [
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 6,
+            "name": "beta",
+            "shape": [
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 7,
+            "name": "epsilon",
+            "shape": []
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 8,
+            "name": "threshold",
+            "shape": []
+        }
+    ],
+    "returns": [
+        "C"
+    ]
+}

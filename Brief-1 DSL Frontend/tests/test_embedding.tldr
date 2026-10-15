@@ -1,0 +1,28 @@
+embedding(
+    ids : Tensor[i32, (N,)],
+    w : Tensor[f32, (V, D)],
+    out : Tensor[f32, (N, D)]
+) -> [out] {
+    for i in loop(N, tile=128) {
+        for j in loop(D, tile=64, unroll=4) {
+            out[i, j] = w[ids[i], j]
+        }
+    }
+}
+
+main() -> [emb] {
+    ids : Tensor[i32, (128,)]
+    w : Tensor[f32, (10000, 64)]
+    emb : Tensor[f32, (128, 64)]
+    for i in loop(128, tile=128) {
+        ids[i] = 1
+    }
+    for i in loop(10000, tile=64) {
+        for j in loop(64, tile=64) {
+            w[i, j] = 1.0
+        }
+    }
+    emb = embedding(ids, w)
+    print(embedding(ids, w))
+    return emb
+}

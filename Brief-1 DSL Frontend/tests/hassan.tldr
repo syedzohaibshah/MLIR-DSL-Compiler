@@ -1,0 +1,24 @@
+matmul(
+    A : Tensor[f32, (64, 64)],
+    B : Tensor[f32, (64, 64)],
+    C : Tensor[f32, (64, 64)]
+) -> [C] {
+    for i in loop(64, tile=64) {
+        for j in loop(64, tile=64) {
+            for k in loop(64, tile=32, unroll=4) {
+                if i < 64 and j < 64 {
+                    C[i, j] += A[i, k] * B[k, j]
+                }
+            }
+        }
+    }
+}
+
+main()
+{
+    A : Tensor[f32, (64, 64)] 
+    B : Tensor[f32, (64, 64)]
+    C : Tensor[f32, (64, 64)]
+    C = matmul(A,B,C)
+    print(softmax(A,B))
+}

@@ -1,0 +1,205 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "i32",
+            "kind": "Tensor",
+            "line": 14,
+            "name": "ids",
+            "shape": [
+                128
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 15,
+            "name": "w",
+            "shape": [
+                10000,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 16,
+            "name": "emb",
+            "shape": [
+                128,
+                64
+            ]
+        },
+        {
+            "body": [
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 18,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 13,
+                                "kind": "Variable",
+                                "line": 18,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 18,
+                        "value": "ids"
+                    },
+                    "value": {
+                        "col": 18,
+                        "kind": "Constant",
+                        "line": 18,
+                        "value": 1
+                    }
+                }
+            ],
+            "bound": "128",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 17,
+            "size": 128,
+            "type": "tile",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 22,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 15,
+                                        "kind": "Variable",
+                                        "line": 22,
+                                        "name": "i"
+                                    },
+                                    {
+                                        "col": 18,
+                                        "kind": "Variable",
+                                        "line": 22,
+                                        "name": "j"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 22,
+                                "value": "w"
+                            },
+                            "value": {
+                                "col": 23,
+                                "kind": "Constant",
+                                "line": 22,
+                                "value": 1.0
+                            }
+                        }
+                    ],
+                    "bound": "64",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 21,
+                    "size": 64,
+                    "type": "tile",
+                    "var": "j"
+                }
+            ],
+            "bound": "10000",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 20,
+            "size": 64,
+            "type": "tile",
+            "var": "i"
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 25,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 25,
+                "name": "emb"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 25,
+                        "name": "ids"
+                    },
+                    {
+                        "col": 26,
+                        "kind": "Variable",
+                        "line": 25,
+                        "name": "w"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 25,
+                "op": "embedding"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 26,
+            "value": {
+                "args": [
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 26,
+                        "name": "ids"
+                    },
+                    {
+                        "col": 26,
+                        "kind": "Variable",
+                        "line": 26,
+                        "name": "w"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 26,
+                "op": "embedding"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 27,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 27,
+                "name": "emb"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 13,
+    "params": [],
+    "returns": [
+        "emb"
+    ]
+}

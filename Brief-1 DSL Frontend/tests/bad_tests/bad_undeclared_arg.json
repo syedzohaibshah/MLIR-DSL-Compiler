@@ -1,0 +1,58 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 7,
+            "name": "A",
+            "shape": [
+                64,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 8,
+            "value": {
+                "args": [
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "A"
+                    },
+                    {
+                        "col": 24,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "gamma"
+                    },
+                    {
+                        "col": 31,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "beta"
+                    },
+                    {
+                        "col": 37,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "alpha"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 8,
+                "op": "layernorm"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 6,
+    "params": [],
+    "returns": []
+}

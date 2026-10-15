@@ -1,0 +1,50 @@
+# Tiny full Llama 3.1 8B-style forward pass using ONLY the builtin ops.
+main() -> [probs] {
+    ids : Tensor[i32, (8,)]
+    w_emb : Tensor[f32, (8, 8, 8)]
+    hidden : Tensor[f32, (8, 8, 8)]
+    gamma : Tensor[f32, (8, 8, 8)]
+    beta : Tensor[f32, (8, 8, 8)]
+    normed : Tensor[f32, (8, 8, 8)]
+    Q : Tensor[f32, (8, 8, 8)]
+    K : Tensor[f32, (8, 8, 8)]
+    V : Tensor[f32, (8, 8, 8)]
+    attn : Tensor[f32, (8, 8, 8)]
+    gate : Tensor[f32, (8, 8, 8)]
+    logits : Tensor[f32, (8, 8)]
+    probs : Tensor[f32, (8, 8)]
+
+    for i in loop(8) {
+        ids[i] = i
+    }
+    for i in loop(8) {
+        for j in loop(8) {
+            for x in loop(8) {
+                w_emb[i, j, x] = 1.0
+                hidden[i, j, x] = 0.0
+                gamma[i, j, x] = 1.0
+                beta[i, j, x] = 0.0
+                normed[i, j, x] = 0.0
+                Q[i, j, x] = 0.5
+                K[i, j, x] = 0.25
+                V[i, j, x] = 1.0
+                attn[i, j, x] = 0.0
+                gate[i, j, x] = 0.0
+            }
+        }
+    }
+    for i in loop(8) {
+        for j in loop(8) {
+            logits[i, j] = 1.0
+            probs[i, j] = 0.0
+        }
+    }
+
+    hidden = embedding(ids, w_emb)
+    normed = layernorm(hidden, gamma, beta, normed)
+    attn = mha_attention(Q, K, V)
+    gate = relu(attn)
+    probs = softmax(logits, probs)
+    print(softmax(logits, probs))
+    return probs
+}

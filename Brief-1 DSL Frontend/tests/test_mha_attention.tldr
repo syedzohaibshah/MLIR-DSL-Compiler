@@ -1,0 +1,27 @@
+mha_attention(
+    Q : Tensor[f32, (T, D)],
+    K : Tensor[f32, (T, D)],
+    V : Tensor[f32, (T, D)]
+) -> [V] {
+    for i in loop(T, tile=32) {
+        for j in loop(T, tile=32, unroll=4) {
+            V[i, j] = Q[i, j] * K[i, j]
+        }
+    }
+}
+
+main() -> [V] {
+    Q : Tensor[f32, (32, 64)]
+    K : Tensor[f32, (32, 64)]
+    V : Tensor[f32, (32, 64)]
+    for i in loop(32, tile=32) {
+        for j in loop(64, tile=64) {
+            Q[i, j] = 1.0
+            K[i, j] = 1.0
+            V[i, j] = 0.0
+        }
+    }
+    V = mha_attention(Q, K, V)
+    print(mha_attention(Q, K, V))
+    return V
+}

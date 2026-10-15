@@ -1,0 +1,189 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": {
+                "col": 45,
+                "kind": "Binary",
+                "left": {
+                    "col": 36,
+                    "elements": [
+                        {
+                            "col": 42,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 37,
+                                "elements": [
+                                    {
+                                        "col": 38,
+                                        "kind": "Constant",
+                                        "line": 5,
+                                        "value": 2.0
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 5
+                            },
+                            "line": 5,
+                            "op": "*",
+                            "right": {
+                                "col": 43,
+                                "kind": "Constant",
+                                "line": 5,
+                                "value": 8
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 5
+                },
+                "line": 5,
+                "op": "*",
+                "right": {
+                    "col": 46,
+                    "kind": "Constant",
+                    "line": 5,
+                    "value": 8
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 5,
+            "name": "logits",
+            "shape": [
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 44,
+                "kind": "Binary",
+                "left": {
+                    "col": 35,
+                    "elements": [
+                        {
+                            "col": 41,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 36,
+                                "elements": [
+                                    {
+                                        "col": 37,
+                                        "kind": "Constant",
+                                        "line": 6,
+                                        "value": 0.0
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 6
+                            },
+                            "line": 6,
+                            "op": "*",
+                            "right": {
+                                "col": 42,
+                                "kind": "Constant",
+                                "line": 6,
+                                "value": 8
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 6
+                },
+                "line": 6,
+                "op": "*",
+                "right": {
+                    "col": 45,
+                    "kind": "Constant",
+                    "line": 6,
+                    "value": 8
+                }
+            },
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 6,
+            "name": "probs",
+            "shape": [
+                8,
+                8
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 7,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 7,
+                "name": "probs"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 7,
+                        "name": "logits"
+                    },
+                    {
+                        "col": 29,
+                        "kind": "Variable",
+                        "line": 7,
+                        "name": "probs"
+                    }
+                ],
+                "col": 13,
+                "kind": "BuiltinCall",
+                "line": 7,
+                "op": "softmax"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 8,
+            "value": {
+                "args": [
+                    {
+                        "col": 19,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "logits"
+                    },
+                    {
+                        "col": 27,
+                        "kind": "Variable",
+                        "line": 8,
+                        "name": "probs"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 8,
+                "op": "softmax"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 9,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 9,
+                "name": "probs"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 4,
+    "params": [],
+    "returns": [
+        "probs"
+    ]
+}

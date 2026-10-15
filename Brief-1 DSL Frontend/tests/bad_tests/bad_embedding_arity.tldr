@@ -1,0 +1,9 @@
+# bad_embedding_arity.tldr
+# embedding expects 2 tensor arguments, but only 1 is provided.
+# Expect: [Parse Error] 'embedding' expects 2 argument(s), got 1
+
+main() -> [C] {
+    A : Tensor[f32, (64, 64)]
+    C : Tensor[f32, (64, 64)]
+    C = embedding(A)
+}

@@ -1,0 +1,9 @@
+# bad_undeclared_arg.tldr
+# Passing undeclared names to a custom operator reports them as undeclared
+# AND as non-tensor arguments.
+# Expect: [Semantic Warning] Undeclared variable/parameter 'gamma' (and beta, alpha)
+# Expect: [Semantic Error] 'layernorm' expects tensor argument(s), ...
+main() {
+    A : Tensor[f32, (64, 64)]
+    print(layernorm(A, gamma, beta, alpha))
+}

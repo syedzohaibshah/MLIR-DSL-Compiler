@@ -1,0 +1,10 @@
+# bad_layernorm_arity.tldr
+# layernorm expects 4 tensor arguments, but only 2 are provided.
+# Expect: [Parse Error] 'layernorm' expects 4 argument(s), got 2
+
+main() -> [C] {
+    A : Tensor[f32, (64, 64)]
+    B : Tensor[f32, (64, 64)]
+    C : Tensor[f32, (64, 64)]
+    C = layernorm(A, B)
+}

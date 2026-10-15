@@ -1,0 +1,21 @@
+# Llama 3.1 8B - pre-attention normalization (stand-in for RMSNorm) using the
+# builtin layernorm op over an 8x8x8 dummy activation tensor.
+main() -> [out] {
+    x : Tensor[f32, (8, 8, 8)]
+    gamma : Tensor[f32, (8, 8, 8)]
+    beta : Tensor[f32, (8, 8, 8)]
+    out : Tensor[f32, (8, 8, 8)]
+    for i in loop(8) {
+        for j in loop(8) {
+            for xk in loop(8) {
+                x[i, j, xk] = 2.0
+                gamma[i, j, xk] = 1.0
+                beta[i, j, xk] = 0.0
+                out[i, j, xk] = 0.0
+            }
+        }
+    }
+    out = layernorm(x, gamma, beta, out)
+    print(layernorm(x, gamma, beta, out))
+    return out
+}

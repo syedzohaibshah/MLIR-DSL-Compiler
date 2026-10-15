@@ -1,0 +1,108 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 19,
+            "name": "A",
+            "shape": [
+                64,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 20,
+            "name": "B",
+            "shape": [
+                64,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 21,
+            "name": "C",
+            "shape": [
+                64,
+                64
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 22,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 22,
+                "name": "C"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 16,
+                        "kind": "Variable",
+                        "line": 22,
+                        "name": "A"
+                    },
+                    {
+                        "col": 18,
+                        "kind": "Variable",
+                        "line": 22,
+                        "name": "B"
+                    },
+                    {
+                        "col": 20,
+                        "kind": "Variable",
+                        "line": 22,
+                        "name": "C"
+                    }
+                ],
+                "col": 9,
+                "kind": "FunctionCall",
+                "line": 22,
+                "name": "matmul"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 23,
+            "value": {
+                "args": [
+                    {
+                        "col": 19,
+                        "kind": "Variable",
+                        "line": 23,
+                        "name": "A"
+                    },
+                    {
+                        "col": 21,
+                        "kind": "Variable",
+                        "line": 23,
+                        "name": "B"
+                    }
+                ],
+                "col": 11,
+                "kind": "BuiltinCall",
+                "line": 23,
+                "op": "softmax"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 17,
+    "params": [],
+    "returns": []
+}

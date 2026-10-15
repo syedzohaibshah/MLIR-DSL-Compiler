@@ -1,0 +1,9 @@
+# bad_subscript_arg.tldr
+# Subscripting a tensor yields a scalar element, not a tensor, so a subscript
+# is not a valid argument for a custom operator.
+# Expect: [Semantic Error] 'softmax' expects tensor argument(s), but argument 2 is not a tensor
+
+main() {
+    A : Tensor[f32, (64, 64)]
+    print(softmax(A, A[0]))
+}

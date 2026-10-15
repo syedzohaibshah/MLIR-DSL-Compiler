@@ -1,0 +1,10 @@
+# bad_mha_attention_arity.tldr
+# mha_attention expects 3 tensor arguments, but only 2 are provided.
+# Expect: [Parse Error] 'mha_attention' expects 3 argument(s), got 2
+
+main() -> [C] {
+    A : Tensor[f32, (64, 64)]
+    B : Tensor[f32, (64, 64)]
+    C : Tensor[f32, (64, 64)]
+    C = mha_attention(A, B)
+}
