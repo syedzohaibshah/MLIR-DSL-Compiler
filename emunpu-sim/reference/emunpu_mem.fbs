@@ -1,0 +1,46 @@
+// Copyright 2026 The IREE Authors
+//
+// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// FlatBuffer schema for the emulated NPU's global memory layout. The global
+// memory subsystem (emunpu_global_mem.{h,c}) keeps a live descriptor table in
+// memory; this schema is the serialized, inspectable form of that layout --
+// the authoritative record of which tensors occupy which byte ranges of the
+// global memory arena. Serialized via flatcc by emunpu_mem_fb.c.
+
+namespace iree.hal.emunpu;
+
+file_identifier "EMEM";
+file_extension "emem";
+
+// One allocation in the global memory arena.
+table TensorDescDef {
+  // Stable handle for this allocation (matches emunpu_tensor_id_t).
+  id:uint32;
+  // Element type (matches emunpu_dtype_t).
+  dtype:uint32;
+  // Logical shape (empty for a raw byte buffer).
+  shape:[uint32];
+  // Byte offset of the allocation within the arena (its "global address").
+  offset:uint64;
+  // Byte size of the allocation.
+  size:uint64;
+  // Optional debug label.
+  name:string;
+}
+
+// The complete layout of the global memory arena at a point in time.
+table GlobalMemoryLayoutDef {
+  // Total arena capacity in bytes.
+  capacity:uint64;
+  // High-water mark: bytes past the last live/free region.
+  watermark:uint64;
+  // Bytes currently allocated to live tensors.
+  bytes_in_use:uint64;
+  // Live allocations.
+  tensors:[TensorDescDef];
+}
+
+root_type GlobalMemoryLayoutDef;

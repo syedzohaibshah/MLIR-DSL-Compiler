@@ -1,0 +1,9 @@
+build/
+cmbuild/
+cminstall/
+*.o
+*.a
+*.so
+*.so.*
+__pycache__/
+/tmp/emunpu*.events
