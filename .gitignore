@@ -1,0 +1,22 @@
+# Editor settings
+.vscode/
+
+# Claude files (local only)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+
+# macOS
+.DS_Store
+
+
+# Build output
+build/
+*.o
+*.obj
+*.a
+*.exe
+
+
+PROGRESS.md

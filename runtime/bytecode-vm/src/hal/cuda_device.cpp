@@ -6,81 +6,80 @@
 #include <cuda_runtime.h>
 #include "kernels.h"
 
+
 cudaDevice::cudaDevice() { registerKernels(); }
 
-
-DeviceHandle cudaDevice::allocate(int size,int line_number){
+Error cudaDevice::allocate(int size,int line_number,DeviceHandle& out_handle){
 
     void* dev_ptr;
     cudaError_t err = cudaMalloc(&dev_ptr, size);
     if (err != cudaSuccess) {
-        fail("cudaMalloc failed with error: "+std::string(cudaGetErrorString(err)), line_number);
-        return -1;
+      
+        return makeError("device allocation failed "+std::string(cudaGetErrorString(err)), false, line_number);
     }
     int id = (int)buffer_table.size();
     buffer_table.push_back({size, false, dev_ptr}); //keeing track of the device allocate data
     std::cout<<"[cuda] alloc buffer "<<id<<" ("<<size<<" bytes)"<<std::endl;
 
-    return id;
+    out_handle = id;
+    return ok();
 }
 
-bool cudaDevice::isValidHandle(DeviceHandle h, int line) {
+Error cudaDevice::isValidHandle(DeviceHandle h, int line) {
     if (h < 0 || h >= (int)buffer_table.size()) {
-        fail("invalid buffer id", line);
-        return false;
+        return makeError("invalid buffer id", line);
     }
     if (buffer_table[h].freed) {
-        fail("buffer already freed", line);
-        return false;
+        return makeError("buffer already freed", line);
     }
-    return true;
+    return ok();
 }
 
 
 
-void cudaDevice:: free(DeviceHandle  buffer_id,int line_number){
+Error cudaDevice:: free(DeviceHandle  buffer_id,int line_number){
 
-    if(isValidHandle(buffer_id, line_number)){
+     RETURN_IF_ERROR(isValidHandle(buffer_id, line_number));
         cudaError_t err = cudaFree(buffer_table[buffer_id].dev_ptr);
         if(err != cudaSuccess){
-            fail("cudaFree failed with error: "+std::string(cudaGetErrorString(err)), line_number);
-            return;
+
+            return makeError("cudaFree failed with error: "+std::string(cudaGetErrorString(err)), line_number);
         }
         buffer_table[buffer_id].freed = true;
         buffer_table[buffer_id].dev_ptr = nullptr;
         std::cout<<"[cuda] free buffer "<<buffer_id<<std::endl;
-          }
+          
 
         
+    return ok();
     }
 
 
- bool cudaDevice:: upload(DeviceHandle buffer_id, const void* src, int size, int line_number){
+Error cudaDevice:: upload(DeviceHandle buffer_id, const void* src, int size, int line_number){
 
-             if(!isValidHandle(buffer_id, line_number)) return false; //check if the buffer id is valid 
+             RETURN_IF_ERROR(isValidHandle(buffer_id, line_number));
+
        
              cudaError_t err = cudaMemcpy(devicePtr(buffer_id), src, size, cudaMemcpyHostToDevice);
              if(err != cudaSuccess){
-                 fail("cudaMemcpy (H2D) failed with error: "+std::string(cudaGetErrorString(err)), line_number);
-                 return false ;
+                 return makeError("cudaMemcpy (H2D) failed with error: "+std::string(cudaGetErrorString(err)), line_number);
+                
              }
              std::cout<<"[cuda] upload "<<size<<" bytes -> buffer "<<buffer_id<<std::endl;
-             return true;
+             return ok();
          }
 
 
-bool cudaDevice:: download(DeviceHandle buffer_id, void* dst, int size, int line_number){
+Error cudaDevice:: download(DeviceHandle buffer_id, void* dst, int size, int line_number){
 
-                 if(!isValidHandle(buffer_id, line_number)) return false;
-             
- 
+                 RETURN_IF_ERROR(isValidHandle(buffer_id, line_number));
+
                  cudaError_t err = cudaMemcpy(dst, devicePtr(buffer_id), size, cudaMemcpyDeviceToHost);
                  if(err != cudaSuccess){
-                     fail("cudaMemcpy (D2H) failed with error: "+std::string(cudaGetErrorString(err)), line_number);
-                     return false;
+                     return makeError("cudaMemcpy (D2H) failed with error: "+std::string(cudaGetErrorString(err)), line_number);
                  }
                  std::cout<<"[cuda] download "<<size<<" bytes <- buffer "<<buffer_id<<std::endl;
-                 return true;
+                 return ok();
              }
 
 
@@ -91,7 +90,7 @@ bool cudaDevice:: download(DeviceHandle buffer_id, void* dst, int size, int line
 
 
 
-    void cudaDevice::registerKernels(){
+    Error cudaDevice::registerKernels(){
         // kernel 0: vec_mm_Kernel - 3 buffers (x, y, z), 3 scalars (n, width, height)
         kernel_table[0] = [this](const KernelContext& ctx){
             return launchGenericKernel("vec_mm_Kernel", (void*)vec_mm_Kernel, 3, 3, ctx);
@@ -108,21 +107,21 @@ bool cudaDevice:: download(DeviceHandle buffer_id, void* dst, int size, int line
         kernel_table[3] = [this](const KernelContext& ctx){
             return launchGenericKernel("bias_add_Kernel", (void*)bias_add_Kernel, 3, 2, ctx);
         };
+        return ok();
     }
 
-bool  cudaDevice:: launchGenericKernel(const char* name,
+Error  cudaDevice:: launchGenericKernel(const char* name,
                    void* kernel_fn,
                    int expected_buffers,
                    int expected_scalars,
                    const KernelContext& ctx){
 
     if(ctx.num_buffers != expected_buffers){
-        fail(std::string(name)+" expects exactly "+std::to_string(expected_buffers)+" buffers", ctx.line_number);
-        return false;
+
+        return makeError("wrong number of buffers for kernel", ctx.line_number);
     }
     if(ctx.num_scalars != expected_scalars){
-        fail(std::string(name)+" expects exactly "+std::to_string(expected_scalars)+" scalars", ctx.line_number);
-        return false;
+        return makeError(std::string(name)+" expects exactly "+std::to_string(expected_scalars)+" scalars", ctx.line_number);
     }
 
     const auto& args = *ctx.args;
@@ -144,45 +143,47 @@ bool  cudaDevice:: launchGenericKernel(const char* name,
 
     cudaError_t err = cudaLaunchKernel(kernel_fn, ctx.grid, ctx.block, kernel_args.data(), 0, 0);
     if(err != cudaSuccess){
-        fail(std::string(name)+" launch failed: "+std::string(cudaGetErrorString(err)), ctx.line_number);
-        return false;
+        return makeError(std::string(name)+" launch failed: "+std::string(cudaGetErrorString(err)), ctx.line_number);
     }
 
     cudaError_t sync_err = cudaDeviceSynchronize();  // wait for the kernel to execute
     if(sync_err != cudaSuccess){
-        fail(std::string(name)+" execution failed: "+std::string(cudaGetErrorString(sync_err)), ctx.line_number);
-        return false;
+        return makeError(std::string(name)+" execution failed: "+std::string(cudaGetErrorString(sync_err)), ctx.line_number);
     }
 
     std::cout<<name<<" completed"<<std::endl;
-    return true;
+    return ok();
     }
 
-      bool cudaDevice::dispatch(const std::vector<int>& args, int line_number) {
+      Error cudaDevice::dispatch(const std::vector<int>& args, int line_number) {
 
           if(args.size() < 2) {
-              fail("LAUNCH expected at least kernel_id and num_buffers", line_number); return false;
+            
+              return makeError("LAUNCH expected at least kernel_id and num_buffers", line_number);
           }
       
           int kernel_id = args[0];
           int num_buffers = args[1];
       
-          if(num_buffers < 0) { fail("LAUNCH has negative num_buffers", line_number); return false; }
+          if(num_buffers < 0) { 
+            return makeError("LAUNCH has negative num_buffers", line_number);
+          }
       
           size_t dims_start = 2 + (size_t)num_buffers;
           size_t num_scalars_index = dims_start + 6;
-          if(args.size() <= num_scalars_index) { fail("LAUNCH missing dimensions or num_scalars", line_number); return false; }
+          if(args.size() <= num_scalars_index) { 
+            return makeError("LAUNCH missing dimensions or num_scalars", line_number); }
       
           int num_scalars = args[num_scalars_index];
-          if(num_scalars < 0) { fail("LAUNCH has negative num_scalars", line_number); return false; }
+          if(num_scalars < 0) { return makeError("LAUNCH has negative num_scalars", line_number); }
       
           size_t expected_total = num_scalars_index + 1 + (size_t)num_scalars;
-          if(args.size() != expected_total) { fail("LAUNCH arg count mismatch", line_number); return false; }
+          if(args.size() != expected_total) { return makeError("LAUNCH arg count mismatch", line_number); }
       
           for(size_t i = 2; i < dims_start; ++i){
-              if(!isValidHandle(args[i], line_number)) return false;
+              RETURN_IF_ERROR(isValidHandle(args[i], line_number));
           }
-      
+
           std::cout<<"Launching kernel ID "<<kernel_id<<" with "<<num_buffers<<" buffers, grid("
                     <<args[dims_start]<<","<<args[dims_start+1]<<","<<args[dims_start+2]<<"), block("
                     <<args[dims_start+3]<<","<<args[dims_start+4]<<","<<args[dims_start+5]<<"), "
@@ -190,8 +191,7 @@ bool  cudaDevice:: launchGenericKernel(const char* name,
       
           auto it = kernel_table.find(kernel_id);
           if(it == kernel_table.end()){
-              fail("unknown kernel_id ", line_number);
-              return false;
+              return makeError("unknown kernel_id ",line_number);
           }
       
           KernelContext ctx; //prepare the context for kernel to execute

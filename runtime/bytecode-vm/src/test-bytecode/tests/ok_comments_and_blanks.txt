@@ -1,0 +1,6 @@
+// this is a comment
+
+   
+   // indented comment
+ALLOC 16
+EOF

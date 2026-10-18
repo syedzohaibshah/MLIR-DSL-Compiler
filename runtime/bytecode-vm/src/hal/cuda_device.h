@@ -35,10 +35,10 @@ class cudaDevice:public Device{
 
   
   
-      bool isValidHandle(DeviceHandle h, int line);
+      Error isValidHandle(DeviceHandle h, int line);
           void* devicePtr(int id);
-          void registerKernels();
-          bool launchGenericKernel(const char* name,
+          Error registerKernels();
+          Error launchGenericKernel(const char* name,
                              void* kernel_fn,
                              int expected_buffers,
                              int expected_scalars,
@@ -49,11 +49,12 @@ public:
 
     cudaDevice();
     std::string name() const override;
-     DeviceHandle allocate(int size,int line) override;
-     void free(DeviceHandle handle,int line)override;
-     bool upload(DeviceHandle handle, const void* src, int size, int line)override;
-    bool download(DeviceHandle handle, void* dst, int size, int line) override;
-    bool dispatch(const std::vector<int>& args, int line) override;
+     Error allocate(int size,int line,DeviceHandle& out_handle) override;
+
+    Error free(DeviceHandle handle,int line)override;
+     Error upload(DeviceHandle handle, const void* src, int size, int line)override;
+    Error download(DeviceHandle handle, void* dst, int size, int line) override;
+    Error dispatch(const std::vector<int>& args, int line) override;
 
  
     

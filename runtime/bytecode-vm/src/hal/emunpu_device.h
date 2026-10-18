@@ -14,31 +14,34 @@ class emunpuDevice:public Device{
 
     emunpu_device_t* emu_device;
     std::vector<TensorSlot> buffer_table;
-    bool isValidHandle(DeviceHandle h, int line);
+    Error isValidHandle(DeviceHandle h, int line);
+   
 
     //kernels
 
-    bool do_matmul(int num_buffers,int num_scalars,
+    Error do_matmul(int num_buffers,int num_scalars,
         int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
-     bool do_vec_add(int num_buffers,int num_scalars,
+     Error do_vec_add(int num_buffers,int num_scalars,
          int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
-     bool do_relu(int num_buffers,int num_scalars,
+     Error do_relu(int num_buffers,int num_scalars,
          int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
 
-     bool  do_bais_add(int num_buffers,int num_scalars,
+     Error  do_bais_add(int num_buffers,int num_scalars,
          int scalars_start,int buffer_start,const std::vector<int>& args,int line);
      
 public:
     emunpuDevice();
     ~emunpuDevice() override;
-
+ Error status() const;
+    
     std::string name() const override;
-     DeviceHandle allocate(int size,int line) override;
-     void free(DeviceHandle handle,int line)override;
-     bool upload(DeviceHandle handle, const void* src, int size, int line)override;
-    bool download(DeviceHandle handle, void* dst, int size, int line) override;
-    bool dispatch(const std::vector<int>& args, int line) override;
+     Error allocate(int size,int line,DeviceHandle& out_handle) override;
+
+     Error free(DeviceHandle handle,int line)override;
+     Error upload(DeviceHandle handle, const void* src, int size, int line)override;
+    Error download(DeviceHandle handle, void* dst, int size, int line) override;
+    Error dispatch(const std::vector<int>& args, int line) override;
 };

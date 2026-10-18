@@ -1,0 +1,3 @@
+ALLOC 16
+FOObar 1 2
+EOF

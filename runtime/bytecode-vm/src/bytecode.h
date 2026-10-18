@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 #include <vector>
-
+#include "error.h"
 
 struct Arg{
-    int value;
+    long value;
     bool is_register;
 };
 struct opcode{
@@ -17,7 +17,7 @@ struct opcode{
 class Bytecode{
 public:
     // reads the file line by line, parses each line, and stores the result.
-    bool loadFromFile(const std::string& filename);
+    Error loadFromFile(const std::string& filename);
 
     size_t size() const;
     
@@ -31,20 +31,22 @@ public:
     int expectedOutputSize(int slot) const;
 
     // Checks a host array's real size against what the bytecode declares for that slot , catches a mismatch here
-    bool checkInputSize(int slot, int actual_size) const;
-    bool checkOutputSize(int slot, int actual_size) const;
-
+    Error checkInputSize(int slot, int actual_size) const;
+    Error checkOutputSize(int slot, int actual_size) const;
+  
 private:
     std::vector<opcode> instructions;
 
     // Parses one bytecode line into one opcode.
-    static opcode parseLine(const std::string& line, int line_number);
+    static Error parseLine(const std::string& line, int line_number,opcode& out_opcode);
+    static Error stringToInteger(const std::string& str, long& out_value, int line_number);
 
+    static bool isSkipable(const std::string& line);
     // used  by expectedInputSize/expectedOutputSize: scans for every
     // instruction named `opcode_name`, whose argument at `slot_arg_index`
     // equals `slot`, and returns its size argument,
     int expectedSize(const std::string& opcode_name, int slot_arg_index, int slot) const;
 
 //check is sze is defined in bytecode and if they both are the same sizes
-    bool checkSize(const std::string& label, int slot, int expected, int actual_size) const;
+    Error checkSize(const std::string& label, int slot, int expected, int actual_size) const;
 };

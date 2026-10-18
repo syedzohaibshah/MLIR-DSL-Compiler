@@ -1,0 +1,3 @@
+ALLOC 16
+ALLOC abc
+EOF
