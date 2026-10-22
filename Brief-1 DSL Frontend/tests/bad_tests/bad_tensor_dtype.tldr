@@ -1,0 +1,7 @@
+scale(
+    A : Tensor[z32, (2, 2)],
+    out : Tensor[f32, (2, 2)]
+) -> [out] {
+    out[0, 0] = 1.0;
+    return out;
+}

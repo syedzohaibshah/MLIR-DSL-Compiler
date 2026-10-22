@@ -134,16 +134,28 @@ std::shared_ptr<ParamNode> Parser::parse_param() {
     return node;
 }
 
+std::string Parser::parse_dtype() {
+    Token tok = advance();
+    if (tok.type != TokenType::TOK_F32 && tok.type != TokenType::TOK_F64 &&
+        tok.type != TokenType::TOK_I32) {
+        throw ParseError(
+            "invalid data type '" + tok.value + "'; expected f32, f64 or i32",
+            tok.line, tok.column
+        );
+    }
+    return tok.value;
+}
+
 std::pair<std::string, std::vector<ShapeDim>> Parser::parse_type_anno() {
     if (match(TokenType::TOK_TENSOR)) {
         expect(TokenType::TOK_LBRACKET);
-        std::string dtype = advance().value;
+        std::string dtype = parse_dtype();
         expect(TokenType::TOK_COMMA);
         auto shape = parse_shape();
         expect(TokenType::TOK_RBRACKET);
         return {dtype, shape};
     } else {
-        std::string dtype = advance().value;
+        std::string dtype = parse_dtype();
         return {dtype, {}};
     }
 }

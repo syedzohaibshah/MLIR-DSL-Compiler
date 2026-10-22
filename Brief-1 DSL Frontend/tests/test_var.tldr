@@ -4,7 +4,7 @@ justafunction(
     C : Tensor[f32, (M, N)]
 ) -> [C] {
 
-A : Tensor[i32, (1,1,1)] = [[[1]]]
+A : Tensor[32, (1,1,1)] = [[[1]]]
 B : Tensor[i32, (1,1,1)] = [[[1]]]
 C = softmax(A, x)
 D = relu(A)

@@ -37,6 +37,7 @@ private:
     std::vector<std::shared_ptr<ParamNode>> parse_param_list();
     std::shared_ptr<ParamNode> parse_param();
     std::pair<std::string, std::vector<ShapeDim>> parse_type_anno();
+    std::string parse_dtype();
     std::vector<ShapeDim> parse_shape();
     std::vector<std::shared_ptr<ASTNode>> parse_block();
     std::shared_ptr<ASTNode> parse_stmt();

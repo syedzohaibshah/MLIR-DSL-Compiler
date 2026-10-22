@@ -1,0 +1,136 @@
+{
+    "body": [
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 7,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 15,
+                                        "kind": "Variable",
+                                        "line": 7,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 7,
+                                "value": "B"
+                            },
+                            "value": {
+                                "col": 20,
+                                "indices": [
+                                    {
+                                        "col": 22,
+                                        "kind": "Variable",
+                                        "line": 7,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 7,
+                                "value": "A"
+                            }
+                        }
+                    ],
+                    "col": 9,
+                    "condition": {
+                        "col": 17,
+                        "kind": "Binary",
+                        "left": {
+                            "col": 12,
+                            "indices": [
+                                {
+                                    "col": 14,
+                                    "kind": "Variable",
+                                    "line": 6,
+                                    "name": "i"
+                                }
+                            ],
+                            "kind": "Subscript",
+                            "line": 6,
+                            "value": "A"
+                        },
+                        "line": 6,
+                        "op": ">",
+                        "right": {
+                            "col": 19,
+                            "kind": "Constant",
+                            "line": 6,
+                            "value": 0
+                        }
+                    },
+                    "kind": "If",
+                    "line": 6,
+                    "orelse": [
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 9,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 15,
+                                        "kind": "Variable",
+                                        "line": 9,
+                                        "name": "i"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 9,
+                                "value": "B"
+                            },
+                            "value": {
+                                "col": 20,
+                                "kind": "Constant",
+                                "line": 9,
+                                "value": 0
+                            }
+                        }
+                    ]
+                }
+            ],
+            "bound": "N",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 5,
+            "size": 4,
+            "type": "unroll",
+            "var": "i"
+        }
+    ],
+    "col": 1,
+    "funcname": "relu",
+    "line": 1,
+    "params": [
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 2,
+            "name": "A",
+            "shape": [
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 3,
+            "name": "B",
+            "shape": [
+                "N"
+            ]
+        }
+    ],
+    "returns": []
+}
