@@ -1,0 +1,9 @@
+# The data of a tensor has to nest the way the dims say it does.
+# A tensor of two dimensions cannot be initialized with a flat list.
+# Expect: [Semantic Error] 'A' is declared with 2 dimension(s) but is initialized with a literal of rank 1
+
+main() -> [C] {
+    A : Tensor[f32, (2,2)] = [1.0, 2.0, 3.0, 4.0]
+    C : Tensor[f32, (2,2)]
+    return C
+}

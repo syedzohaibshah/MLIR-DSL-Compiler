@@ -1,0 +1,230 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "data": {
+                "col": 31,
+                "elements": [
+                    {
+                        "col": 32,
+                        "elements": [
+                            {
+                                "col": 33,
+                                "kind": "Constant",
+                                "line": 16,
+                                "value": 1.0
+                            },
+                            {
+                                "col": 38,
+                                "kind": "Constant",
+                                "line": 16,
+                                "value": 2.0
+                            }
+                        ],
+                        "kind": "List",
+                        "line": 16
+                    },
+                    {
+                        "col": 44,
+                        "elements": [
+                            {
+                                "col": 45,
+                                "kind": "Constant",
+                                "line": 16,
+                                "value": 3.0
+                            },
+                            {
+                                "col": 50,
+                                "kind": "Constant",
+                                "line": 16,
+                                "value": 4.0
+                            }
+                        ],
+                        "kind": "List",
+                        "line": 16
+                    }
+                ],
+                "kind": "List",
+                "line": 16
+            },
+            "data_values": [
+                [
+                    1.0,
+                    2.0
+                ],
+                [
+                    3.0,
+                    4.0
+                ]
+            ],
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 16,
+            "name": "A",
+            "shape": [
+                2,
+                2
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 19,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 19,
+                "name": "M"
+            },
+            "value": {
+                "col": 9,
+                "kind": "Constant",
+                "line": 19,
+                "value": 2
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 20,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 20,
+                "name": "N"
+            },
+            "value": {
+                "col": 9,
+                "kind": "Constant",
+                "line": 20,
+                "value": 2
+            }
+        },
+        {
+            "col": 5,
+            "data": null,
+            "data_values": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 21,
+            "name": "B",
+            "shape": [
+                "M",
+                "N"
+            ]
+        },
+        {
+            "col": 5,
+            "data": {
+                "col": 40,
+                "kind": "Binary",
+                "left": {
+                    "col": 31,
+                    "elements": [
+                        {
+                            "col": 37,
+                            "kind": "Binary",
+                            "left": {
+                                "col": 32,
+                                "elements": [
+                                    {
+                                        "col": 33,
+                                        "kind": "Constant",
+                                        "line": 24,
+                                        "value": 0.0
+                                    }
+                                ],
+                                "kind": "List",
+                                "line": 24
+                            },
+                            "line": 24,
+                            "op": "*",
+                            "right": {
+                                "col": 38,
+                                "kind": "Constant",
+                                "line": 24,
+                                "value": 2
+                            }
+                        }
+                    ],
+                    "kind": "List",
+                    "line": 24
+                },
+                "line": 24,
+                "op": "*",
+                "right": {
+                    "col": 41,
+                    "kind": "Constant",
+                    "line": 24,
+                    "value": 2
+                }
+            },
+            "data_values": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 24,
+            "name": "C",
+            "shape": [
+                2,
+                2
+            ]
+        },
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 26,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 26,
+                "name": "out"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 18,
+                        "kind": "Variable",
+                        "line": 26,
+                        "name": "A"
+                    }
+                ],
+                "col": 11,
+                "kind": "FunctionCall",
+                "line": 26,
+                "name": "scaled"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Print",
+            "line": 27,
+            "value": {
+                "col": 11,
+                "kind": "Variable",
+                "line": 27,
+                "name": "out"
+            }
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 28,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 28,
+                "name": "out"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "main",
+    "line": 14,
+    "params": [],
+    "returns": [
+        "out"
+    ]
+}

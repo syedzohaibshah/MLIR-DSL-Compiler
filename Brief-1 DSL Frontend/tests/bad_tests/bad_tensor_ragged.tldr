@@ -1,0 +1,8 @@
+# The nested lists of a tensor have to be of the same length.
+# Expect: [Semantic Error] 'A' is initialized with a ragged literal: the nested lists do not all have the same length
+
+main() -> [C] {
+    A : Tensor[f32, (2,2)] = [[1.0, 2.0], [3.0]]
+    C : Tensor[f32, (2,2)]
+    return C
+}

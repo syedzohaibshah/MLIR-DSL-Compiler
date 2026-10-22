@@ -2,50 +2,8 @@
     "body": [
         {
             "col": 5,
-            "data": {
-                "col": 47,
-                "kind": "Binary",
-                "left": {
-                    "col": 39,
-                    "elements": [
-                        {
-                            "col": 43,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 40,
-                                "elements": [
-                                    {
-                                        "col": 41,
-                                        "kind": "Constant",
-                                        "line": 10,
-                                        "value": 0
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 10
-                            },
-                            "line": 10,
-                            "op": "*",
-                            "right": {
-                                "col": 44,
-                                "kind": "Constant",
-                                "line": 10,
-                                "value": 64
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 10
-                },
-                "line": 10,
-                "op": "*",
-                "right": {
-                    "col": 48,
-                    "kind": "Constant",
-                    "line": 10,
-                    "value": 64
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 10,
@@ -57,31 +15,8 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 39,
-                "kind": "Binary",
-                "left": {
-                    "col": 36,
-                    "elements": [
-                        {
-                            "col": 37,
-                            "kind": "Constant",
-                            "line": 11,
-                            "value": 0
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 11
-                },
-                "line": 11,
-                "op": "*",
-                "right": {
-                    "col": 40,
-                    "kind": "Constant",
-                    "line": 11,
-                    "value": 64
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 11,
@@ -92,31 +27,8 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 38,
-                "kind": "Binary",
-                "left": {
-                    "col": 35,
-                    "elements": [
-                        {
-                            "col": 36,
-                            "kind": "Constant",
-                            "line": 12,
-                            "value": 0
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 12
-                },
-                "line": 12,
-                "op": "*",
-                "right": {
-                    "col": 39,
-                    "kind": "Constant",
-                    "line": 12,
-                    "value": 64
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 12,
@@ -127,31 +39,8 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 36,
-                "kind": "Binary",
-                "left": {
-                    "col": 33,
-                    "elements": [
-                        {
-                            "col": 34,
-                            "kind": "Constant",
-                            "line": 13,
-                            "value": 0
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 13
-                },
-                "line": 13,
-                "op": "*",
-                "right": {
-                    "col": 37,
-                    "kind": "Constant",
-                    "line": 13,
-                    "value": 64
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 13,
@@ -162,31 +51,8 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 40,
-                "kind": "Binary",
-                "left": {
-                    "col": 37,
-                    "elements": [
-                        {
-                            "col": 38,
-                            "kind": "Constant",
-                            "line": 14,
-                            "value": 0
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 14
-                },
-                "line": 14,
-                "op": "*",
-                "right": {
-                    "col": 41,
-                    "kind": "Constant",
-                    "line": 14,
-                    "value": 64
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 14,
@@ -194,6 +60,177 @@
             "shape": [
                 64
             ]
+        },
+        {
+            "col": 5,
+            "data": null,
+            "data_values": null,
+            "dtype": "f32",
+            "kind": "Tensor",
+            "line": 15,
+            "name": "C",
+            "shape": [
+                "M",
+                "N"
+            ]
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 19,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 21,
+                                        "kind": "Variable",
+                                        "line": 19,
+                                        "name": "i"
+                                    },
+                                    {
+                                        "col": 24,
+                                        "kind": "Variable",
+                                        "line": 19,
+                                        "name": "j"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 19,
+                                "value": "C_local"
+                            },
+                            "value": {
+                                "col": 29,
+                                "kind": "Constant",
+                                "line": 19,
+                                "value": 0.0
+                            }
+                        }
+                    ],
+                    "bound": "64",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 18,
+                    "size": 0,
+                    "type": "",
+                    "var": "j"
+                },
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 21,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 17,
+                                "kind": "Variable",
+                                "line": 21,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 21,
+                        "value": "sum_val"
+                    },
+                    "value": {
+                        "col": 22,
+                        "kind": "Constant",
+                        "line": 21,
+                        "value": 0.0
+                    }
+                },
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 22,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 16,
+                                "kind": "Variable",
+                                "line": 22,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 22,
+                        "value": "sum_sq"
+                    },
+                    "value": {
+                        "col": 21,
+                        "kind": "Constant",
+                        "line": 22,
+                        "value": 0.0
+                    }
+                },
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 23,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 14,
+                                "kind": "Variable",
+                                "line": 23,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 23,
+                        "value": "mean"
+                    },
+                    "value": {
+                        "col": 19,
+                        "kind": "Constant",
+                        "line": 23,
+                        "value": 0.0
+                    }
+                },
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 24,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 18,
+                                "kind": "Variable",
+                                "line": 24,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 24,
+                        "value": "variance"
+                    },
+                    "value": {
+                        "col": 23,
+                        "kind": "Constant",
+                        "line": 24,
+                        "value": 0.0
+                    }
+                }
+            ],
+            "bound": "64",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 17,
+            "size": 0,
+            "type": "",
+            "var": "i"
         },
         {
             "body": [
@@ -208,7 +245,7 @@
                                                 {
                                                     "col": 25,
                                                     "kind": "Assign",
-                                                    "line": 21,
+                                                    "line": 32,
                                                     "op": "+=",
                                                     "target": {
                                                         "col": 25,
@@ -216,18 +253,18 @@
                                                             {
                                                                 "col": 33,
                                                                 "kind": "Variable",
-                                                                "line": 21,
+                                                                "line": 32,
                                                                 "name": "ii"
                                                             },
                                                             {
                                                                 "col": 37,
                                                                 "kind": "Variable",
-                                                                "line": 21,
+                                                                "line": 32,
                                                                 "name": "jj"
                                                             }
                                                         ],
                                                         "kind": "Subscript",
-                                                        "line": 21,
+                                                        "line": 32,
                                                         "value": "C_local"
                                                     },
                                                     "value": {
@@ -242,30 +279,30 @@
                                                                     "left": {
                                                                         "col": 46,
                                                                         "kind": "Variable",
-                                                                        "line": 21,
+                                                                        "line": 32,
                                                                         "name": "i"
                                                                     },
-                                                                    "line": 21,
+                                                                    "line": 32,
                                                                     "op": "+",
                                                                     "right": {
                                                                         "col": 48,
                                                                         "kind": "Variable",
-                                                                        "line": 21,
+                                                                        "line": 32,
                                                                         "name": "ii"
                                                                     }
                                                                 },
                                                                 {
                                                                     "col": 52,
                                                                     "kind": "Variable",
-                                                                    "line": 21,
+                                                                    "line": 32,
                                                                     "name": "k"
                                                                 }
                                                             ],
                                                             "kind": "Subscript",
-                                                            "line": 21,
+                                                            "line": 32,
                                                             "value": "A"
                                                         },
-                                                        "line": 21,
+                                                        "line": 32,
                                                         "op": "*",
                                                         "right": {
                                                             "col": 57,
@@ -273,7 +310,7 @@
                                                                 {
                                                                     "col": 59,
                                                                     "kind": "Variable",
-                                                                    "line": 21,
+                                                                    "line": 32,
                                                                     "name": "k"
                                                                 },
                                                                 {
@@ -282,21 +319,21 @@
                                                                     "left": {
                                                                         "col": 62,
                                                                         "kind": "Variable",
-                                                                        "line": 21,
+                                                                        "line": 32,
                                                                         "name": "j"
                                                                     },
-                                                                    "line": 21,
+                                                                    "line": 32,
                                                                     "op": "+",
                                                                     "right": {
                                                                         "col": 64,
                                                                         "kind": "Variable",
-                                                                        "line": 21,
+                                                                        "line": 32,
                                                                         "name": "jj"
                                                                     }
                                                                 }
                                                             ],
                                                             "kind": "Subscript",
-                                                            "line": 21,
+                                                            "line": 32,
                                                             "value": "B"
                                                         }
                                                     }
@@ -305,7 +342,7 @@
                                             "bound": "64",
                                             "col": 21,
                                             "kind": "For Loop",
-                                            "line": 20,
+                                            "line": 31,
                                             "size": 2,
                                             "type": "unroll",
                                             "var": "jj"
@@ -314,7 +351,7 @@
                                     "bound": "64",
                                     "col": 17,
                                     "kind": "For Loop",
-                                    "line": 19,
+                                    "line": 30,
                                     "size": 4,
                                     "type": "unroll",
                                     "var": "ii"
@@ -323,7 +360,7 @@
                             "bound": "K",
                             "col": 13,
                             "kind": "For Loop",
-                            "line": 18,
+                            "line": 29,
                             "size": 4,
                             "type": "unroll",
                             "var": "k"
@@ -332,7 +369,7 @@
                     "bound": "N",
                     "col": 9,
                     "kind": "For Loop",
-                    "line": 17,
+                    "line": 28,
                     "size": 64,
                     "type": "tile",
                     "var": "j"
@@ -341,7 +378,7 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 16,
+            "line": 27,
             "size": 64,
             "type": "tile",
             "var": "i"
@@ -355,7 +392,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 31,
+                                    "line": 42,
                                     "op": "=",
                                     "target": {
                                         "col": 17,
@@ -363,18 +400,18 @@
                                             {
                                                 "col": 25,
                                                 "kind": "Variable",
-                                                "line": 31,
+                                                "line": 42,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 28,
                                                 "kind": "Variable",
-                                                "line": 31,
+                                                "line": 42,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 31,
+                                        "line": 42,
                                         "value": "C_local"
                                     },
                                     "value": {
@@ -386,21 +423,21 @@
                                                 {
                                                     "col": 42,
                                                     "kind": "Variable",
-                                                    "line": 31,
+                                                    "line": 42,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 45,
                                                     "kind": "Variable",
-                                                    "line": 31,
+                                                    "line": 42,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 31,
+                                            "line": 42,
                                             "value": "C_local"
                                         },
-                                        "line": 31,
+                                        "line": 42,
                                         "op": "+",
                                         "right": {
                                             "col": 51,
@@ -411,21 +448,21 @@
                                                     "left": {
                                                         "col": 56,
                                                         "kind": "Variable",
-                                                        "line": 31,
+                                                        "line": 42,
                                                         "name": "j"
                                                     },
-                                                    "line": 31,
+                                                    "line": 42,
                                                     "op": "+",
                                                     "right": {
                                                         "col": 58,
                                                         "kind": "Variable",
-                                                        "line": 31,
+                                                        "line": 42,
                                                         "name": "jj"
                                                     }
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 31,
+                                            "line": 42,
                                             "value": "bias"
                                         }
                                     }
@@ -433,7 +470,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 32,
+                                    "line": 43,
                                     "op": "+=",
                                     "target": {
                                         "col": 17,
@@ -441,12 +478,12 @@
                                             {
                                                 "col": 25,
                                                 "kind": "Variable",
-                                                "line": 32,
+                                                "line": 43,
                                                 "name": "i"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 32,
+                                        "line": 43,
                                         "value": "sum_val"
                                     },
                                     "value": {
@@ -455,25 +492,25 @@
                                             {
                                                 "col": 39,
                                                 "kind": "Variable",
-                                                "line": 32,
+                                                "line": 43,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 42,
                                                 "kind": "Variable",
-                                                "line": 32,
+                                                "line": 43,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 32,
+                                        "line": 43,
                                         "value": "C_local"
                                     }
                                 },
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 33,
+                                    "line": 44,
                                     "op": "+=",
                                     "target": {
                                         "col": 17,
@@ -481,12 +518,12 @@
                                             {
                                                 "col": 24,
                                                 "kind": "Variable",
-                                                "line": 33,
+                                                "line": 44,
                                                 "name": "i"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 33,
+                                        "line": 44,
                                         "value": "sum_sq"
                                     },
                                     "value": {
@@ -498,21 +535,21 @@
                                                 {
                                                     "col": 38,
                                                     "kind": "Variable",
-                                                    "line": 33,
+                                                    "line": 44,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 41,
                                                     "kind": "Variable",
-                                                    "line": 33,
+                                                    "line": 44,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 33,
+                                            "line": 44,
                                             "value": "C_local"
                                         },
-                                        "line": 33,
+                                        "line": 44,
                                         "op": "*",
                                         "right": {
                                             "col": 47,
@@ -520,18 +557,18 @@
                                                 {
                                                     "col": 55,
                                                     "kind": "Variable",
-                                                    "line": 33,
+                                                    "line": 44,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 58,
                                                     "kind": "Variable",
-                                                    "line": 33,
+                                                    "line": 44,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 33,
+                                            "line": 44,
                                             "value": "C_local"
                                         }
                                     }
@@ -540,7 +577,7 @@
                             "bound": "64",
                             "col": 13,
                             "kind": "For Loop",
-                            "line": 30,
+                            "line": 41,
                             "size": 8,
                             "type": "unroll",
                             "var": "jj"
@@ -549,7 +586,7 @@
                     "bound": "N",
                     "col": 9,
                     "kind": "For Loop",
-                    "line": 29,
+                    "line": 40,
                     "size": 64,
                     "type": "tile",
                     "var": "j"
@@ -558,7 +595,7 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 28,
+            "line": 39,
             "size": 64,
             "type": "tile",
             "var": "i"
@@ -568,7 +605,7 @@
                 {
                     "col": 9,
                     "kind": "Assign",
-                    "line": 39,
+                    "line": 50,
                     "op": "=",
                     "target": {
                         "col": 9,
@@ -576,12 +613,12 @@
                             {
                                 "col": 14,
                                 "kind": "Variable",
-                                "line": 39,
+                                "line": 50,
                                 "name": "i"
                             }
                         ],
                         "kind": "Subscript",
-                        "line": 39,
+                        "line": 50,
                         "value": "mean"
                     },
                     "value": {
@@ -593,20 +630,20 @@
                                 {
                                     "col": 27,
                                     "kind": "Variable",
-                                    "line": 39,
+                                    "line": 50,
                                     "name": "i"
                                 }
                             ],
                             "kind": "Subscript",
-                            "line": 39,
+                            "line": 50,
                             "value": "sum_val"
                         },
-                        "line": 39,
+                        "line": 50,
                         "op": "*",
                         "right": {
                             "col": 32,
                             "kind": "Variable",
-                            "line": 39,
+                            "line": 50,
                             "name": "epsilon"
                         }
                     }
@@ -614,7 +651,7 @@
                 {
                     "col": 9,
                     "kind": "Assign",
-                    "line": 40,
+                    "line": 51,
                     "op": "=",
                     "target": {
                         "col": 9,
@@ -622,12 +659,12 @@
                             {
                                 "col": 18,
                                 "kind": "Variable",
-                                "line": 40,
+                                "line": 51,
                                 "name": "i"
                             }
                         ],
                         "kind": "Subscript",
-                        "line": 40,
+                        "line": 51,
                         "value": "variance"
                     },
                     "value": {
@@ -642,24 +679,24 @@
                                     {
                                         "col": 30,
                                         "kind": "Variable",
-                                        "line": 40,
+                                        "line": 51,
                                         "name": "i"
                                     }
                                 ],
                                 "kind": "Subscript",
-                                "line": 40,
+                                "line": 51,
                                 "value": "sum_sq"
                             },
-                            "line": 40,
+                            "line": 51,
                             "op": "*",
                             "right": {
                                 "col": 35,
                                 "kind": "Variable",
-                                "line": 40,
+                                "line": 51,
                                 "name": "epsilon"
                             }
                         },
-                        "line": 40,
+                        "line": 51,
                         "op": "-",
                         "right": {
                             "col": 53,
@@ -670,15 +707,15 @@
                                     {
                                         "col": 50,
                                         "kind": "Variable",
-                                        "line": 40,
+                                        "line": 51,
                                         "name": "i"
                                     }
                                 ],
                                 "kind": "Subscript",
-                                "line": 40,
+                                "line": 51,
                                 "value": "mean"
                             },
-                            "line": 40,
+                            "line": 51,
                             "op": "*",
                             "right": {
                                 "col": 55,
@@ -686,12 +723,12 @@
                                     {
                                         "col": 60,
                                         "kind": "Variable",
-                                        "line": 40,
+                                        "line": 51,
                                         "name": "i"
                                     }
                                 ],
                                 "kind": "Subscript",
-                                "line": 40,
+                                "line": 51,
                                 "value": "mean"
                             }
                         }
@@ -701,7 +738,7 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 38,
+            "line": 49,
             "size": 2,
             "type": "unroll",
             "var": "i"
@@ -715,7 +752,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 46,
+                                    "line": 57,
                                     "op": "=",
                                     "target": {
                                         "col": 17,
@@ -723,18 +760,18 @@
                                             {
                                                 "col": 19,
                                                 "kind": "Variable",
-                                                "line": 46,
+                                                "line": 57,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 22,
                                                 "kind": "Variable",
-                                                "line": 46,
+                                                "line": 57,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 46,
+                                        "line": 57,
                                         "value": "C"
                                     },
                                     "value": {
@@ -752,21 +789,21 @@
                                                         {
                                                             "col": 37,
                                                             "kind": "Variable",
-                                                            "line": 46,
+                                                            "line": 57,
                                                             "name": "i"
                                                         },
                                                         {
                                                             "col": 40,
                                                             "kind": "Variable",
-                                                            "line": 46,
+                                                            "line": 57,
                                                             "name": "jj"
                                                         }
                                                     ],
                                                     "kind": "Subscript",
-                                                    "line": 46,
+                                                    "line": 57,
                                                     "value": "C_local"
                                                 },
-                                                "line": 46,
+                                                "line": 57,
                                                 "op": "-",
                                                 "right": {
                                                     "col": 46,
@@ -774,16 +811,16 @@
                                                         {
                                                             "col": 51,
                                                             "kind": "Variable",
-                                                            "line": 46,
+                                                            "line": 57,
                                                             "name": "i"
                                                         }
                                                     ],
                                                     "kind": "Subscript",
-                                                    "line": 46,
+                                                    "line": 57,
                                                     "value": "mean"
                                                 }
                                             },
-                                            "line": 46,
+                                            "line": 57,
                                             "op": "*",
                                             "right": {
                                                 "col": 57,
@@ -794,25 +831,25 @@
                                                         "left": {
                                                             "col": 63,
                                                             "kind": "Variable",
-                                                            "line": 46,
+                                                            "line": 57,
                                                             "name": "j"
                                                         },
-                                                        "line": 46,
+                                                        "line": 57,
                                                         "op": "+",
                                                         "right": {
                                                             "col": 65,
                                                             "kind": "Variable",
-                                                            "line": 46,
+                                                            "line": 57,
                                                             "name": "jj"
                                                         }
                                                     }
                                                 ],
                                                 "kind": "Subscript",
-                                                "line": 46,
+                                                "line": 57,
                                                 "value": "gamma"
                                             }
                                         },
-                                        "line": 46,
+                                        "line": 57,
                                         "op": "+",
                                         "right": {
                                             "col": 71,
@@ -823,21 +860,21 @@
                                                     "left": {
                                                         "col": 76,
                                                         "kind": "Variable",
-                                                        "line": 46,
+                                                        "line": 57,
                                                         "name": "j"
                                                     },
-                                                    "line": 46,
+                                                    "line": 57,
                                                     "op": "+",
                                                     "right": {
                                                         "col": 78,
                                                         "kind": "Variable",
-                                                        "line": 46,
+                                                        "line": 57,
                                                         "name": "jj"
                                                     }
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 46,
+                                            "line": 57,
                                             "value": "beta"
                                         }
                                     }
@@ -845,7 +882,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 47,
+                                    "line": 58,
                                     "op": "=",
                                     "target": {
                                         "col": 17,
@@ -853,18 +890,18 @@
                                             {
                                                 "col": 19,
                                                 "kind": "Variable",
-                                                "line": 47,
+                                                "line": 58,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 22,
                                                 "kind": "Variable",
-                                                "line": 47,
+                                                "line": 58,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 47,
+                                        "line": 58,
                                         "value": "C"
                                     },
                                     "value": {
@@ -876,26 +913,26 @@
                                                 {
                                                     "col": 30,
                                                     "kind": "Variable",
-                                                    "line": 47,
+                                                    "line": 58,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 33,
                                                     "kind": "Variable",
-                                                    "line": 47,
+                                                    "line": 58,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 47,
+                                            "line": 58,
                                             "value": "C"
                                         },
-                                        "line": 47,
+                                        "line": 58,
                                         "op": "*",
                                         "right": {
                                             "col": 39,
                                             "kind": "Variable",
-                                            "line": 47,
+                                            "line": 58,
                                             "name": "threshold"
                                         }
                                     }
@@ -904,7 +941,7 @@
                             "bound": "64",
                             "col": 13,
                             "kind": "For Loop",
-                            "line": 45,
+                            "line": 56,
                             "size": 2,
                             "type": "unroll",
                             "var": "jj"
@@ -913,7 +950,7 @@
                     "bound": "N",
                     "col": 9,
                     "kind": "For Loop",
-                    "line": 44,
+                    "line": 55,
                     "size": 4,
                     "type": "unroll",
                     "var": "j"
@@ -922,7 +959,7 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 43,
+            "line": 54,
             "size": 64,
             "type": "tile",
             "var": "i"
@@ -936,7 +973,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 55,
+                                    "line": 66,
                                     "op": "+=",
                                     "target": {
                                         "col": 17,
@@ -944,18 +981,18 @@
                                             {
                                                 "col": 19,
                                                 "kind": "Variable",
-                                                "line": 55,
+                                                "line": 66,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 22,
                                                 "kind": "Variable",
-                                                "line": 55,
+                                                "line": 66,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 55,
+                                        "line": 66,
                                         "value": "C"
                                     },
                                     "value": {
@@ -967,26 +1004,26 @@
                                                 {
                                                     "col": 31,
                                                     "kind": "Variable",
-                                                    "line": 55,
+                                                    "line": 66,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 34,
                                                     "kind": "Variable",
-                                                    "line": 55,
+                                                    "line": 66,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 55,
+                                            "line": 66,
                                             "value": "A"
                                         },
-                                        "line": 55,
+                                        "line": 66,
                                         "op": "*",
                                         "right": {
                                             "col": 40,
                                             "kind": "Variable",
-                                            "line": 55,
+                                            "line": 66,
                                             "name": "epsilon"
                                         }
                                     }
@@ -995,7 +1032,7 @@
                             "bound": "128",
                             "col": 13,
                             "kind": "For Loop",
-                            "line": 54,
+                            "line": 65,
                             "size": 2,
                             "type": "unroll",
                             "var": "jj"
@@ -1004,7 +1041,7 @@
                     "bound": "N",
                     "col": 9,
                     "kind": "For Loop",
-                    "line": 53,
+                    "line": 64,
                     "size": 4,
                     "type": "unroll",
                     "var": "j"
@@ -1013,7 +1050,7 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 52,
+            "line": 63,
             "size": 4,
             "type": "unroll",
             "var": "i"
@@ -1027,7 +1064,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 63,
+                                    "line": 74,
                                     "op": "=",
                                     "target": {
                                         "col": 17,
@@ -1035,18 +1072,18 @@
                                             {
                                                 "col": 19,
                                                 "kind": "Variable",
-                                                "line": 63,
+                                                "line": 74,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 22,
                                                 "kind": "Variable",
-                                                "line": 63,
+                                                "line": 74,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 63,
+                                        "line": 74,
                                         "value": "C"
                                     },
                                     "value": {
@@ -1058,21 +1095,21 @@
                                                 {
                                                     "col": 30,
                                                     "kind": "Variable",
-                                                    "line": 63,
+                                                    "line": 74,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 33,
                                                     "kind": "Variable",
-                                                    "line": 63,
+                                                    "line": 74,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 63,
+                                            "line": 74,
                                             "value": "C"
                                         },
-                                        "line": 63,
+                                        "line": 74,
                                         "op": "+",
                                         "right": {
                                             "col": 39,
@@ -1080,12 +1117,12 @@
                                                 {
                                                     "col": 44,
                                                     "kind": "Variable",
-                                                    "line": 63,
+                                                    "line": 74,
                                                     "name": "j"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 63,
+                                            "line": 74,
                                             "value": "beta"
                                         }
                                     }
@@ -1093,7 +1130,7 @@
                                 {
                                     "col": 17,
                                     "kind": "Assign",
-                                    "line": 64,
+                                    "line": 75,
                                     "op": "=",
                                     "target": {
                                         "col": 17,
@@ -1101,18 +1138,18 @@
                                             {
                                                 "col": 19,
                                                 "kind": "Variable",
-                                                "line": 64,
+                                                "line": 75,
                                                 "name": "i"
                                             },
                                             {
                                                 "col": 22,
                                                 "kind": "Variable",
-                                                "line": 64,
+                                                "line": 75,
                                                 "name": "jj"
                                             }
                                         ],
                                         "kind": "Subscript",
-                                        "line": 64,
+                                        "line": 75,
                                         "value": "C"
                                     },
                                     "value": {
@@ -1124,21 +1161,21 @@
                                                 {
                                                     "col": 30,
                                                     "kind": "Variable",
-                                                    "line": 64,
+                                                    "line": 75,
                                                     "name": "i"
                                                 },
                                                 {
                                                     "col": 33,
                                                     "kind": "Variable",
-                                                    "line": 64,
+                                                    "line": 75,
                                                     "name": "jj"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 64,
+                                            "line": 75,
                                             "value": "C"
                                         },
-                                        "line": 64,
+                                        "line": 75,
                                         "op": "*",
                                         "right": {
                                             "col": 39,
@@ -1146,12 +1183,12 @@
                                                 {
                                                     "col": 45,
                                                     "kind": "Variable",
-                                                    "line": 64,
+                                                    "line": 75,
                                                     "name": "j"
                                                 }
                                             ],
                                             "kind": "Subscript",
-                                            "line": 64,
+                                            "line": 75,
                                             "value": "gamma"
                                         }
                                     }
@@ -1160,7 +1197,7 @@
                             "bound": "32",
                             "col": 13,
                             "kind": "For Loop",
-                            "line": 62,
+                            "line": 73,
                             "size": 4,
                             "type": "unroll",
                             "var": "jj"
@@ -1169,7 +1206,7 @@
                     "bound": "N",
                     "col": 9,
                     "kind": "For Loop",
-                    "line": 61,
+                    "line": 72,
                     "size": 8,
                     "type": "unroll",
                     "var": "j"
@@ -1178,10 +1215,21 @@
             "bound": "M",
             "col": 5,
             "kind": "For Loop",
-            "line": 60,
+            "line": 71,
             "size": 64,
             "type": "tile",
             "var": "i"
+        },
+        {
+            "col": 5,
+            "kind": "Return",
+            "line": 79,
+            "value": {
+                "col": 12,
+                "kind": "Variable",
+                "line": 79,
+                "name": "C"
+            }
         }
     ],
     "col": 1,

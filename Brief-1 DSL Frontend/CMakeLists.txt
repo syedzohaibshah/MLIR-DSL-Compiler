@@ -12,6 +12,7 @@ add_executable(tldr_compiler
     src/tokens.cpp
     src/json_visitor.cpp
     src/semantic.cpp
+    src/const_eval.cpp
 )
 
 target_include_directories(tldr_compiler PRIVATE include)

@@ -2,6 +2,7 @@
 #define TLDR_JSON_VISITOR_H
 
 #include "ast_nodes.h"
+#include "const_eval.h"
 #include "json.hpp"
 #include <string>
 
@@ -33,6 +34,7 @@ public:
 private:
     json shape_to_json(const std::vector<ShapeDim>& shape);
     void add_span(json& j, const span& sp);
+    json tensor_values(const std::shared_ptr<TensorDeclNode>& node);
 };
 
 #endif

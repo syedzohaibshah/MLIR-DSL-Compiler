@@ -1,0 +1,9 @@
+# The data of a tensor has to fill the declared dims.
+# A tensor of four elements cannot be initialized with three.
+# Expect: [Semantic Error] 'A' is declared as Tensor[f32, (4)] (4 element(s)) but is initialized with 3 element(s)
+
+main() -> [C] {
+    A : Tensor[f32, (4,)] = [1.0, 2.0, 3.0]
+    C : Tensor[f32, (4,)]
+    return C
+}

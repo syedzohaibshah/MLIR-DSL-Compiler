@@ -2,10 +2,10 @@
 # softmax only accepts tensor arguments; here argument 2 is a scalar.
 # Expect: [Semantic Error] 'softmax' expects tensor argument(s), but argument 2 is not a tensor
 
-main() -> [C] {
-    A : Tensor[f32, (64, 64)]
+main(){
+    A : Tensor[f32, (2,2)] = [[][]] 
     x : f32
-    C : Tensor[f32, (64, 64)]
+    C : Tensor[f32, (2,2)]
     print(softmax(A, x))
     C = softmax(A, A)
 }

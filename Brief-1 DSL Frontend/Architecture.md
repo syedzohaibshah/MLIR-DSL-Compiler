@@ -24,12 +24,13 @@ This is the primary pipeline. A `.tldr` source file goes through lexing, parsing
     AST  (ast_nodes.h / ast_nodes.cpp)
         |
         v
-    SemanticAnalyzer (semantic.h / semantic.cpp)
-        |     * symbol table: variables + parameters
-        |     * symbol table: functions
-        |
-        +---> JsonVisitor        -->  .json file
-        +---> GraphvizVisitor    -->  .dot file  (render with `dot`)
+SemanticAnalyzer (semantic.h / semantic.cpp)
+    |     * symbol table: variables + parameters
+    |     * symbol table: functions
+    |     * checks the data of a tensor against its dims
+    |
+    +---> JsonVisitor        -->  .json file
+    +---> GraphvizVisitor    -->  .dot file  (render with `dot`)
 ```
 
 ### Module Descriptions
@@ -40,8 +41,9 @@ This is the primary pipeline. A `.tldr` source file goes through lexing, parsing
 | **Lexer** | `include/lexer.h`, `src/lexer.cpp` | Scans source text into a `vector<Token>`. Handles whitespace, comments, numbers, identifiers, operators, and keywords. |
 | **AST Nodes** | `include/ast_nodes.h`, `src/ast_nodes.cpp` | Defines the node hierarchy: `FuncNode`, `ParamNode`, `ForLoopNode`, `IfNode`, `AssignNode`, `TensorDeclNode`, `BinaryOpNode`, `UnaryOpNode`, `SubscriptNode`, `BoolOpNode`, `TernaryNode`, `VariableNode`, `ConstantNode`, `ReturnNode`, `BreakNode`, `ContinueNode`, `ListNode`, `BuiltinCallNode`, `PrintNode`, `FunctionCallNode`. Each node implements `print()` and `accept(Visitor&)`. |
 | **Parser** | `include/parser.h`, `src/parser.cpp` | Recursive-descent parser. Consumes tokens and builds the AST. Implements the full grammar: function defs, `main`, blocks, statements (incl. `print`), and expressions with correct precedence. |
-| **SemanticAnalyzer** | `include/semantic.h`, `src/semantic.cpp` | Semantic/name-resolution pass. Maintains two symbol tables (hashmaps): one mapping **variables & parameters** to their types per function scope, and one mapping **function names** to their `FuncInfo` (arity, returns, is_main). Emits warnings for undeclared names, undeclared functions, arity mismatches, `main` with parameters, `return` outside `main`, and `main` without an explicit `return`. |
-| **JsonVisitor** | `include/json_visitor.h`, `src/json_visitor.cpp` | Visitor that serializes the AST to a JSON object using nlohmann/json. Outputs one `.json` file per function. |
+| **SemanticAnalyzer** | `include/semantic.h`, `src/semantic.cpp` | Semantic/name-resolution pass. Maintains two symbol tables (hashmaps): one mapping **variables & parameters** to their types per function scope, and one mapping **function names** to their `FuncInfo` (arity, returns, is_main). Emits warnings for undeclared names, undeclared functions, arity mismatches, `main` with parameters, `return` outside `main`, and `main` without an explicit `return`. Checks the data of a tensor declaration against its declared dims (rank, element count, ragged lists) when the init is a constant literal; symbolic dims are resolved from in-scope constants or from call-site bindings. |
+| **ConstEval** | `include/const_eval.h`, `src/const_eval.cpp` | Flattens nested list literals of constants, folds simple arithmetic on constants, reconstructs nested JSON for `data_values`. |
+| **JsonVisitor** | `include/json_visitor.h`, `src/json_visitor.cpp` | Visitor that serializes the AST to a JSON object using nlohmann/json. Outputs one `.json` file per function. Adds `data_values` (the reconstructed nested array of the tensor initialiser) alongside the existing `data` AST dump. |
 | **GraphvizVisitor** | `include/graphviz_visitor.h` | Visitor that emits a Graphviz DOT graph of the AST. Node colors indicate type (orange for loops, yellow for control flow, cyan for params, green for variables, etc.). |
 | **Main** | `src/main.cpp` | CLI entry point. Reads `.tldr` file, runs lexer, parser, and semantic analysis; prints AST to stdout, and optionally writes `.json` and `.dot` files. |
 

@@ -1,0 +1,29 @@
+# The data of a tensor has to fill the declared dims.
+# Static dims, symbolic dims given a number in the scope, dims that are only
+# known at the call site, and an initialiser that is not known at compile time.
+
+scaled(
+    X : Tensor[f32, (M, N)]
+) -> [Y] {
+    # M and N come from the call site, so the two elements of the first
+    # dimension and the two elements of the second one are checked here.
+    Y : Tensor[f32, (M, N)] = [[1.0, 2.0], [3.0, 4.0]]
+    return Y
+}
+
+main() -> [out] {
+    # Static dims: one element per declared slot.
+    A : Tensor[f32, (2, 2)] = [[1.0, 2.0], [3.0, 4.0]]
+
+    # Symbolic dims that were given a number in this scope.
+    M = 2
+    N = 2
+    B : Tensor[f32, (M, N)] = [[5.0, 6.0], [7.0, 8.0]]
+
+    # The repeat syntax is not known at compile time, so it is not checked.
+    C : Tensor[f32, (2, 2)] = [[0.0]*2]*2
+
+    out = scaled(A)
+    print(out)
+    return out
+}

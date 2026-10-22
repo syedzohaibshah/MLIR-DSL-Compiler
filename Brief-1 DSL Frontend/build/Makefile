@@ -152,6 +152,30 @@ src/ast_nodes.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\tldr_compiler.dir\build.make CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.s
 .PHONY : src/ast_nodes.cpp.s
 
+src/const_eval.obj: src/const_eval.cpp.obj
+.PHONY : src/const_eval.obj
+
+# target to build an object file
+src/const_eval.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\tldr_compiler.dir\build.make CMakeFiles/tldr_compiler.dir/src/const_eval.cpp.obj
+.PHONY : src/const_eval.cpp.obj
+
+src/const_eval.i: src/const_eval.cpp.i
+.PHONY : src/const_eval.i
+
+# target to preprocess a source file
+src/const_eval.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\tldr_compiler.dir\build.make CMakeFiles/tldr_compiler.dir/src/const_eval.cpp.i
+.PHONY : src/const_eval.cpp.i
+
+src/const_eval.s: src/const_eval.cpp.s
+.PHONY : src/const_eval.s
+
+# target to generate assembly for a file
+src/const_eval.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\tldr_compiler.dir\build.make CMakeFiles/tldr_compiler.dir/src/const_eval.cpp.s
+.PHONY : src/const_eval.cpp.s
+
 src/json_visitor.obj: src/json_visitor.cpp.obj
 .PHONY : src/json_visitor.obj
 
@@ -308,6 +332,9 @@ help:
 	@echo ... src/ast_nodes.obj
 	@echo ... src/ast_nodes.i
 	@echo ... src/ast_nodes.s
+	@echo ... src/const_eval.obj
+	@echo ... src/const_eval.i
+	@echo ... src/const_eval.s
 	@echo ... src/json_visitor.obj
 	@echo ... src/json_visitor.i
 	@echo ... src/json_visitor.s

@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj"
   "CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj.d"
+  "CMakeFiles/tldr_compiler.dir/src/const_eval.cpp.obj"
+  "CMakeFiles/tldr_compiler.dir/src/const_eval.cpp.obj.d"
   "CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj"
   "CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj.d"
   "CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj"

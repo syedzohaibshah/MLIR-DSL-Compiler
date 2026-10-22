@@ -1,11 +1,28 @@
 #include "semantic.h"
 
+namespace {
+
+// The analysis is repeated until the dimensions of every function are known.
+// A call site that appears late in the file can still bind the dimensions of a
+// function that was analyzed first, so a few rounds are needed.
+constexpr int kMaxAnalysisRounds = 8;
+
+}  // namespace
+
 void SemanticAnalyzer::semantic_error(const std::string& msg) {
+    if (!collect_errors_) return;
     errors_.push_back(msg);
+}
+
+void SemanticAnalyzer::warn(const std::string& msg) {
+    if (!collect_errors_) return;
+    std::cerr << msg << std::endl;
 }
 
 void SemanticAnalyzer::analyze(const std::vector<std::shared_ptr<FuncNode>>& funcs) {
     errors_.clear();
+    func_dim_bindings_.clear();
+    reported_conflicts_.clear();
 
     // Build the function table first so calls can be resolved later.
     function_table_.clear();
@@ -16,9 +33,28 @@ void SemanticAnalyzer::analyze(const std::vector<std::shared_ptr<FuncNode>>& fun
         info.param_count = func->params.size();
         info.returns = func->returns;
         info.is_main = (func->name == "main");
+        for (const auto& param : func->params) {
+            info.param_shapes.push_back(param->shape);
+        }
         function_table_[func->name] = info;
     }
 
+    // The dimensions of a function are discovered at its call sites, so the
+    // analysis is repeated until no new dimension turns up. These rounds only
+    // collect dimensions; the errors are reported by the last round.
+    collect_errors_ = false;
+    bool changed = true;
+    for (int round = 0; round < kMaxAnalysisRounds && changed; ++round) {
+        new_bindings_ = 0;
+        for (const auto& func : funcs) {
+            if (func) analyze_func(func);
+        }
+        changed = (new_bindings_ > 0);
+    }
+
+    // Report the errors of the last round, now that every dimension that can
+    // be known is known.
+    collect_errors_ = true;
     for (const auto& func : funcs) {
         if (func) analyze_func(func);
     }
@@ -40,13 +76,14 @@ void SemanticAnalyzer::analyze_func(const std::shared_ptr<FuncNode>& func) {
 
     // main must not declare parameters.
     if (func->name == "main" && !func->params.empty()) {
-        std::cerr << "[Semantic Warning] 'main' should not take parameters; "
-                  << func->params.size() << " found at L" << func->sp.line << ":"
-                  << func->sp.col << std::endl;
+        warn("[Semantic Warning] 'main' should not take parameters; " +
+             std::to_string(func->params.size()) + " found at L" +
+             std::to_string(func->sp.line) + ":" + std::to_string(func->sp.col));
     }
 
     // Build the local symbol table from parameters.
     symbol_table_.clear();
+    dim_bindings_.clear();
     for (const auto& param : func->params) {
         TypeInfo ti;
         ti.is_tensor = !param->shape.empty();
@@ -63,6 +100,9 @@ void SemanticAnalyzer::analyze_func(const std::shared_ptr<FuncNode>& func) {
             }
         }
     }
+
+    // Put the dimensions that were found at the call sites into scope.
+    seed_dim_bindings(func->name);
 
     // Names declared by the return annotation are output symbols of this scope.
     // Keep the parameter's TypeInfo if the returned symbol is also a parameter.
@@ -91,9 +131,9 @@ void SemanticAnalyzer::analyze_func(const std::shared_ptr<FuncNode>& func) {
     }
 
     if (func->name == "main" && !function_table_[func->name].has_explicit_return) {
-        std::cerr << "[Semantic Warning] 'main' does not have an explicit "
-                  << "'return' statement; consider returning a result at L"
-                  << func->sp.line << ":" << func->sp.col << std::endl;
+        warn("[Semantic Warning] 'main' does not have an explicit "
+             "'return' statement; consider returning a result at L" +
+             std::to_string(func->sp.line) + ":" + std::to_string(func->sp.col));
     }
 }
 
@@ -125,6 +165,25 @@ void SemanticAnalyzer::analyze_stmt(const std::shared_ptr<ASTNode>& stmt) {
                 if (symbol_table_.find(name) == symbol_table_.end()) {
                     symbol_table_[name] = TypeInfo{}; // implicit declaration
                 }
+                // An integer assignment defines a compile-time constant, which
+                // lets a symbolic dimension resolve to a number.
+                Scalar s;
+                auto& info = symbol_table_[name];
+                // A tensor holds data, not a compile-time constant.
+                if (!info.is_tensor && node->value &&
+                    eval_scalar(node->value, s) && s.is_int) {
+                    const int64_t value = static_cast<int64_t>(s.value);
+                    if (info.const_value.has_value() && *info.const_value != value) {
+                        semantic_error("[Semantic Error] '" + name +
+                                       "' is assigned both " +
+                                       std::to_string(*info.const_value) + " and " +
+                                       std::to_string(value) + " at L" +
+                                       std::to_string(node->sp.line) + ":" +
+                                       std::to_string(node->sp.col));
+                    } else {
+                        info.const_value = value;
+                    }
+                }
             } else if (node->target) {
                 analyze_expr(node->target);
             }
@@ -144,16 +203,24 @@ void SemanticAnalyzer::analyze_stmt(const std::shared_ptr<ASTNode>& stmt) {
             // Holds data when a value was provided at declaration.
             ti.initialized = (node->init_value != nullptr);
             symbol_table_[node->name] = ti;
-            if (node->init_value) analyze_expr(node->init_value);
+            if (node->init_value) {
+                analyze_expr(node->init_value);
+                // The data must fill the declared dims. A declaration without
+                // a shape is a scalar, so there are no dims to fill.
+                if (ti.is_tensor) {
+                    check_tensor_init(node);
+                }
+            }
             break;
         }
         case ASTKind::RETURN: {
             auto node = std::static_pointer_cast<ReturnNode>(stmt);
             // Return is only permitted inside main.
             if (current_func_ != "main") {
-                std::cerr << "[Semantic Warning] 'return' is only allowed inside "
-                          << "'main'; found in '" << current_func_ << "' at L"
-                          << node->sp.line << ":" << node->sp.col << std::endl;
+                warn("[Semantic Warning] 'return' is only allowed inside "
+                     "'main'; found in '" + current_func_ + "' at L" +
+                     std::to_string(node->sp.line) + ":" +
+                     std::to_string(node->sp.col));
             } else {
                 function_table_[current_func_].has_explicit_return = true;
             }
@@ -208,6 +275,8 @@ void SemanticAnalyzer::analyze_expr(const std::shared_ptr<ASTNode>& expr) {
             auto node = std::static_pointer_cast<FunctionCallNode>(expr);
             for (const auto& arg : node->args) analyze_expr(arg);
             resolve_call(node->name, node->args.size(), node->sp.line, node->sp.col);
+            // The arguments give the dimensions of the callee.
+            bind_call_dims(node);
             break;
         }
         case ASTKind::CUSTOM_OP: {
@@ -256,22 +325,23 @@ void SemanticAnalyzer::analyze_expr(const std::shared_ptr<ASTNode>& expr) {
 
 void SemanticAnalyzer::resolve_var(const std::string& name, int line, int col) {
     if (symbol_table_.find(name) == symbol_table_.end()) {
-        std::cerr << "[Semantic Warning] Undeclared variable/parameter '" << name
-                  << "' at L" << line << ":" << col << std::endl;
+        warn("[Semantic Warning] Undeclared variable/parameter '" + name +
+             "' at L" + std::to_string(line) + ":" + std::to_string(col));
     }
 }
 
 void SemanticAnalyzer::resolve_call(const std::string& name, size_t argc, int line, int col) {
     auto it = function_table_.find(name);
     if (it == function_table_.end()) {
-        std::cerr << "[Semantic Warning] Call to undeclared function '" << name
-                  << "' at L" << line << ":" << col << std::endl;
+        warn("[Semantic Warning] Call to undeclared function '" + name +
+             "' at L" + std::to_string(line) + ":" + std::to_string(col));
         return;
     }
     if (it->second.param_count != argc) {
-        std::cerr << "[Semantic Warning] Function '" << name << "' expects "
-                  << it->second.param_count << " argument(s), got " << argc
-                  << " at L" << line << ":" << col << std::endl;
+        warn("[Semantic Warning] Function '" + name + "' expects " +
+             std::to_string(it->second.param_count) + " argument(s), got " +
+             std::to_string(argc) + " at L" + std::to_string(line) + ":" +
+             std::to_string(col));
     }
 }
 
@@ -352,5 +422,122 @@ bool SemanticAnalyzer::is_tensor_expr(const std::shared_ptr<ASTNode>& expr) {
             return true;
         default:
             return false;
+    }
+}
+
+void SemanticAnalyzer::check_tensor_init(const std::shared_ptr<TensorDeclNode>& node) {
+    const auto bindings = current_dim_bindings();
+    const TensorInitInfo info = analyze_tensor_init(node, &bindings);
+
+    switch (info.status) {
+        case TensorInitInfo::Status::SCALAR_INIT:
+        case TensorInitInfo::Status::RAGGED:
+        case TensorInitInfo::Status::RANK_MISMATCH:
+        case TensorInitInfo::Status::COUNT_MISMATCH:
+            semantic_error("[Semantic Error] " + info.message + " at L" +
+                           std::to_string(node->sp.line) + ":" +
+                           std::to_string(node->sp.col));
+            break;
+        default:
+            // The initialiser is either absent, not a literal or not
+            // statically known, so there is nothing to check against the dims.
+            break;
+    }
+}
+
+std::unordered_map<std::string, int64_t> SemanticAnalyzer::current_dim_bindings() {
+    std::unordered_map<std::string, int64_t> bindings = dim_bindings_;
+    for (const auto& entry : symbol_table_) {
+        if (entry.second.const_value.has_value()) {
+            bindings[entry.first] = *entry.second.const_value;
+        }
+    }
+    return bindings;
+}
+
+bool SemanticAnalyzer::resolve_dims(const std::vector<ShapeDim>& shape,
+                                    std::vector<int64_t>& out) {
+    out.clear();
+    const auto bindings = current_dim_bindings();
+    for (const auto& dim : shape) {
+        if (std::holds_alternative<int64_t>(dim)) {
+            out.push_back(std::get<int64_t>(dim));
+            continue;
+        }
+        const std::string& name = std::get<std::string>(dim);
+        auto it = bindings.find(name);
+        if (it == bindings.end()) return false;
+        out.push_back(it->second);
+    }
+    return true;
+}
+
+void SemanticAnalyzer::bind_call_dims(const std::shared_ptr<FunctionCallNode>& call) {
+    auto it = function_table_.find(call->name);
+    if (it == function_table_.end()) return;
+
+    const auto& param_shapes = it->second.param_shapes;
+    for (size_t i = 0; i < call->args.size() && i < param_shapes.size(); ++i) {
+        // Only an argument with a fully known shape can give a dimension.
+        std::vector<int64_t> arg_dims;
+        if (!arg_shape(call->args[i], arg_dims)) continue;
+
+        const auto& param_shape = param_shapes[i];
+        for (size_t d = 0; d < param_shape.size() && d < arg_dims.size(); ++d) {
+            if (std::holds_alternative<std::string>(param_shape[d])) {
+                bind_dim(call->name, std::get<std::string>(param_shape[d]),
+                         arg_dims[d]);
+            }
+        }
+    }
+}
+
+bool SemanticAnalyzer::bind_dim(const std::string& func_name, const std::string& dim,
+                                 int64_t value) {
+    auto& bindings = func_dim_bindings_[func_name];
+    auto it = bindings.find(dim);
+    if (it == bindings.end()) {
+        bindings[dim] = value;
+        new_bindings_++;
+        return true;
+    }
+    if (it->second != value) {
+        const std::string key = func_name + "." + dim;
+        if (collect_errors_ && reported_conflicts_.insert(key).second) {
+            semantic_error("[Semantic Error] dimension '" + dim + "' of '" +
+                           func_name + "' is bound to both " +
+                           std::to_string(it->second) + " and " +
+                           std::to_string(value));
+        }
+    }
+    return false;
+}
+
+bool SemanticAnalyzer::arg_shape(const std::shared_ptr<ASTNode>& arg,
+                                 std::vector<int64_t>& out) {
+    if (!arg || arg->kind() != ASTKind::VARIABLE) return false;
+    auto node = std::static_pointer_cast<VariableNode>(arg);
+    auto it = symbol_table_.find(node->name);
+    if (it == symbol_table_.end()) return false;
+    return resolve_dims(it->second.shape, out);
+}
+
+void SemanticAnalyzer::seed_dim_bindings(const std::string& func_name) {
+    auto it = func_dim_bindings_.find(func_name);
+    if (it == func_dim_bindings_.end()) return;
+
+    for (const auto& entry : it->second) {
+        const std::string& dim = entry.first;
+        const int64_t value = entry.second;
+        dim_bindings_[dim] = value;
+
+        auto sym = symbol_table_.find(dim);
+        if (sym == symbol_table_.end()) {
+            TypeInfo ti;
+            ti.const_value = value;
+            symbol_table_[dim] = ti;
+        } else if (!sym->second.const_value.has_value()) {
+            sym->second.const_value = value;
+        }
     }
 }

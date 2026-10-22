@@ -122,7 +122,18 @@ std::any JsonVisitor::visitTensorDeclNode(std::shared_ptr<TensorDeclNode> node) 
     } else {
         j["data"] = nullptr;
     }
+    // The values of the initialiser, nested the way the literal nests. They
+    // are only known when every element of the initialiser is a compile-time
+    // constant.
+    j["data_values"] = has_symbolic ? json(nullptr) : tensor_values(node);
     return j;
+}
+
+// The values held by the initialiser of a tensor declaration.
+json JsonVisitor::tensor_values(const std::shared_ptr<TensorDeclNode>& node) {
+    const TensorInitInfo info = analyze_tensor_init(node, nullptr);
+    if (info.status != TensorInitInfo::Status::OK) return json(nullptr);
+    return rebuild_tensor(info.literal_shape, info.raw);
 }
 
 std::any JsonVisitor::visitBinaryOpNode(std::shared_ptr<BinaryOpNode> node) {

@@ -1,0 +1,17 @@
+# Two call sites that give a callee different dims for the same dimension.
+# Expect: [Semantic Error] dimension 'M' of 'scaled' is bound to both 2 and 3
+
+scaled(
+    X : Tensor[f32, (M, N)]
+) -> [Y] {
+    Y : Tensor[f32, (M, N)] = [[1.0, 2.0], [3.0, 4.0]]
+    return Y
+}
+
+main() -> [out] {
+    A : Tensor[f32, (2, 2)] = [[1.0, 2.0], [3.0, 4.0]]
+    B : Tensor[f32, (3, 2)] = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
+    out = scaled(A)
+    out = scaled(B)
+    return out
+}

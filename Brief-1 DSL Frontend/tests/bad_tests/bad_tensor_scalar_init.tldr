@@ -1,0 +1,8 @@
+# A tensor cannot be initialized with a scalar.
+# Expect: [Semantic Error] 'A' is declared as a tensor but is initialized with a scalar value
+
+main() -> [C] {
+    A : Tensor[f32, (2,2)] = 5.0
+    C : Tensor[f32, (2,2)]
+    return C
+}

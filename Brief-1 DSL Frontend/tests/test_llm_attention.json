@@ -3,6 +3,7 @@
         {
             "col": 5,
             "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 3,
@@ -16,6 +17,7 @@
         {
             "col": 5,
             "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 4,
@@ -29,6 +31,7 @@
         {
             "col": 5,
             "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 5,
@@ -42,6 +45,7 @@
         {
             "col": 5,
             "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
             "line": 6,

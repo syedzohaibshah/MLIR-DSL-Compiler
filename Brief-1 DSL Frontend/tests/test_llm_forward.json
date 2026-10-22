@@ -2,64 +2,11 @@
     "body": [
         {
             "col": 5,
-            "data": {
-                "col": 31,
-                "elements": [
-                    {
-                        "col": 32,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 0
-                    },
-                    {
-                        "col": 35,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 1
-                    },
-                    {
-                        "col": 38,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 2
-                    },
-                    {
-                        "col": 41,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 3
-                    },
-                    {
-                        "col": 44,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 4
-                    },
-                    {
-                        "col": 47,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 5
-                    },
-                    {
-                        "col": 50,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 6
-                    },
-                    {
-                        "col": 53,
-                        "kind": "Constant",
-                        "line": 10,
-                        "value": 7
-                    }
-                ],
-                "kind": "List",
-                "line": 10
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "i32",
             "kind": "Tensor",
-            "line": 10,
+            "line": 3,
             "name": "ids",
             "shape": [
                 8
@@ -67,72 +14,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 51,
-                "kind": "Binary",
-                "left": {
-                    "col": 38,
-                    "elements": [
-                        {
-                            "col": 48,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 39,
-                                "elements": [
-                                    {
-                                        "col": 45,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 40,
-                                            "elements": [
-                                                {
-                                                    "col": 41,
-                                                    "kind": "Constant",
-                                                    "line": 11,
-                                                    "value": 1.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 11
-                                        },
-                                        "line": 11,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 46,
-                                            "kind": "Constant",
-                                            "line": 11,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 11
-                            },
-                            "line": 11,
-                            "op": "*",
-                            "right": {
-                                "col": 49,
-                                "kind": "Constant",
-                                "line": 11,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 11
-                },
-                "line": 11,
-                "op": "*",
-                "right": {
-                    "col": 52,
-                    "kind": "Constant",
-                    "line": 11,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 11,
+            "line": 4,
             "name": "w_emb",
             "shape": [
                 8,
@@ -142,72 +28,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 52,
-                "kind": "Binary",
-                "left": {
-                    "col": 39,
-                    "elements": [
-                        {
-                            "col": 49,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 40,
-                                "elements": [
-                                    {
-                                        "col": 46,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 41,
-                                            "elements": [
-                                                {
-                                                    "col": 42,
-                                                    "kind": "Constant",
-                                                    "line": 12,
-                                                    "value": 0.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 12
-                                        },
-                                        "line": 12,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 47,
-                                            "kind": "Constant",
-                                            "line": 12,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 12
-                            },
-                            "line": 12,
-                            "op": "*",
-                            "right": {
-                                "col": 50,
-                                "kind": "Constant",
-                                "line": 12,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 12
-                },
-                "line": 12,
-                "op": "*",
-                "right": {
-                    "col": 53,
-                    "kind": "Constant",
-                    "line": 12,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 12,
+            "line": 5,
             "name": "hidden",
             "shape": [
                 8,
@@ -217,72 +42,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 51,
-                "kind": "Binary",
-                "left": {
-                    "col": 38,
-                    "elements": [
-                        {
-                            "col": 48,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 39,
-                                "elements": [
-                                    {
-                                        "col": 45,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 40,
-                                            "elements": [
-                                                {
-                                                    "col": 41,
-                                                    "kind": "Constant",
-                                                    "line": 13,
-                                                    "value": 1.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 13
-                                        },
-                                        "line": 13,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 46,
-                                            "kind": "Constant",
-                                            "line": 13,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 13
-                            },
-                            "line": 13,
-                            "op": "*",
-                            "right": {
-                                "col": 49,
-                                "kind": "Constant",
-                                "line": 13,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 13
-                },
-                "line": 13,
-                "op": "*",
-                "right": {
-                    "col": 52,
-                    "kind": "Constant",
-                    "line": 13,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 13,
+            "line": 6,
             "name": "gamma",
             "shape": [
                 8,
@@ -292,72 +56,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 50,
-                "kind": "Binary",
-                "left": {
-                    "col": 37,
-                    "elements": [
-                        {
-                            "col": 47,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 38,
-                                "elements": [
-                                    {
-                                        "col": 44,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 39,
-                                            "elements": [
-                                                {
-                                                    "col": 40,
-                                                    "kind": "Constant",
-                                                    "line": 14,
-                                                    "value": 0.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 14
-                                        },
-                                        "line": 14,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 45,
-                                            "kind": "Constant",
-                                            "line": 14,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 14
-                            },
-                            "line": 14,
-                            "op": "*",
-                            "right": {
-                                "col": 48,
-                                "kind": "Constant",
-                                "line": 14,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 14
-                },
-                "line": 14,
-                "op": "*",
-                "right": {
-                    "col": 51,
-                    "kind": "Constant",
-                    "line": 14,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 14,
+            "line": 7,
             "name": "beta",
             "shape": [
                 8,
@@ -367,72 +70,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 52,
-                "kind": "Binary",
-                "left": {
-                    "col": 39,
-                    "elements": [
-                        {
-                            "col": 49,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 40,
-                                "elements": [
-                                    {
-                                        "col": 46,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 41,
-                                            "elements": [
-                                                {
-                                                    "col": 42,
-                                                    "kind": "Constant",
-                                                    "line": 15,
-                                                    "value": 0.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 15
-                                        },
-                                        "line": 15,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 47,
-                                            "kind": "Constant",
-                                            "line": 15,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 15
-                            },
-                            "line": 15,
-                            "op": "*",
-                            "right": {
-                                "col": 50,
-                                "kind": "Constant",
-                                "line": 15,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 15
-                },
-                "line": 15,
-                "op": "*",
-                "right": {
-                    "col": 53,
-                    "kind": "Constant",
-                    "line": 15,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 15,
+            "line": 8,
             "name": "normed",
             "shape": [
                 8,
@@ -442,72 +84,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 47,
-                "kind": "Binary",
-                "left": {
-                    "col": 34,
-                    "elements": [
-                        {
-                            "col": 44,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 35,
-                                "elements": [
-                                    {
-                                        "col": 41,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 36,
-                                            "elements": [
-                                                {
-                                                    "col": 37,
-                                                    "kind": "Constant",
-                                                    "line": 16,
-                                                    "value": 0.5
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 16
-                                        },
-                                        "line": 16,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 42,
-                                            "kind": "Constant",
-                                            "line": 16,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 16
-                            },
-                            "line": 16,
-                            "op": "*",
-                            "right": {
-                                "col": 45,
-                                "kind": "Constant",
-                                "line": 16,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 16
-                },
-                "line": 16,
-                "op": "*",
-                "right": {
-                    "col": 48,
-                    "kind": "Constant",
-                    "line": 16,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 16,
+            "line": 9,
             "name": "Q",
             "shape": [
                 8,
@@ -517,72 +98,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 48,
-                "kind": "Binary",
-                "left": {
-                    "col": 34,
-                    "elements": [
-                        {
-                            "col": 45,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 35,
-                                "elements": [
-                                    {
-                                        "col": 42,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 36,
-                                            "elements": [
-                                                {
-                                                    "col": 37,
-                                                    "kind": "Constant",
-                                                    "line": 17,
-                                                    "value": 0.25
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 17
-                                        },
-                                        "line": 17,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 43,
-                                            "kind": "Constant",
-                                            "line": 17,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 17
-                            },
-                            "line": 17,
-                            "op": "*",
-                            "right": {
-                                "col": 46,
-                                "kind": "Constant",
-                                "line": 17,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 17
-                },
-                "line": 17,
-                "op": "*",
-                "right": {
-                    "col": 49,
-                    "kind": "Constant",
-                    "line": 17,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 17,
+            "line": 10,
             "name": "K",
             "shape": [
                 8,
@@ -592,72 +112,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 47,
-                "kind": "Binary",
-                "left": {
-                    "col": 34,
-                    "elements": [
-                        {
-                            "col": 44,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 35,
-                                "elements": [
-                                    {
-                                        "col": 41,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 36,
-                                            "elements": [
-                                                {
-                                                    "col": 37,
-                                                    "kind": "Constant",
-                                                    "line": 18,
-                                                    "value": 1.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 18
-                                        },
-                                        "line": 18,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 42,
-                                            "kind": "Constant",
-                                            "line": 18,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 18
-                            },
-                            "line": 18,
-                            "op": "*",
-                            "right": {
-                                "col": 45,
-                                "kind": "Constant",
-                                "line": 18,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 18
-                },
-                "line": 18,
-                "op": "*",
-                "right": {
-                    "col": 48,
-                    "kind": "Constant",
-                    "line": 18,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 18,
+            "line": 11,
             "name": "V",
             "shape": [
                 8,
@@ -667,72 +126,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 50,
-                "kind": "Binary",
-                "left": {
-                    "col": 37,
-                    "elements": [
-                        {
-                            "col": 47,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 38,
-                                "elements": [
-                                    {
-                                        "col": 44,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 39,
-                                            "elements": [
-                                                {
-                                                    "col": 40,
-                                                    "kind": "Constant",
-                                                    "line": 19,
-                                                    "value": 0.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 19
-                                        },
-                                        "line": 19,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 45,
-                                            "kind": "Constant",
-                                            "line": 19,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 19
-                            },
-                            "line": 19,
-                            "op": "*",
-                            "right": {
-                                "col": 48,
-                                "kind": "Constant",
-                                "line": 19,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 19
-                },
-                "line": 19,
-                "op": "*",
-                "right": {
-                    "col": 51,
-                    "kind": "Constant",
-                    "line": 19,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 19,
+            "line": 12,
             "name": "attn",
             "shape": [
                 8,
@@ -742,72 +140,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 50,
-                "kind": "Binary",
-                "left": {
-                    "col": 37,
-                    "elements": [
-                        {
-                            "col": 47,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 38,
-                                "elements": [
-                                    {
-                                        "col": 44,
-                                        "kind": "Binary",
-                                        "left": {
-                                            "col": 39,
-                                            "elements": [
-                                                {
-                                                    "col": 40,
-                                                    "kind": "Constant",
-                                                    "line": 20,
-                                                    "value": 0.0
-                                                }
-                                            ],
-                                            "kind": "List",
-                                            "line": 20
-                                        },
-                                        "line": 20,
-                                        "op": "*",
-                                        "right": {
-                                            "col": 45,
-                                            "kind": "Constant",
-                                            "line": 20,
-                                            "value": 8
-                                        }
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 20
-                            },
-                            "line": 20,
-                            "op": "*",
-                            "right": {
-                                "col": 48,
-                                "kind": "Constant",
-                                "line": 20,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 20
-                },
-                "line": 20,
-                "op": "*",
-                "right": {
-                    "col": 51,
-                    "kind": "Constant",
-                    "line": 20,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 20,
+            "line": 13,
             "name": "gate",
             "shape": [
                 8,
@@ -817,53 +154,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 45,
-                "kind": "Binary",
-                "left": {
-                    "col": 36,
-                    "elements": [
-                        {
-                            "col": 42,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 37,
-                                "elements": [
-                                    {
-                                        "col": 38,
-                                        "kind": "Constant",
-                                        "line": 21,
-                                        "value": 1.0
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 21
-                            },
-                            "line": 21,
-                            "op": "*",
-                            "right": {
-                                "col": 43,
-                                "kind": "Constant",
-                                "line": 21,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 21
-                },
-                "line": 21,
-                "op": "*",
-                "right": {
-                    "col": 46,
-                    "kind": "Constant",
-                    "line": 21,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 21,
+            "line": 14,
             "name": "logits",
             "shape": [
                 8,
@@ -872,53 +167,11 @@
         },
         {
             "col": 5,
-            "data": {
-                "col": 44,
-                "kind": "Binary",
-                "left": {
-                    "col": 35,
-                    "elements": [
-                        {
-                            "col": 41,
-                            "kind": "Binary",
-                            "left": {
-                                "col": 36,
-                                "elements": [
-                                    {
-                                        "col": 37,
-                                        "kind": "Constant",
-                                        "line": 22,
-                                        "value": 0.0
-                                    }
-                                ],
-                                "kind": "List",
-                                "line": 22
-                            },
-                            "line": 22,
-                            "op": "*",
-                            "right": {
-                                "col": 42,
-                                "kind": "Constant",
-                                "line": 22,
-                                "value": 8
-                            }
-                        }
-                    ],
-                    "kind": "List",
-                    "line": 22
-                },
-                "line": 22,
-                "op": "*",
-                "right": {
-                    "col": 45,
-                    "kind": "Constant",
-                    "line": 22,
-                    "value": 8
-                }
-            },
+            "data": null,
+            "data_values": null,
             "dtype": "f32",
             "kind": "Tensor",
-            "line": 22,
+            "line": 15,
             "name": "probs",
             "shape": [
                 8,
@@ -926,14 +179,550 @@
             ]
         },
         {
+            "body": [
+                {
+                    "col": 9,
+                    "kind": "Assign",
+                    "line": 18,
+                    "op": "=",
+                    "target": {
+                        "col": 9,
+                        "indices": [
+                            {
+                                "col": 13,
+                                "kind": "Variable",
+                                "line": 18,
+                                "name": "i"
+                            }
+                        ],
+                        "kind": "Subscript",
+                        "line": 18,
+                        "value": "ids"
+                    },
+                    "value": {
+                        "col": 18,
+                        "kind": "Variable",
+                        "line": 18,
+                        "name": "i"
+                    }
+                }
+            ],
+            "bound": "8",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 17,
+            "size": 0,
+            "type": "",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "body": [
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 23,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 23,
+                                                "kind": "Variable",
+                                                "line": 23,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 26,
+                                                "kind": "Variable",
+                                                "line": 23,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 29,
+                                                "kind": "Variable",
+                                                "line": 23,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 23,
+                                        "value": "w_emb"
+                                    },
+                                    "value": {
+                                        "col": 34,
+                                        "kind": "Constant",
+                                        "line": 23,
+                                        "value": 1.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 24,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 24,
+                                                "kind": "Variable",
+                                                "line": 24,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 27,
+                                                "kind": "Variable",
+                                                "line": 24,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 30,
+                                                "kind": "Variable",
+                                                "line": 24,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 24,
+                                        "value": "hidden"
+                                    },
+                                    "value": {
+                                        "col": 35,
+                                        "kind": "Constant",
+                                        "line": 24,
+                                        "value": 0.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 25,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 23,
+                                                "kind": "Variable",
+                                                "line": 25,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 26,
+                                                "kind": "Variable",
+                                                "line": 25,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 29,
+                                                "kind": "Variable",
+                                                "line": 25,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 25,
+                                        "value": "gamma"
+                                    },
+                                    "value": {
+                                        "col": 34,
+                                        "kind": "Constant",
+                                        "line": 25,
+                                        "value": 1.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 26,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 26,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 26,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 28,
+                                                "kind": "Variable",
+                                                "line": 26,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 26,
+                                        "value": "beta"
+                                    },
+                                    "value": {
+                                        "col": 33,
+                                        "kind": "Constant",
+                                        "line": 26,
+                                        "value": 0.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 27,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 24,
+                                                "kind": "Variable",
+                                                "line": 27,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 27,
+                                                "kind": "Variable",
+                                                "line": 27,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 30,
+                                                "kind": "Variable",
+                                                "line": 27,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 27,
+                                        "value": "normed"
+                                    },
+                                    "value": {
+                                        "col": 35,
+                                        "kind": "Constant",
+                                        "line": 27,
+                                        "value": 0.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 28,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 28,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 28,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 28,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 28,
+                                        "value": "Q"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 28,
+                                        "value": 0.5
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 29,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 29,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 29,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 29,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 29,
+                                        "value": "K"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 29,
+                                        "value": 0.25
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 30,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 19,
+                                                "kind": "Variable",
+                                                "line": 30,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 30,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 30,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 30,
+                                        "value": "V"
+                                    },
+                                    "value": {
+                                        "col": 30,
+                                        "kind": "Constant",
+                                        "line": 30,
+                                        "value": 1.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 31,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 31,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 31,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 28,
+                                                "kind": "Variable",
+                                                "line": 31,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 31,
+                                        "value": "attn"
+                                    },
+                                    "value": {
+                                        "col": 33,
+                                        "kind": "Constant",
+                                        "line": 31,
+                                        "value": 0.0
+                                    }
+                                },
+                                {
+                                    "col": 17,
+                                    "kind": "Assign",
+                                    "line": 32,
+                                    "op": "=",
+                                    "target": {
+                                        "col": 17,
+                                        "indices": [
+                                            {
+                                                "col": 22,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "i"
+                                            },
+                                            {
+                                                "col": 25,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "j"
+                                            },
+                                            {
+                                                "col": 28,
+                                                "kind": "Variable",
+                                                "line": 32,
+                                                "name": "x"
+                                            }
+                                        ],
+                                        "kind": "Subscript",
+                                        "line": 32,
+                                        "value": "gate"
+                                    },
+                                    "value": {
+                                        "col": 33,
+                                        "kind": "Constant",
+                                        "line": 32,
+                                        "value": 0.0
+                                    }
+                                }
+                            ],
+                            "bound": "8",
+                            "col": 13,
+                            "kind": "For Loop",
+                            "line": 22,
+                            "size": 0,
+                            "type": "",
+                            "var": "x"
+                        }
+                    ],
+                    "bound": "8",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 21,
+                    "size": 0,
+                    "type": "",
+                    "var": "j"
+                }
+            ],
+            "bound": "8",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 20,
+            "size": 0,
+            "type": "",
+            "var": "i"
+        },
+        {
+            "body": [
+                {
+                    "body": [
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 38,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 20,
+                                        "kind": "Variable",
+                                        "line": 38,
+                                        "name": "i"
+                                    },
+                                    {
+                                        "col": 23,
+                                        "kind": "Variable",
+                                        "line": 38,
+                                        "name": "j"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 38,
+                                "value": "logits"
+                            },
+                            "value": {
+                                "col": 28,
+                                "kind": "Constant",
+                                "line": 38,
+                                "value": 1.0
+                            }
+                        },
+                        {
+                            "col": 13,
+                            "kind": "Assign",
+                            "line": 39,
+                            "op": "=",
+                            "target": {
+                                "col": 13,
+                                "indices": [
+                                    {
+                                        "col": 19,
+                                        "kind": "Variable",
+                                        "line": 39,
+                                        "name": "i"
+                                    },
+                                    {
+                                        "col": 22,
+                                        "kind": "Variable",
+                                        "line": 39,
+                                        "name": "j"
+                                    }
+                                ],
+                                "kind": "Subscript",
+                                "line": 39,
+                                "value": "probs"
+                            },
+                            "value": {
+                                "col": 27,
+                                "kind": "Constant",
+                                "line": 39,
+                                "value": 0.0
+                            }
+                        }
+                    ],
+                    "bound": "8",
+                    "col": 9,
+                    "kind": "For Loop",
+                    "line": 37,
+                    "size": 0,
+                    "type": "",
+                    "var": "j"
+                }
+            ],
+            "bound": "8",
+            "col": 5,
+            "kind": "For Loop",
+            "line": 36,
+            "size": 0,
+            "type": "",
+            "var": "i"
+        },
+        {
             "col": 5,
             "kind": "Assign",
-            "line": 24,
+            "line": 43,
             "op": "=",
             "target": {
                 "col": 5,
                 "kind": "Variable",
-                "line": 24,
+                "line": 43,
                 "name": "hidden"
             },
             "value": {
@@ -941,31 +730,31 @@
                     {
                         "col": 24,
                         "kind": "Variable",
-                        "line": 24,
+                        "line": 43,
                         "name": "ids"
                     },
                     {
                         "col": 29,
                         "kind": "Variable",
-                        "line": 24,
+                        "line": 43,
                         "name": "w_emb"
                     }
                 ],
                 "col": 14,
                 "kind": "BuiltinCall",
-                "line": 24,
+                "line": 43,
                 "op": "embedding"
             }
         },
         {
             "col": 5,
             "kind": "Assign",
-            "line": 25,
+            "line": 44,
             "op": "=",
             "target": {
                 "col": 5,
                 "kind": "Variable",
-                "line": 25,
+                "line": 44,
                 "name": "normed"
             },
             "value": {
@@ -973,43 +762,43 @@
                     {
                         "col": 24,
                         "kind": "Variable",
-                        "line": 25,
+                        "line": 44,
                         "name": "hidden"
                     },
                     {
                         "col": 32,
                         "kind": "Variable",
-                        "line": 25,
+                        "line": 44,
                         "name": "gamma"
                     },
                     {
                         "col": 39,
                         "kind": "Variable",
-                        "line": 25,
+                        "line": 44,
                         "name": "beta"
                     },
                     {
                         "col": 45,
                         "kind": "Variable",
-                        "line": 25,
+                        "line": 44,
                         "name": "normed"
                     }
                 ],
                 "col": 14,
                 "kind": "BuiltinCall",
-                "line": 25,
+                "line": 44,
                 "op": "layernorm"
             }
         },
         {
             "col": 5,
             "kind": "Assign",
-            "line": 26,
+            "line": 45,
             "op": "=",
             "target": {
                 "col": 5,
                 "kind": "Variable",
-                "line": 26,
+                "line": 45,
                 "name": "attn"
             },
             "value": {
@@ -1017,37 +806,37 @@
                     {
                         "col": 26,
                         "kind": "Variable",
-                        "line": 26,
+                        "line": 45,
                         "name": "Q"
                     },
                     {
                         "col": 29,
                         "kind": "Variable",
-                        "line": 26,
+                        "line": 45,
                         "name": "K"
                     },
                     {
                         "col": 32,
                         "kind": "Variable",
-                        "line": 26,
+                        "line": 45,
                         "name": "V"
                     }
                 ],
                 "col": 12,
                 "kind": "BuiltinCall",
-                "line": 26,
+                "line": 45,
                 "op": "mha_attention"
             }
         },
         {
             "col": 5,
             "kind": "Assign",
-            "line": 27,
+            "line": 46,
             "op": "=",
             "target": {
                 "col": 5,
                 "kind": "Variable",
-                "line": 27,
+                "line": 46,
                 "name": "gate"
             },
             "value": {
@@ -1055,25 +844,25 @@
                     {
                         "col": 17,
                         "kind": "Variable",
-                        "line": 27,
+                        "line": 46,
                         "name": "attn"
                     }
                 ],
                 "col": 12,
                 "kind": "BuiltinCall",
-                "line": 27,
+                "line": 46,
                 "op": "relu"
             }
         },
         {
             "col": 5,
             "kind": "Assign",
-            "line": 28,
+            "line": 47,
             "op": "=",
             "target": {
                 "col": 5,
                 "kind": "Variable",
-                "line": 28,
+                "line": 47,
                 "name": "probs"
             },
             "value": {
@@ -1081,62 +870,62 @@
                     {
                         "col": 21,
                         "kind": "Variable",
-                        "line": 28,
+                        "line": 47,
                         "name": "logits"
                     },
                     {
                         "col": 29,
                         "kind": "Variable",
-                        "line": 28,
+                        "line": 47,
                         "name": "probs"
                     }
                 ],
                 "col": 13,
                 "kind": "BuiltinCall",
-                "line": 28,
+                "line": 47,
                 "op": "softmax"
             }
         },
         {
             "col": 5,
             "kind": "Print",
-            "line": 29,
+            "line": 48,
             "value": {
                 "args": [
                     {
                         "col": 19,
                         "kind": "Variable",
-                        "line": 29,
+                        "line": 48,
                         "name": "logits"
                     },
                     {
                         "col": 27,
                         "kind": "Variable",
-                        "line": 29,
+                        "line": 48,
                         "name": "probs"
                     }
                 ],
                 "col": 11,
                 "kind": "BuiltinCall",
-                "line": 29,
+                "line": 48,
                 "op": "softmax"
             }
         },
         {
             "col": 5,
             "kind": "Return",
-            "line": 30,
+            "line": 49,
             "value": {
                 "col": 12,
                 "kind": "Variable",
-                "line": 30,
+                "line": 49,
                 "name": "probs"
             }
         }
     ],
     "col": 1,
     "funcname": "main",
-    "line": 9,
+    "line": 2,
     "params": [],
     "returns": [
         "probs"

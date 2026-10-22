@@ -1,0 +1,16 @@
+# The dims of a callee come from its call sites, so the data of a tensor in the
+# callee is checked against them.
+# Expect: [Semantic Error] 'Y' is declared as Tensor[f32, (2, 3)] (6 element(s)) but is initialized with 4 element(s)
+
+scaled(
+    X : Tensor[f32, (M, N)]
+) -> [Y] {
+    Y : Tensor[f32, (M, N)] = [[1.0, 2.0], [3.0, 4.0]]
+    return Y
+}
+
+main() -> [out] {
+    A : Tensor[f32, (2, 3)] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+    out = scaled(A)
+    return out
+}
