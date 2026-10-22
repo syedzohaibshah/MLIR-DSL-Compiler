@@ -1,3 +1,3 @@
-C:/Users/SM Computers/Desktop/git repositories/MLIRDSLProject/Brief-1 DSL Frontend/build/CMakeFiles/tldr_compiler.dir
-C:/Users/SM Computers/Desktop/git repositories/MLIRDSLProject/Brief-1 DSL Frontend/build/CMakeFiles/edit_cache.dir
-C:/Users/SM Computers/Desktop/git repositories/MLIRDSLProject/Brief-1 DSL Frontend/build/CMakeFiles/rebuild_cache.dir
+C:/Users/SM Computers/Desktop/git repositories/MLIR-DSL-Compiler/Brief-1 DSL Frontend/build/CMakeFiles/tldr_compiler.dir
+C:/Users/SM Computers/Desktop/git repositories/MLIR-DSL-Compiler/Brief-1 DSL Frontend/build/CMakeFiles/edit_cache.dir
+C:/Users/SM Computers/Desktop/git repositories/MLIR-DSL-Compiler/Brief-1 DSL Frontend/build/CMakeFiles/rebuild_cache.dir

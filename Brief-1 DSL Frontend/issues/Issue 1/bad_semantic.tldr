@@ -1,0 +1,9 @@
+# bad_semantic.tldr
+# Regression input for Issue 1.
+# A scalar is passed to 'relu', which only accepts tensors. This is a hard
+# semantic error, so compilation must abort and must NOT emit JSON/DOT.
+main() -> [C] {
+    x : f32
+    C : Tensor[f32, (64, 64)]
+    C = relu(x)
+}

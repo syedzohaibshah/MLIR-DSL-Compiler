@@ -52,10 +52,10 @@ RM = "C:\Program Files\CMake\bin\cmake.exe" -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend"
+CMAKE_SOURCE_DIR = "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build"
+CMAKE_BINARY_DIR = "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build"
 
 # Include any dependencies generated for this target.
 include CMakeFiles/tldr_compiler.dir/depend.make
@@ -73,108 +73,108 @@ CMakeFiles/tldr_compiler.dir/codegen:
 
 CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/main.cpp
+CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/main.cpp
 CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/tldr_compiler.dir/src/main.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/main.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\main.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\main.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\main.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/tldr_compiler.dir/src/main.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/main.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\main.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\main.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\main.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/main.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\main.cpp" > CMakeFiles\tldr_compiler.dir\src\main.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\main.cpp" > CMakeFiles\tldr_compiler.dir\src\main.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/main.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\main.cpp" -o CMakeFiles\tldr_compiler.dir\src\main.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\main.cpp" -o CMakeFiles\tldr_compiler.dir\src\main.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/lexer.cpp
+CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/lexer.cpp
 CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\lexer.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\lexer.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\lexer.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/lexer.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\lexer.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\lexer.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\lexer.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/lexer.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/lexer.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\lexer.cpp" > CMakeFiles\tldr_compiler.dir\src\lexer.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\lexer.cpp" > CMakeFiles\tldr_compiler.dir\src\lexer.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/lexer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/lexer.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\lexer.cpp" -o CMakeFiles\tldr_compiler.dir\src\lexer.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\lexer.cpp" -o CMakeFiles\tldr_compiler.dir\src\lexer.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/parser.cpp
+CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/parser.cpp
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\parser.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\parser.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\parser.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\parser.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\parser.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\parser.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/parser.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\parser.cpp" > CMakeFiles\tldr_compiler.dir\src\parser.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\parser.cpp" > CMakeFiles\tldr_compiler.dir\src\parser.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/parser.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\parser.cpp" -o CMakeFiles\tldr_compiler.dir\src\parser.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\parser.cpp" -o CMakeFiles\tldr_compiler.dir\src\parser.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/ast_nodes.cpp
+CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/ast_nodes.cpp
 CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\ast_nodes.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\ast_nodes.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\ast_nodes.cpp" > CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\ast_nodes.cpp" > CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/ast_nodes.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\ast_nodes.cpp" -o CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\ast_nodes.cpp" -o CMakeFiles\tldr_compiler.dir\src\ast_nodes.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/tokens.cpp
+CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/tokens.cpp
 CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\tokens.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\tokens.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\tokens.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/tokens.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\tokens.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\tokens.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\tokens.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/tokens.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/tokens.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\tokens.cpp" > CMakeFiles\tldr_compiler.dir\src\tokens.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\tokens.cpp" > CMakeFiles\tldr_compiler.dir\src\tokens.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/tokens.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/tokens.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\tokens.cpp" -o CMakeFiles\tldr_compiler.dir\src\tokens.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\tokens.cpp" -o CMakeFiles\tldr_compiler.dir\src\tokens.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/json_visitor.cpp
+CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/json_visitor.cpp
 CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\json_visitor.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\json_visitor.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\json_visitor.cpp" > CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\json_visitor.cpp" > CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/json_visitor.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\json_visitor.cpp" -o CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\json_visitor.cpp" -o CMakeFiles\tldr_compiler.dir\src\json_visitor.cpp.s
 
 CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj: CMakeFiles/tldr_compiler.dir/flags.make
 CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj: CMakeFiles/tldr_compiler.dir/includes_CXX.rsp
-CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIRDSLProject/Brief-1\ DSL\ Frontend/src/semantic.cpp
+CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj: C:/Users/SM\ Computers/Desktop/git\ repositories/MLIR-DSL-Compiler/Brief-1\ DSL\ Frontend/src/semantic.cpp
 CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj: CMakeFiles/tldr_compiler.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\semantic.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\semantic.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\semantic.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tldr_compiler.dir/src/semantic.cpp.obj -MF CMakeFiles\tldr_compiler.dir\src\semantic.cpp.obj.d -o CMakeFiles\tldr_compiler.dir\src\semantic.cpp.obj -c "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\semantic.cpp"
 
 CMakeFiles/tldr_compiler.dir/src/semantic.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tldr_compiler.dir/src/semantic.cpp.i"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\semantic.cpp" > CMakeFiles\tldr_compiler.dir\src\semantic.cpp.i
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\semantic.cpp" > CMakeFiles\tldr_compiler.dir\src\semantic.cpp.i
 
 CMakeFiles/tldr_compiler.dir/src/semantic.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tldr_compiler.dir/src/semantic.cpp.s"
-	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\src\semantic.cpp" -o CMakeFiles\tldr_compiler.dir\src\semantic.cpp.s
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\src\semantic.cpp" -o CMakeFiles\tldr_compiler.dir\src\semantic.cpp.s
 
 # Object files for target tldr_compiler
 tldr_compiler_OBJECTS = \
@@ -200,7 +200,7 @@ tldr_compiler.exe: CMakeFiles/tldr_compiler.dir/build.make
 tldr_compiler.exe: CMakeFiles/tldr_compiler.dir/linkLibs.rsp
 tldr_compiler.exe: CMakeFiles/tldr_compiler.dir/objects1.rsp
 tldr_compiler.exe: CMakeFiles/tldr_compiler.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable tldr_compiler.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable tldr_compiler.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\tldr_compiler.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -212,6 +212,6 @@ CMakeFiles/tldr_compiler.dir/clean:
 .PHONY : CMakeFiles/tldr_compiler.dir/clean
 
 CMakeFiles/tldr_compiler.dir/depend:
-	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend" "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend" "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build" "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build" "C:\Users\SM Computers\Desktop\git repositories\MLIRDSLProject\Brief-1 DSL Frontend\build\CMakeFiles\tldr_compiler.dir\DependInfo.cmake" "--color=$(COLOR)" tldr_compiler
+	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend" "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend" "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build" "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build" "C:\Users\SM Computers\Desktop\git repositories\MLIR-DSL-Compiler\Brief-1 DSL Frontend\build\CMakeFiles\tldr_compiler.dir\DependInfo.cmake" "--color=$(COLOR)" tldr_compiler
 .PHONY : CMakeFiles/tldr_compiler.dir/depend
 

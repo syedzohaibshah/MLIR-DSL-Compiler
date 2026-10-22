@@ -1,6 +1,12 @@
 #include "semantic.h"
 
+void SemanticAnalyzer::semantic_error(const std::string& msg) {
+    errors_.push_back(msg);
+}
+
 void SemanticAnalyzer::analyze(const std::vector<std::shared_ptr<FuncNode>>& funcs) {
+    errors_.clear();
+
     // Build the function table first so calls can be resolved later.
     function_table_.clear();
     for (const auto& func : funcs) {
@@ -15,6 +21,17 @@ void SemanticAnalyzer::analyze(const std::vector<std::shared_ptr<FuncNode>>& fun
 
     for (const auto& func : funcs) {
         if (func) analyze_func(func);
+    }
+
+    // Surface all collected hard errors at once. Throwing here stops the
+    // pipeline before the AST/JSON/DOT are emitted for an invalid program.
+    if (!errors_.empty()) {
+        std::string combined;
+        for (size_t i = 0; i < errors_.size(); ++i) {
+            if (i != 0) combined += "\n";
+            combined += errors_[i];
+        }
+        throw SemanticError(combined);
     }
 }
 
@@ -202,21 +219,22 @@ void SemanticAnalyzer::analyze_expr(const std::shared_ptr<ASTNode>& expr) {
             const BuiltinOpSpec* spec = find_builtin_op(node->op);
             if (!spec || spec->requires_tensor_args) {
                 for (size_t i = 0; i < node->args.size(); i++) {
+                    const std::string loc =
+                        " at L" + std::to_string(node->sp.line) + ":" +
+                        std::to_string(node->sp.col);
+                    const std::string arg = std::to_string(i + 1);
                     if (!is_tensor_expr(node->args[i])) {
-                        std::cerr << "[Semantic Error] '" << node->op
-                                  << "' expects tensor argument(s), but argument "
-                                  << (i + 1) << " is not a tensor at L"
-                                  << node->sp.line << ":" << node->sp.col << std::endl;
+                        semantic_error("[Semantic Error] '" + node->op +
+                                       "' expects tensor argument(s), but argument " +
+                                       arg + " is not a tensor" + loc);
                     } else if (tensor_is_empty(node->args[i])) {
-                        std::cerr << "[Semantic Error] '" << node->op
-                                  << "' does not accept empty tensors, but argument "
-                                  << (i + 1) << " has a zero-sized dimension at L"
-                                  << node->sp.line << ":" << node->sp.col << std::endl;
+                        semantic_error("[Semantic Error] '" + node->op +
+                                       "' does not accept empty tensors, but argument " +
+                                       arg + " has a zero-sized dimension" + loc);
                     } else if (is_uninitialized_tensor(node->args[i])) {
-                        std::cerr << "[Semantic Error] '" << node->op
-                                  << "' does not accept empty tensors, but argument "
-                                  << (i + 1) << " holds no data (never written) at L"
-                                  << node->sp.line << ":" << node->sp.col << std::endl;
+                        semantic_error("[Semantic Error] '" + node->op +
+                                       "' does not accept empty tensors, but argument " +
+                                       arg + " holds no data (never written)" + loc);
                     }
                 }
             }

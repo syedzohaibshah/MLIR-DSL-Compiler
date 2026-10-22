@@ -1,5 +1,5 @@
 CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: \
- C:\Users\SM\ Computers\Desktop\git\ repositories\MLIRDSLProject\Brief-1\ DSL\ Frontend\src\main.cpp \
+ C:\Users\SM\ Computers\Desktop\git\ repositories\MLIR-DSL-Compiler\Brief-1\ DSL\ Frontend\src\main.cpp \
  C:/msys64/ucrt64/include/c++/14.2.0/iostream \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/requires_hosted.h \
  C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -143,8 +143,8 @@ CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/fstream.tcc \
  C:/msys64/ucrt64/include/c++/14.2.0/sstream \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/sstream.tcc \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/lexer.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/tokens.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/lexer.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/tokens.h \
  C:/msys64/ucrt64/include/c++/14.2.0/cstdint \
  C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/stdint.h \
  C:/msys64/ucrt64/include/stdint.h \
@@ -153,8 +153,8 @@ CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_vector.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_bvector.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/vector.tcc \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/parser.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/ast_nodes.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/parser.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/ast_nodes.h \
  C:/msys64/ucrt64/include/c++/14.2.0/memory \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_tempbuf.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_raw_storage_iter.h \
@@ -175,15 +175,15 @@ CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/enable_special_members.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/parse_numbers.h \
  C:/msys64/ucrt64/include/c++/14.2.0/any \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/builtin_ops.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/builtin_ops.h \
  C:/msys64/ucrt64/include/c++/14.2.0/unordered_map \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/unordered_map.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/hashtable.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/hashtable_policy.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/node_handle.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/erase_if.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/json_visitor.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/json.hpp \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/json_visitor.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/json.hpp \
  C:/msys64/ucrt64/include/c++/14.2.0/algorithm \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_algo.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/algorithmfwd.h \
@@ -258,5 +258,5 @@ CMakeFiles/tldr_compiler.dir/src/main.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/numeric \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_numeric.h \
  C:/msys64/ucrt64/include/c++/14.2.0/pstl/glue_numeric_defs.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/graphviz_visitor.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/semantic.h
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/graphviz_visitor.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/semantic.h

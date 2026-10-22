@@ -1,7 +1,7 @@
 CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: \
- C:\Users\SM\ Computers\Desktop\git\ repositories\MLIRDSLProject\Brief-1\ DSL\ Frontend\src\parser.cpp \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/parser.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/tokens.h \
+ C:\Users\SM\ Computers\Desktop\git\ repositories\MLIR-DSL-Compiler\Brief-1\ DSL\ Frontend\src\parser.cpp \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/parser.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/tokens.h \
  C:/msys64/ucrt64/include/c++/14.2.0/string \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/requires_hosted.h \
  C:/msys64/ucrt64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -101,7 +101,7 @@ CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/cstdint \
  C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/stdint.h \
  C:/msys64/ucrt64/include/stdint.h \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/ast_nodes.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/ast_nodes.h \
  C:/msys64/ucrt64/include/c++/14.2.0/vector \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_uninitialized.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/stl_vector.h \
@@ -172,7 +172,7 @@ CMakeFiles/tldr_compiler.dir/src/parser.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc \
  C:/msys64/ucrt64/include/c++/14.2.0/sstream \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/sstream.tcc \
- C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIRDS~1/BRIEF-~4/include/builtin_ops.h \
+ C:/Users/SMCOMP~1/Desktop/GITREP~1/MLIR-D~1/BRIEF-~2/include/builtin_ops.h \
  C:/msys64/ucrt64/include/c++/14.2.0/unordered_map \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/unordered_map.h \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/hashtable.h \

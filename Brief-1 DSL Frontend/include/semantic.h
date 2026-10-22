@@ -7,6 +7,12 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <stdexcept>
+
+class SemanticError : public std::runtime_error {
+public:
+    explicit SemanticError(const std::string& msg) : std::runtime_error(msg) {}
+};
 
 // Symbol table for variables and parameters of a single function scope.
 struct TypeInfo {
@@ -29,17 +35,21 @@ struct FuncInfo {
 
 class SemanticAnalyzer {
 public:
-    // Analyze a set of parsed functions; prints diagnostics to std::cerr.
     void analyze(const std::vector<std::shared_ptr<FuncNode>>& funcs);
 
 private:
-    // Two symbol tables (the hashmaps requested):
-    // 1. variables & parameters for the currently-analyzed function
-    // 2. all declared functions (global)
-    std::unordered_map<std::string, TypeInfo> symbol_table_;
-    std::unordered_map<std::string, FuncInfo> function_table_;
+    std::unordered_map<std::string, TypeInfo> symbol_table_; //hashmap for symbols
+    std::unordered_map<std::string, FuncInfo> function_table_; //hashmap for functions
 
     std::string current_func_;
+
+    // Hard semantic errors gathered during the current analysis; if any are
+    // present when analysis completes, analyze() throws a SemanticError.
+    std::vector<std::string> errors_;
+
+    // Record a recoverable hard error and continue analysis so all problems
+    // can be reported together.
+    void semantic_error(const std::string& msg);
 
     void analyze_func(const std::shared_ptr<FuncNode>& func);
     void analyze_stmt(const std::shared_ptr<ASTNode>& stmt);
