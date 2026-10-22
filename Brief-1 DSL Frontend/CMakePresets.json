@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default toolchain (Linux/macOS; uses CMake's default generator)",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "mingw",
+      "displayName": "Windows + MSYS2 MinGW-w64 (expects g++ and mingw32-make on PATH)",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "mingw",
+      "configurePreset": "mingw"
+    }
+  ]
+}

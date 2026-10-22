@@ -4,7 +4,7 @@ The repository contains two compiler pipelines for the TLDR DSL.
 
 ---
 
-## Pipeline 1 -- Standalone C++ Compiler (`test_tldr_compiler/`)
+## Pipeline 1 -- Standalone C++ Compiler (`Brief-1 DSL Frontend/`)
 
 This is the primary pipeline. A `.tldr` source file goes through lexing, parsing, and visitor-based code generation.
 
@@ -56,17 +56,26 @@ tldr_compiler <file.tldr> [--tokens] [--json] [--dot]
 ### Building
 
 ```bash
-cd test_tldr_compiler
-mkdir build && cd build
-cmake ..
-cmake --build .
+cd "Brief-1 DSL Frontend"
+cmake --preset default      # Linux / macOS
+cmake --preset mingw        # Windows + MSYS2 MinGW-w64 instead
+cmake --build build
 ```
 
-Requires: C++17, CMake 3.14+.
+Requires: C++17, CMake 3.14+ (3.21+ for the presets). Without presets, run
+`cmake -B build -S .` and add `-G "MinGW Makefiles"` on Windows.
+
+`build/` holds the generated makefiles, object files and the executable. It is
+machine specific (it records absolute paths) and is not tracked by git, so a
+fresh clone only needs the commands above.
 
 ---
 
-## Pipeline 2 -- Python Decorator Pipeline (root)
+## Pipeline 2 -- Python Decorator Pipeline (earlier prototype)
+
+This pipeline is not part of this repository; it is kept here for reference.
+The files it needs (`kernel_decorator.py`, `compiler_backend.pyd`, the `Test
+folder/` sources) are not in the tree.
 
 An alternative path that captures Python function source code and converts it to JSON via Python's `ast` module.
 
@@ -116,7 +125,7 @@ g++ -O2 -shared -std=c++17 \
 
 ## Comparison
 
-| Aspect | Pipeline 1 (`test_tldr_compiler`) | Pipeline 2 (Python decorator) |
+| Aspect | Pipeline 1 (`Brief-1 DSL Frontend`) | Pipeline 2 (Python decorator) |
 |--------|-------------------------------------|-------------------------------|
 | Input format | `.tldr` text files | Python `@kernel` functions |
 | Parser | C++ recursive-descent | Python `ast` + C++ JSON parser |

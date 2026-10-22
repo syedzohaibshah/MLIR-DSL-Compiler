@@ -6,14 +6,33 @@ A standalone C++ compiler for the **TLDR** domain-specific language. TLDR lets y
 
 ### 1. Build the compiler
 
+From a fresh clone, Linux / macOS:
+
 ```bash
-cd test_tldr_compiler
-mkdir build && cd build
-cmake ..
-cmake --build .
+cd "Brief-1 DSL Frontend"
+cmake --preset default
+cmake --build --preset default
 ```
 
-Requires C++17 and CMake 3.14+.
+Windows with MSYS2 MinGW-w64 (`g++` and `mingw32-make` on PATH):
+
+```powershell
+cd "Brief-1 DSL Frontend"
+cmake --preset mingw
+cmake --build --preset mingw
+```
+
+Without presets (CMake < 3.21) use the plain commands:
+
+```bash
+cmake -B build -S . -G "MinGW Makefiles"   # Windows
+cmake -B build -S .                        # Linux / macOS
+cmake --build build
+```
+
+The executable is written to `build/tldr_compiler` (`build/tldr_compiler.exe` on Windows).
+
+Requires C++17 and CMake 3.14+ (3.21+ for the presets). The `build/` directory is generated and is not tracked by git, so it never needs to be committed and can be deleted at any time to rebuild from scratch.
 
 ### 2. Write a kernel
 
@@ -39,18 +58,20 @@ matmul(
 
 ### 3. Compile
 
+Run the built executable from the project directory (`.\build\tldr_compiler.exe` in PowerShell on Windows):
+
 ```bash
 # Print the AST to stdout
-./tldr_compiler matmul.tldr
+./build/tldr_compiler matmul.tldr
 
 # Export JSON AST
-./tldr_compiler matmul.tldr --json
+./build/tldr_compiler matmul.tldr --json
 
 # Export Graphviz DOT
-./tldr_compiler matmul.tldr --dot
+./build/tldr_compiler matmul.tldr --dot
 
 # Show token stream
-./tldr_compiler matmul.tldr --tokens
+./build/tldr_compiler matmul.tldr --tokens
 ```
 
 ### 4. Output
@@ -166,7 +187,7 @@ softmax(
 
 ### Fused GEMM + Bias + LayerNorm
 
-See `test_tldr_compiler/tests/test_fused.tldr` for a full fused kernel with local tensor declarations, tiled matmul, bias addition, and layer normalization -- all in a single function.
+See `tests/test_fused.tldr` for a full fused kernel with local tensor declarations, tiled matmul, bias addition, and layer normalization -- all in a single function.
 
 ---
 

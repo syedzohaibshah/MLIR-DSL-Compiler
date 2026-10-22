@@ -1,5 +1,6 @@
 # Editor settings
 .vscode/
+.idea/
 
 # Claude files (local only)
 CLAUDE.md
@@ -13,10 +14,36 @@ CLAUDE.local.md
 
 # Build output
 build/
+out/
+cmake-build-*/
 *.o
 *.obj
 *.a
+*.lib
 *.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.obj.d
+*.o.d
+
+
+# CMake generated files (for build trees outside a "build" directory)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CMakeUserPresets.json
+
+
+# Binaries built by the runtime Makefile
+/runtime/bytecode-vm/emunpu_test
+/runtime/bytecode-vm/test_runner
+
+
+# Python
+__pycache__/
+*.pyc
 
 
 PROGRESS.md
