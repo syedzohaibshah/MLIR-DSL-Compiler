@@ -1,0 +1,237 @@
+===== err_alloc_negative.txt (exit 0) =====
+PASS  err_alloc_negative.txt  ->  ERROR: ALLOC has zero or  negative size (line 1)
+
+===== err_alloc_not_mult4.txt (exit 0) =====
+PASS  err_alloc_not_mult4.txt  ->  ERROR: size must be a multiple of 4 bytes (line 1)
+
+===== err_alloc_zero.txt (exit 0) =====
+PASS  err_alloc_zero.txt  ->  ERROR: ALLOC has zero or  negative size (line 1)
+
+===== err_br_negative.txt (exit 0) =====
+PASS  err_br_negative.txt  ->  ERROR: BR target index out of bounds (line 1)
+
+===== err_br_too_big.txt (exit 0) =====
+PASS  err_br_too_big.txt  ->  ERROR: BR target index out of bounds (line 1)
+
+===== err_condbr_bad_target.txt (exit 0) =====
+PASS  err_condbr_bad_target.txt  ->  ERROR: register id not found (line 1)
+
+===== err_condbr_unset_reg.txt (exit 0) =====
+PASS  err_condbr_unset_reg.txt  ->  ERROR: register id not found (line 1)
+
+===== err_copy_d2h_bad_buffer.txt (exit 0) =====
+PASS  err_copy_d2h_bad_buffer.txt  ->  ERROR: invalid buffer id (line 1)
+
+===== err_copy_h2d_bad_buffer.txt (exit 0) =====
+PASS  err_copy_h2d_bad_buffer.txt  ->  ERROR: invalid buffer id (line 1)
+
+===== err_copy_h2d_bad_input_slot.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_h2d_bad_input_slot.txt  ->  ERROR: input slot 99 was never set via vm_set_input (line 2)
+
+===== err_copy_h2d_size_mismatch.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_h2d_size_mismatch.txt  ->  ERROR: input slot 0 holds 16 bytes, COPY_H2D asked for 8 (line 2)
+
+===== err_end_eof_with_arg.txt (exit 0) =====
+PASS  err_end_eof_with_arg.txt  ->  ERROR: unknown opcode or incorrect number of arguments EOF (line 1)
+
+===== err_free_double.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
+PASS  err_free_double.txt  ->  ERROR: buffer already freed (line 3)
+
+===== err_free_negative.txt (exit 0) =====
+PASS  err_free_negative.txt  ->  ERROR: invalid buffer id (line 1)
+
+===== err_free_unallocated.txt (exit 0) =====
+PASS  err_free_unallocated.txt  ->  ERROR: invalid buffer id (line 1)
+
+===== err_launch_bad_buffer.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_launch_bad_buffer.txt  ->  ERROR: invalid buffer id (line 2)
+
+===== err_launch_matmul_wrong_shape.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+Launching kernel ID 0 with 2 buffers and 1 scalar args
+PASS  err_launch_matmul_wrong_shape.txt  ->  ERROR: wrong number of buffers/scalars for MATMUL (line 3)
+
+===== err_launch_negative_nbuf.txt (exit 0) =====
+PASS  err_launch_negative_nbuf.txt  ->  ERROR: LAUNCH has negative num_buffers (line 1)
+
+===== err_launch_truncated.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_launch_truncated.txt  ->  ERROR: LAUNCH missing dimensions or num_scalars (line 2)
+
+===== err_launch_unknown_op.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+Launching kernel ID 9 with 3 buffers and 3 scalar args
+PASS  err_launch_unknown_op.txt  ->  ERROR: unknown op_id (line 4)
+
+===== err_loop_infinite.txt (exit 0) =====
+PASS  err_loop_infinite.txt  ->  ERROR: step limit exceeded - possible infinite loop (line 1)
+
+===== err_op_alloc_no_args.txt (exit 0) =====
+PASS  err_op_alloc_no_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 1)
+
+===== err_op_alloc_two_args.txt (exit 0) =====
+PASS  err_op_alloc_two_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 1)
+
+===== err_op_lowercase.txt (exit 0) =====
+PASS  err_op_lowercase.txt  ->  ERROR: unknown opcode or incorrect number of arguments alloc (line 1)
+
+===== err_op_set_too_few.txt (exit 0) =====
+PASS  err_op_set_too_few.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 1)
+
+===== err_op_set_too_many.txt (exit 0) =====
+PASS  err_op_set_too_many.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 1)
+
+===== err_op_unknown.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_op_unknown.txt  ->  ERROR: unknown opcode or incorrect number of arguments FOObar (line 2)
+
+===== err_parse_bad_number.txt (exit 0) =====
+PASS  err_parse_bad_number.txt  ->  ERROR: Invalid integer: abc (line 2)
+
+===== err_parse_double_at.txt (exit 0) =====
+PASS  err_parse_double_at.txt  ->  ERROR: Invalid integer: @3 (line 1)
+
+===== err_parse_empty_register.txt (exit 0) =====
+PASS  err_parse_empty_register.txt  ->  ERROR: register argument is empty (line 1)
+
+===== err_parse_float_value.txt (exit 0) =====
+PASS  err_parse_float_value.txt  ->  ERROR: Invalid integer: 1.5 (line 1)
+
+===== err_parse_trailing_junk.txt (exit 0) =====
+PASS  err_parse_trailing_junk.txt  ->  ERROR: Invalid integer: 16x (line 1)
+
+===== err_reg_dec_unset.txt (exit 0) =====
+PASS  err_reg_dec_unset.txt  ->  ERROR: register id not found (line 1)
+
+===== err_reg_inc_unset.txt (exit 0) =====
+PASS  err_reg_inc_unset.txt  ->  ERROR: register id not found (line 1)
+
+===== err_reg_negative_id.txt (exit 0) =====
+PASS  err_reg_negative_id.txt  ->  ERROR: out of range register id (line 1)
+
+===== err_reg_set_negative_id.txt (exit 0) =====
+PASS  err_reg_set_negative_id.txt  ->  ERROR: out of range register id (line 1)
+
+===== err_use_after_free.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
+PASS  err_use_after_free.txt  ->  ERROR: buffer already freed (line 3)
+
+===== ok_alloc_free_many.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+[emunpu] freed buffer with tensor id:3
+[emunpu] freed buffer with tensor id:2
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_alloc_free_many.txt  ->  ok
+
+===== ok_br_forward_skip.txt (exit 0) =====
+End of file
+PASS  ok_br_forward_skip.txt  ->  ok
+
+===== ok_copy_round_trip.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu]  device to host  copy with tensor_id: 1(16 bytes)
+End of file
+PASS  ok_copy_round_trip.txt  ->  ok
+
+===== ok_e2e_matmul_relu.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+[emunpu] alloc buffer 4 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 2 (16 bytes)
+Launching kernel ID 0 with 3 buffers and 3 scalar args
+Launching kernel ID 2 with 2 buffers and 1 scalar args
+[emunpu]  device to host  copy with tensor_id: 4(16 bytes)
+[emunpu] freed buffer with tensor id:1
+[emunpu] freed buffer with tensor id:2
+[emunpu] freed buffer with tensor id:3
+[emunpu] freed buffer with tensor id:4
+End of file
+PASS  ok_e2e_matmul_relu.txt  ->  ok
+
+===== ok_end_empty_file.txt (exit 0) =====
+PASS  ok_end_empty_file.txt  ->  ok
+
+===== ok_end_eof_in_middle.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+End of file
+PASS  ok_end_eof_in_middle.txt  ->  ok
+
+===== ok_end_no_eof.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
+PASS  ok_end_no_eof.txt  ->  ok
+
+===== ok_launch_matmul.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 2 (16 bytes)
+Launching kernel ID 0 with 3 buffers and 3 scalar args
+[emunpu]  device to host  copy with tensor_id: 3(16 bytes)
+End of file
+PASS  ok_launch_matmul.txt  ->  ok
+
+===== ok_launch_relu.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+Launching kernel ID 2 with 2 buffers and 1 scalar args
+[emunpu]  device to host  copy with tensor_id: 2(16 bytes)
+End of file
+PASS  ok_launch_relu.txt  ->  ok
+
+===== ok_launch_vec_add.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 2 (16 bytes)
+Launching kernel ID 1 with 3 buffers and 1 scalar args
+[emunpu]  device to host  copy with tensor_id: 3(16 bytes)
+End of file
+PASS  ok_launch_vec_add.txt  ->  ok
+
+===== ok_loop_countdown.txt (exit 0) =====
+End of file
+PASS  ok_loop_countdown.txt  ->  ok
+
+===== ok_parse_comments_blanks.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+End of file
+PASS  ok_parse_comments_blanks.txt  ->  ok
+
+===== ok_parse_only_comment.txt (exit 0) =====
+End of file
+PASS  ok_parse_only_comment.txt  ->  ok
+
+===== ok_reg_indirect_alloc.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+End of file
+PASS  ok_reg_indirect_alloc.txt  ->  ok
+
+===== ok_reg_indirect_copy.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+End of file
+PASS  ok_reg_indirect_copy.txt  ->  ok
+
+===== ok_reg_set_inc_dec.txt (exit 0) =====
+End of file
+PASS  ok_reg_set_inc_dec.txt  ->  ok
+

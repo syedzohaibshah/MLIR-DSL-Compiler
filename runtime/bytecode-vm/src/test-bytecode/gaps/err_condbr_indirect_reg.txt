@@ -1,0 +1,5 @@
+SET 0 3
+DEC 0
+COND_BR @0 4 2
+FREE 3
+EOF

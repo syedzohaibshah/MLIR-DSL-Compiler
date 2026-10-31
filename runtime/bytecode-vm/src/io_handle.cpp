@@ -7,6 +7,10 @@
 
 //links the slot id reurned by the allocated buffer with the actual data
 Error IOHandler::setInput(int slot, void* data, int size){
+
+    if(slot < 0 || data == nullptr || size <= 0){
+        return makeError("input slot is invalid", 0);
+    }
    
     if(slot >= (int)input_slots.size()){
         input_slots.resize(slot + 1, {nullptr, 0});
@@ -19,12 +23,11 @@ Error IOHandler::setInput(int slot, void* data, int size){
 
 Error IOHandler::getOutput(int slot, void* out_ptr, int size){
     if(slot < 0 || slot >= (int)output_slots.size() || !output_slots[slot].written_ok){
-       // std::cerr<<"getOutput: output slot "<<slot<<" is either out of range or  never written cleanly by D2H"<<std::endl;
-        return makeError("output slot not ready", 0);
+      
+        return makeError("output slot not rea./dy", 0);
     }
-    if((int)output_slots[slot].data.size() != size){  //what is happening heree?
-       // std::cerr<<"getOutput: output slot "<<slot<<" holds "<<output_slots[slot].size()
-                 // <<" bytes, caller asked for "<<size<<std::endl;
+    if((int)output_slots[slot].data.size() != size){  
+
         return makeError("output slot size mismatch",  0);
     }
     
@@ -59,7 +62,12 @@ void* IOHandler::inputData(int slot){  //Returns the HOST memory pointer for the
 // Returns a pointer to that buffer
 
 uint8_t* IOHandler::prepareOutputSlot(int slot, int size){
-    if(slot >= (int)output_slots.size()){
+
+    if(slot < 0){
+        return nullptr;
+    }
+
+    if(slot >= (int)output_slots.size()){ // !!!if output is too large number that even not needed to allocate, it will waste memeory, we should address it
         output_slots.resize(slot + 1);
     }
     output_slots[slot].data.resize(size);

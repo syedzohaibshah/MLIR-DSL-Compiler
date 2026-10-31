@@ -1,10 +1,7 @@
 
 // Same 2-layer network as main.cpp, targeting EmunpuDevice instead of
 // CudaDevice. Only the LAUNCH lines differ between bytecode12.txt and
-// bytecode12_emunpu.txt -- everything else in this file is identical to
-// main.cpp on purpose, since the computation itself hasn't changed, only
-// which hardware runs it.
-//
+// bytecode12_emunpu.txt 
 // Expected final result: [0, 0, 8, 0]
 #include <iostream>
 #include "bytecode.h"
@@ -12,12 +9,12 @@
 #include "hal/emunpu_device.h"
 #include "error.h"
 
-Error run(){
+Error run( std::string filename ){
 
 
     Bytecode bytecode;
 
-    RETURN_IF_ERROR(bytecode.loadFromFile("bytecode12_emunpu.txt"));
+    RETURN_IF_ERROR(bytecode.loadFromFile(filename));
  
 
     emunpuDevice npu;
@@ -62,9 +59,18 @@ Error run(){
 
 
 
-int main(){
+int main(int argc, char** argv){
 
-Error err=run();
+    std::string filename;
+    if(argc>1){
+ filename = argv[1];
+    }
+    else {
+        std::cerr<<"provide bytecode file"<<std::endl;
+        return 1;
+    }
+
+Error err=run(filename);
 if(!err.ok){
     report(err);
     return 1;

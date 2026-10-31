@@ -1,6 +1,6 @@
 # A custom bytecode VM runtime
 
-**A virtual machine that reads a hand-written bytecode file, interprets it instruction by instruction, and calls the real device APIs needed to hand heavy compute off to a GPU.**
+**A virtual machine that reads a hand-written bytecode file, interprets it instruction by instruction, and calls the real device APIs needed to hand heavy compute off to a device — a GPU, or the emulated NPU.**
 
 This doc covers the bytecode format, how the interpreter turns a text file into real device memory and real kernel launches, and where it maps onto IREE's own architecture. No compiler exists here on purpose — the bytecode is written by hand, in plain text files. What's actually being built and tested is the runtime underneath it.
 
@@ -19,9 +19,11 @@ This doc covers the bytecode format, how the interpreter turns a text file into 
    - [4.7 Control flow: BR and COND_BR](#47-control-flow-br-and-cond_br)
    - [4.8 Launching a kernel](#48-launching-a-kernel)
    - [4.9 Reading the result back](#49-reading-the-result-back)
-5. [Limitations](#limitations)
-6. [Future direction](#future-direction)
-7. [File structure](#file-structure)
+5. [Error handling](#error-handling)
+6. [Testing](#testing)
+7. [Limitations](#limitations)
+8. [Future direction](#future-direction)
+9. [File structure](#file-structure)
 
 ## Mapping onto IREE
 
@@ -41,14 +43,14 @@ This doc covers the bytecode format, how the interpreter turns a text file into 
 The first version of this VM could only run a straight-line list of five instructions: allocate memory, copy data in, launch one of two kernels, copy data out, free memory. Since then, three real capabilities have been added on top of that:
 
 - **Registers.** A small, growable array of integers the bytecode can read and write (`SET`, `INC`, `DEC`). This is what makes anything below possible — without somewhere to keep a running value, there's no way to count, loop, or make a decision.
-- **Indirect addressing.** Any numeric operand in the bytecode — a buffer id, an input slot, even a `LAUNCH` argument — can be written as `@N` instead of a plain number, meaning "read register `N` right now and use that." The same line of bytecode can then touch a different buffer or slot on every pass through a loop.
-- **Control flow.** `BR` (unconditional jump) and `COND_BR` (jump based on whether a register is zero). Together with registers, this is enough to build real loops — proven end to end in `examples/bytecode12.txt`, which runs a two-layer network by looping the same three-kernel block twice, picking each layer's own weights and bias through register-indexed buffer arguments.
+- **Indirect addressing.** Any **value** operand in the bytecode — a buffer handle, an input slot, a size, a `LAUNCH` argument — can be written as `@N` instead of a plain number, meaning "read register `N` right now and use that." (Id operands — register ids and jump targets — stay bare; see the note above the opcode tables.) The same line of bytecode can then touch a different buffer or slot on every pass through a loop.
+- **Control flow.** `BR` (unconditional jump) and `COND_BR` (jump based on whether a register is zero). Together with registers, this is enough to build real loops — proven end to end in `src/test-bytecode/bytecode12.txt`, which runs a two-layer network by looping the same three-kernel block twice, picking each layer's own weights and bias through register-indexed buffer arguments.
 
 Two more kernels were also added (`relu_Kernel`, `bias_add_Kernel`, on top of the original matmul and vector-add), and kernel chaining was proven: a kernel's output buffer can feed straight into the next kernel's input, with no host round trip in between.
 
 Since then, a second, larger change has landed: **the VM no longer talks to CUDA directly.** Every hardware call — allocate, free, upload, download, launch — now goes through an abstract `Device` interface (`src/hal/device.h`), with CUDA's own logic relocated, unchanged in behavior, behind a `CudaDevice` implementation of it. A second implementation, `EmunpuDevice`, wraps `emunpu-sim` (a separately-built, simulated multi-core NPU, plain C, no GPU required) behind that same interface. The VM itself never knows which one it's talking to.
 
-That second implementation has been run, not just built: `examples/bytecode12_emunpu.txt` (the same two-layer network as `bytecode12.txt`, with only its `LAUNCH` lines rewritten for emunpu's shape) produced `0 0 8 0` end to end via `src/main_emunpu.cpp` — the correct result. The CUDA side of the same comparison is still assumed correct rather than confirmed the same way, since this environment has no CUDA GPU to run it on. Full design reasoning — why this shape, what was tried and dropped, what's still open — lives in [`hal-design.md`](../bytecode-vm/hal-design.md); this doc covers what's actually built.
+That second implementation has been run, not just built: `src/test-bytecode/bytecode12_emunpu.txt` (the same two-layer network as `bytecode12.txt`, with only its `LAUNCH` lines rewritten for emunpu's shape) produced `0 0 8 0` end to end via `src/main_emunpu.cpp` — the correct result. The CUDA side of the same comparison is still assumed correct rather than confirmed the same way, since this environment has no CUDA GPU to run it on. Full design reasoning — why this shape, what was tried and dropped, what's still open — lives in [`hal-design.md`](../bytecode-vm/hal-design.md); this doc covers what's actually built.
 
 The rest of this doc describes the instruction set and pipeline in detail; §7's file structure reflects the current `hal/` split.
 
@@ -56,52 +58,60 @@ The rest of this doc describes the instruction set and pipeline in detail; §7's
 
 Eleven opcodes now, not five. Every instruction is still one line: a name, then whitespace-separated operands. The VM doesn't know what a program "means" — it just runs these in order (or jumps, when told to).
 
+**Operands.** An operand is written one of two ways:
+
+- a plain **number**, e.g. `3`.
+- a **register**, written `@N`, e.g. `@3` — read register `N` now and use the number inside it.
+
+Every operand is one of two kinds. The **Kind** column in each table marks each one:
+
+- **value** — the data the opcode works on. A value is a number, or a register that holds that number (`@N`). Example: a size, a handle, the number to store.
+- **id** — a register id, or an instruction index (the line a `BR` or `COND_BR` jumps to). An id is always a plain number.
+
+`@N` is allowed only on a **value**. `@N` on an **id** is a parse error.
+
+Most opcodes take values, so they accept `@N` or a plain number. A few arguments (`BR`, `COND_BR`, `SET`, `INC`, `DEC`) are ids by design, for two reasons:
+
+- A branch target is a fixed instruction index, so it is never read from a register (`BR`, `COND_BR` targets).
+- `SET`, `INC`, `DEC`, and `COND_BR` already name a `reg_id` directly, so putting a `reg_id` inside another register would only add double indirection for no gain.
+
 ### Memory and host transfer
 
-| Instruction | Operands | What it does |
-|---|---|---|
-| `ALLOC` | `size` | Allocates a device buffer of `size` bytes. The VM hands out the next free buffer ID (0, 1, 2...) on its own, and later instructions refer back to it by that number. |
-| `FREE` | `buffer_id` | Releases the device buffer at `buffer_id`. |
-| `COPY_H2D` | `buffer_id`, `input_slot`, `size` | Copies `size` bytes from an input slot (set earlier by the host) into a device buffer. |
-| `COPY_D2H` | `output_slot`, `buffer_id`, `size` | Copies `size` bytes from a device buffer into an output slot, so the host can read it back. The order flips here — output slot comes first. |
+| Instruction | Operands | Kind | What it does |
+|---|---|---|---|
+| `ALLOC` | `size` | value | Allocates a device buffer of `size` bytes. The VM hands out the next free buffer ID (0, 1, 2...) on its own, and later instructions refer back to it by that number. |
+| `FREE` | `buffer_id` | value | Releases the device buffer at `buffer_id`. The handle is data, so `FREE @4` frees the buffer whose handle sits in register 4. |
+| `COPY_H2D` | `buffer_id`, `input_slot`, `size` | value, value, value | Copies `size` bytes from an input slot (set earlier by the host) into a device buffer. All three operands accept `@N`. |
+| `COPY_D2H` | `output_slot`, `buffer_id`, `size` | value, value, value | Copies `size` bytes from a device buffer into an output slot, so the host can read it back. The order flips here — output slot comes first. All three operands accept `@N`. |
 
 ### Compute
 
-| Instruction | Operands | What it does |
-|---|---|---|
-| `LAUNCH` | *backend-specific — see below* | Runs compute. Every other opcode in this table means the same thing regardless of which device the VM is running against; `LAUNCH` is the one exception, on purpose. |
+| Instruction | Operands | Kind | What it does |
+|---|---|---|---|
+| `LAUNCH` | *backend-specific — see below* | all value | Runs compute. Every operand (op id, buffer handles, scalars) is a value, so each one accepts `@N`. Every other opcode in this table means the same thing regardless of which device the VM is running against; `LAUNCH` is the one exception, on purpose. |
 
 `LAUNCH`'s exact shape depends on which `Device` is loaded — a CUDA-targeted bytecode file and an emunpu-targeted one encode it differently, and each backend refuses to run the other's format. CUDA's shape (the only one shown in the rest of this doc's examples): `kernel_id`, `num_buffers`, `buf0..bufN`, `grid_x/y/z`, `block_x/y/z`, `num_scalars`, `scalar0..` — a kernel id, the buffers it touches, a grid/block configuration, and scalar arguments. emunpu's shape has no grid or block at all (emunpu has no such concept) — `op_id`, `num_buffers`, `buf0..bufN`, `num_scalars`, `scalar0..` — see [`hal-design.md`](../bytecode-vm/hal-design.md) for the full mapping of `op_id`s to emunpu's own compute functions.
 
 ### Registers
 
-| Instruction | Operands | What it does |
-|---|---|---|
-| `SET` | `reg_id`, `value` | Writes `value` into register `reg_id`. Registers grow automatically — writing register 5 when only 2 exist extends the register file, filling the gap with zeros. |
-| `INC` | `reg_id` | Adds 1 to the register's current value. |
-| `DEC` | `reg_id` | Subtracts 1. Nothing stops it going negative. |
+| Instruction | Operands | Kind | What it does |
+|---|---|---|---|
+| `SET` | `reg_id`, `value` | id, value | Writes `value` into register `reg_id`. `reg_id` is an id (bare, no `@`); `value` accepts `@N`. So `SET 4 @3` writes the contents of register 3 into register 4. Registers grow automatically — writing register 5 when only 2 exist extends the register file, filling the gap with zeros. |
+| `INC` | `reg_id` | id | Adds 1 to the register's current value. `reg_id` is an id — bare, no `@`. |
+| `DEC` | `reg_id` | id | Subtracts 1. `reg_id` is an id — bare, no `@`. Nothing stops it going negative. |
 
 ### Control flow
 
-| Instruction | Operands | What it does |
-|---|---|---|
-| `BR` | `target_index` | Unconditionally jumps execution to instruction `target_index`. No register involved — just go there next. |
-| `COND_BR` | `reg_id`, `if_zero_index`, `else_index` | Reads the register. If it's exactly 0, jump to `if_zero_index`; otherwise jump to `else_index`. This is the VM's only conditional — every loop is built from this one instruction plus a register counting down toward zero. |
+| Instruction | Operands | Kind | What it does |
+|---|---|---|---|
+| `BR` | `target_index` | id | Unconditionally jumps execution to instruction `target_index`. The target is an id (an instruction index) — bare, no `@`. No register involved — just go there next. |
+| `COND_BR` | `reg_id`, `if_zero_index`, `else_index` | id, id, id | Reads the register named by `reg_id`. If its value is exactly 0, jump to `if_zero_index`; otherwise jump to `else_index`. All three operands are ids — bare, no `@`. Note the asymmetry: `reg_id` is an id (the VM *reads* that register), but the two targets are also ids (instruction indices). This is the VM's only conditional — every loop is built from this one instruction plus a register counting down toward zero. |
 
 ### End of program
 
-| Instruction | Operands | What it does |
-|---|---|---|
-| `EOF` | (none) | Marks the end of the file. Prints a message and moves on — execution then naturally stops because there's nothing left to run. |
-
-### Indirect addressing (`@N`)
-
-This isn't a separate instruction — it's a second way to write *any* numeric operand above.
-
-- **A literal**, e.g. `3` — just the number three.
-- **A register read**, written `@3` — "go read register 3 right now, and use whatever value is in it."
-
-For example, `COPY_H2D 1 @0 4` copies 4 bytes into buffer 1, from whichever input slot is currently held in register 0. If register 0 changes between loop passes, this exact same line reads a different input slot each time. This is the entire mechanism that makes a loop body do different work on each iteration, instead of repeating the identical operation.
+| Instruction | Operands | Kind | What it does |
+|---|---|---|---|
+| `EOF` | (none) | — | Halts the program cleanly. It sets the next index to one past the last instruction, so the execute loop ends and returns ok. It works anywhere, not only at the real end — an `EOF` in the middle stops execution of every line after it. |
 
 ## Architecture
 
@@ -131,11 +141,11 @@ Each of the next eight sections is one step in that pipeline, roughly in the ord
 
 ### 4.2 Parsing the file
 
-The file is read one line at a time. Each line becomes one instruction — a name (`ALLOC`, `LAUNCH`, `COND_BR`) plus whatever arguments follow it on that line. Every argument is parsed into an `Arg`, which remembers whether it was written as a plain number or as `@N`:
+The file is read one line at a time. Blank lines and comment lines (`//`) are skipped, not parsed into instructions. Every other line becomes one instruction — a name (`ALLOC`, `LAUNCH`, `COND_BR`) plus whatever arguments follow it on that line. Every argument is parsed into an `Arg`, which remembers whether it was written as a plain number or as `@N`:
 
 ```cpp
 struct Arg {
-    int value;
+    long value;
     bool is_register;   // true if this operand was written as @N
 };
 
@@ -146,7 +156,9 @@ struct opcode {
 };
 ```
 
-An argument token starting with `@` is stored with `is_register = true` and `value` set to the register number to read; anything else is stored as a plain literal. All of this gets collected into one `std::vector<opcode>` — the parsed program. By the end of this step, the whole program exists in host memory as that list. Nothing has touched the GPU yet, and no register has actually been read — that only happens once the VM runs the instruction.
+An argument token starting with `@` is stored with `is_register = true` and `value` set to the register number to read; anything else is stored as a plain literal. Parsing a number uses `strtol`, not `std::stoi` — `strtol` does not throw, so a bad token (`abc`, `16x`, an empty `@`) returns an `Error` instead of an uncaught exception. That choice matters: the whole runtime is built on `Error` returns, not exceptions (see §5), and `std::stoi` would be the one place that breaks that contract.
+
+All of this gets collected into one `std::vector<opcode>` — the parsed program. The whole file is parsed up front, before any instruction executes. So parsing and execution are two separate phases: a syntax error anywhere in the file fails at load time, and `EOF` in the middle of a file (§4.7) stops *execution* of later lines, but does not stop them being *parsed*. By the end of this step, the whole program exists in host memory as that list. Nothing has touched the device yet, and no register has actually been read — that only happens once the VM runs the instruction.
 
 ### 4.3 Checking sizes before anything runs
 
@@ -162,26 +174,30 @@ That pointer only stays valid as long as the original array stays alive for as l
 
 ### 4.5 Running the instructions
 
-Execution used to be "take the next instruction, run it, move to the next one" — a straight line, always forward, always by one. That's no longer true. Now, every instruction handler *returns* the index of whichever instruction should run next. Most instructions return "the one right after me." `BR` and `COND_BR` are the exception — they return whatever index they decide to jump to.
+Execution used to be "take the next instruction, run it, move to the next one" — a straight line, always forward, always by one. That's no longer true. Now `dispatch()` hands back two things: an `Error` (ok, or a failure that stops the whole run — see §5), and, through an out-parameter, the index of whichever instruction should run next. Most instructions set "the one right after me." `BR` and `COND_BR` are the exception — they set whatever index they decide to jump to.
 
 ```mermaid
 flowchart LR
-    A["Take instruction at index i"] --> B["dispatch() runs it,<br/>returns the next index"]
-    B --> C{"index in range?"}
-    C -->|yes| A
-    C -->|no, and it happened mid-run| D["stop: out-of-range jump, fail()"]
-    C -->|it ran past the last instruction| E["done"]
+    A["Take instruction at index i"] --> S{"step count<br/>under the limit?"}
+    S -->|no| L["stop: step limit exceeded<br/>(return Error)"]
+    S -->|yes| B["dispatch() runs it,<br/>returns Error + next index"]
+    B --> F{"Error ok?"}
+    F -->|no| G["stop: return the Error"]
+    F -->|yes| C{"next index in range?"}
+    C -->|out of range| D["stop: out-of-range jump<br/>(return Error)"]
+    C -->|== opcode_size| E["done: loop ends, return ok"]
+    C -->|in range| A
 ```
 
-This one change is what turns the VM from "run this list top to bottom" into something that can loop and branch — everything in §4.7 is built directly on top of it.
+Two guards sit in this loop that were not there before. A **step counter** bounds how many instructions run in one `execute` call (`1e8` right now), so a runaway loop fails instead of hanging. And the **next index is range-checked** every pass: a negative or too-large index is a failure, while exactly `opcode_size` means "fell off the end" and ends the loop cleanly. This one change — index-plus-status out of `dispatch` — is what turns the VM from "run this list top to bottom" into something that can loop and branch. Everything in §4.7 is built on top of it.
 
 ### 4.6 Registers and indirect addressing
 
-Registers are a plain `std::vector<int>` inside the VM, starting empty. Writing to a register that doesn't exist yet (`SET`, or the first `INC`/`DEC` on a new id) grows the vector to fit, filling any new slots with zero. Reading a register that's genuinely out of range — never written, and past the current size — is an error; reading one that exists but was never explicitly set just returns 0.
+Registers are a plain `std::vector<int>` inside the VM, starting empty. Writing to a register that doesn't exist yet (`SET`) grows the vector to fit, filling any new slots with zero. Reading a register that's genuinely out of range — never written, and past the current size — is an error; reading one that exists but was never explicitly set just returns 0.
 
 `INC` and `DEC` are both read-modify-write: read the current value, add or subtract 1, write it back. `DEC` doesn't stop at zero — it'll happily go negative if asked to.
 
-Every operand written as `@N` anywhere in the bytecode — not just in `COND_BR` — gets resolved through this same register read at the moment its instruction runs. That's what lets `bytecode11.txt`'s loop do `COPY_H2D 1 @0 4`: as register 0 counts up across passes, the exact same instruction line pulls from a different input slot each time.
+Every **value** operand written as `@N` — not just in one opcode — gets resolved through this same register read at the moment its instruction runs; one helper, `resolveValue`, does the read for every opcode, so no handler reads `@N` on its own. (Id operands never carry `@N`, so they never pass through this read; `COND_BR`'s first operand is a register the VM reads directly with `readRegister`, not a `@N` resolve.) That's what lets a loop body do `COPY_H2D @0 @1 16`: as the registers change across passes, the exact same instruction line touches a different buffer or input slot each time. `bytecode12_emunpu.txt` uses this directly — its `LAUNCH 0 3 @0 @1 5 ...` picks each layer's own weight buffer through register-indexed arguments.
 
 ### 4.7 Control flow: `BR` and `COND_BR`
 
@@ -198,9 +214,9 @@ flowchart TD
     D -->|counter != 0| B
 ```
 
-`bytecode10.txt` proves the mechanics work (the same `LAUNCH` runs three times — confirmed by the printed "kernel completed" line appearing three times, since the elementwise result doesn't visibly change run to run). `bytecode11.txt` and `bytecode12.txt` go further, combining this with indirect addressing so each pass through the loop actually touches different data — `bytecode12.txt`'s two-layer network is one loop body, run twice, picking layer 0's or layer 1's weights and bias through register-indexed `LAUNCH` buffer arguments.
+`bytecode12_emunpu.txt` proves this end to end: its two-layer network is one loop body, run twice, picking layer 0's or layer 1's weights and bias through register-indexed `LAUNCH` buffer arguments. The loop counter counts down with `DEC`, and `COND_BR` jumps back to the body until it hits zero.
 
-`EOF` doesn't participate in any of this — it's a courtesy marker, not a stop instruction. The VM stops because it runs out of instructions to execute, the same way it always did.
+`EOF` now halts the program for real. It sets the next index to `opcode_size` — one past the last instruction — so the execute loop's condition ends and `execute` returns ok. This works mid-file too: an `EOF` on line 2 of a 6-line file stops lines 3–6 from ever running. Worth calling out the two-phase split here — those lines are still *parsed* at load time, so a syntax error after `EOF` still fails. `EOF` only ends *execution*.
 
 ### 4.8 Launching a kernel
 
@@ -234,15 +250,89 @@ All four happen to take the same *shape* of arguments — some number of buffers
 
 **Why the explicit wait.** Launching a kernel isn't instant. The device starts running it and immediately hands control back, so right after the launch, the VM explicitly waits for the kernel to finish and checks whether anything went wrong during that run. Skip that wait, and the VM moves on to the next instruction before the kernel's actually done.
 
-**Kernel chaining, proven.** Nothing requires a `LAUNCH`'s output to go back to the host before the next `LAUNCH` uses it. `bytecode9.txt` proves this directly: a matmul's output buffer is passed straight in as `relu_Kernel`'s input buffer, with no `COPY_D2H`/`COPY_H2D` in between — the intermediate result never leaves the device.
+**Kernel chaining, proven.** Nothing requires a `LAUNCH`'s output to go back to the host before the next `LAUNCH` uses it. `bytecode12_emunpu.txt` relies on this directly: a matmul's output buffer is passed straight in as the next kernel's input buffer, with no `COPY_D2H`/`COPY_H2D` in between — the intermediate result never leaves the device.
 
 Adding a new kernel of the same shape is a short registration, not new logic — define the kernel function, then register it in `kernel_table` under a new ID.
 
 ### 4.9 Reading the result back
 
-Once every instruction has run, whatever the last `COPY_D2H` wrote is sitting in an output slot, waiting. The host asks for it by slot number, the VM checks that slot was actually written and the size matches, then hands the data over.
+Once `execute` returns ok, whatever the last `COPY_D2H` wrote is sitting in an output slot, waiting. The host asks for it by slot number, the VM checks that slot was actually written and the size matches, then hands the data over.
 
-Nothing clever at this last step. The real work is already done by this point — this is just handing the answer back.
+**Why the write check matters.** A `COPY_D2H` prepares the output slot (grows and sizes it) *before* the download runs. If the download then fails, the slot exists but holds garbage. So each slot carries a `written_ok` flag, set true only after a clean download, and `getOutput` refuses a slot that is not `written_ok`. A failed run can never hand back a slot full of garbage as if it were a real result — the `Error` path (§5) stops the host from reading it in the first place, and this flag is the second line of defence.
+
+## Error handling
+
+**Every operation that can fail returns a status, the caller checks it, and the first failure stops the whole run.** This replaced an earlier model where a helper printed a message and execution carried on past the error.
+
+**Why not exceptions.** The two systems this runtime models itself on both ban them: IREE's runtime is C and runs on `iree_status_t`, and LLVM builds with `-fno-exceptions` and uses `llvm::Error`/`Expected`. There's also a hard reason — `emunpu-sim` is C, and you cannot throw a C++ exception across a C boundary. A status return works on both sides of it; an exception does not. So the runtime uses checked status returns everywhere, and the one place that used to throw (`std::stoi` in the parser) is now `strtol`.
+
+**The `Error` type.** A small struct in `src/error.h`, built only through two helpers so every call site reads the same:
+
+```cpp
+struct Error {
+    std::string msg;
+    bool ok;
+    int line_number;
+};
+
+Error makeError(const std::string& msg, int line);   // a failure
+Error ok();                                           // success
+```
+
+**The anti-ignore macro.** A plain `bool` is easy to drop — the old bug was exactly that, a device result thrown away. The fix is one macro that makes a dropped error impossible to write:
+
+```cpp
+#define RETURN_IF_ERROR(expr)            \
+    do {                                 \
+        Error _status = (expr);          \
+        if(!_status.ok) return _status;  \
+    } while(0)
+```
+
+It runs the call once, and if it failed, returns that same `Error` — with its real message and line — up to the caller. Each fallible call becomes one line that cannot silently continue. The `do { } while(0)` wrapper is the standard trick that lets a multi-line macro act as a single statement.
+
+**How a failure travels.** The `Error` bubbles up untouched, layer by layer, until one place prints it:
+
+```
+emunpuDevice::upload   -> makeError(...) on failure, ok() on success
+       ^ Error
+VM::copyHostToDevice   -> RETURN_IF_ERROR(device->upload(...))
+       ^ Error
+VM::dispatch           -> RETURN_IF_ERROR(copyHostToDevice(...))
+       ^ Error
+VM::execute            -> stops the loop, returns the Error
+       ^ Error
+main (run() helper)    -> one check, report(e) once, non-zero exit
+```
+
+Each layer either forwards the error through the macro, or returns `ok()` at the end. Only the top — the `run()` helper in `main_emunpu.cpp` — calls `report()` and sets the exit code. That is the single stop point.
+
+**Two-value returns.** Two functions have to return a status *and* a value: `allocate` (the status plus a device handle) and `dispatch` (the status plus the next instruction index). Both use an out-parameter — `Error f(..., T& out)` — so they still return `Error` and still work with `RETURN_IF_ERROR`, instead of a struct the caller would have to unpack by hand.
+
+**The C boundary rule.** The device layer reads `emunpu-sim`'s `emunpu_status_t` and converts it to an `Error` right there. No raw `emunpu_status_t` ever travels above the device layer.
+
+**Where each check lives.** A check that is true for any device goes in the VM; a check specific to one device stays in that device. For example, `ALLOC` with a size `<= 0` is rejected in the VM (wrong for any backend), while "size must be a multiple of 4" lives in the emunpu device, because that constraint only exists because emunpu commits every allocation to fp32.
+
+**Constructor failure.** A C++ constructor cannot return an `Error`. So `emunpuDevice` records a failed `emunpu_device_create` by leaving its device pointer null, exposes `Error status()`, and the host checks it before running anything. Every device method also guards the null pointer, so a missed check still fails cleanly instead of dereferencing null.
+
+**One caveat.** This describes the emunpu path, which is converted end to end. `src/main.cpp` (the CUDA entry point) still uses the old pre-`Error` calling style and is not converted yet — see §8.
+
+## Testing
+
+**A small runner plus a folder of one-case-each bytecode files, judged by a naming rule.** The runner (`src/test_runner.cpp`) takes one bytecode filename, sets generic inputs, runs the VM on the emunpu device, and prints a verdict. It decides the expected outcome from the file name: a file named `err_*` must return an `Error`, a file named `ok_*` must return ok. So `PASS` always means "behaved as the name promised," and one binary checks every case with no per-test C++.
+
+`run_all.sh` runs a whole folder and prints one line per test — `PASS`/`FAIL`, the name, and a short detail. The noisy device logs go to `detail.log`, so the summary stays readable.
+
+There are two folders:
+
+| Folder | What it covers |
+|---|---|
+| `src/test-bytecode/tests/` | The normal surface: parser, opcodes, program end, alloc/free, copy, registers, control flow, LAUNCH and real kernel compute, and a small end-to-end matmul→relu program. |
+| `src/test-bytecode/stress/` | Production-style attacks: integer overflow, resource exhaustion against the real device limit (256 MB global memory, the default capacity our runtime gets), size-contract violations, adversarial text (CRLF, embedded NUL, 10000-arg lines), and a real 16×16 MMA tile. |
+
+**Probe tests.** Some files are deliberate probes — their correct outcome is not known in advance, and a `FAIL` on one may mean a real gap *or* a wrong guess in the name. Both are findings. Each folder's `README.md` marks these and records the gaps most likely to be real: the parser does not check `strtol`'s `ERANGE`, so an overflowing number is silently clamped; the VM checks a copy's size against the host slot but not against the device buffer's own allocated size; and `INC`/`DEC` have no overflow guard.
+
+This section closes the "deliberate error-path testing" gap that earlier versions of this doc listed as not-yet-done.
 
 ## Limitations
 
@@ -254,6 +344,9 @@ Nothing clever at this last step. The real work is already done by this point �
 - No function calls or subroutines. Repeating a sequence still means either writing it twice, or looping it with `COND_BR` — which only supports "repeat the same block," not "call this block from several different places and come back."
 - No type system for buffers. A buffer is just N raw bytes as far as the VM is concerned — nothing records whether it holds floats, ints, or anything else. Whichever kernel reads it just assumes a type. This is fine while every kernel agrees on `float*`, but it's a real gap against hardware that tracks data types itself — `EmunpuDevice` currently papers over this by committing every allocation to `EMUNPU_DT_FP32` (see [`hal-design.md`](../bytecode-vm/hal-design.md) §8).
 - Registers only grow, never shrink, and there's no overflow/underflow protection on `INC`/`DEC`.
+- A copy's size is checked against the host input slot, but not against the device buffer's own allocated size. Uploading more bytes than a buffer holds is not caught in the VM layer — only by the device, if it catches it at all.
+- The parser's number conversion does not check `strtol`'s `ERANGE`. A number past `LONG_MAX` is silently clamped instead of rejected.
+- The `ALLOC` handle returned by the device is captured but not stored. The VM still assumes a buffer's handle equals its allocation order, which happens to hold for emunpu but is not guaranteed.
 
 ## Future direction
 
@@ -263,9 +356,9 @@ Two structural gaps from the first version of this doc — control flow, and ker
 
 **A debug/print instruction.** Lets someone hand-writing bytecode inspect a buffer's contents mid-run without editing the host harness and recompiling.
 
-**Deliberate error-path testing.** Every instruction has a `fail()` call ready for bad input — wrong buffer ID, size mismatch, unknown kernel, out-of-range register, bad jump target. None of those paths have actually been triggered on purpose and watched happen yet. Worth confirming they behave as designed rather than assuming it from the code alone.
+**Device selection and the CUDA path.** The emunpu path is converted to the `Error` model and run end to end. `src/main.cpp` (CUDA) is not — it still uses the old pre-`Error` calling style. Two things are left here: convert `main.cpp`, and replace the two hand-maintained entry points with one that selects the device at startup (a flag, or a `.target` line in the bytecode).
 
-**Multi-hardware support — implemented and confirmed on one backend.** The VM no longer assumes CUDA anywhere in its own code (`vm_core.cpp` has zero CUDA in it) — it talks only to an abstract `Device` interface. Two implementations exist: `CudaDevice`, wrapping the same CUDA logic this VM always had, and `EmunpuDevice`, wrapping `emunpu-sim` — a separately-built, simulated multi-core NPU (plain C11, no GPU, no CUDA toolchain needed). Since the two devices work at genuinely different levels (CUDA's `LAUNCH` needs a grid/block, emunpu's doesn't and shouldn't pretend to), bytecode is *target-specific*: a CUDA-targeted file and an emunpu-targeted file compute the same thing but encode `LAUNCH` differently — every other opcode is identical between them. `examples/bytecode12_emunpu.txt` is that emunpu-targeted equivalent of `examples/bytecode12.txt`, run end to end via `src/main_emunpu.cpp`, and it produced `0 0 8 0` — the correct result, matching the CUDA version's expected output exactly. The CUDA side of that same comparison is still only assumed correct, not yet confirmed the same way: it needs a run on a real CUDA GPU (Kaggle, since this environment has none), which hasn't happened yet. The full reasoning — why target-specific bytecode over a shared format, the handle-translation contract, what happens when emunpu is missing an operation, how this maps onto IREE's own HAL/executable split — lives in [`hal-design.md`](../bytecode-vm/hal-design.md), kept up to date as each piece lands.
+**Multi-hardware support — implemented and confirmed on one backend.** The VM no longer assumes CUDA anywhere in its own code (`vm_core.cpp` has zero CUDA in it) — it talks only to an abstract `Device` interface. Two implementations exist: `CudaDevice`, wrapping the same CUDA logic this VM always had, and `EmunpuDevice`, wrapping `emunpu-sim` — a separately-built, simulated multi-core NPU (plain C11, no GPU, no CUDA toolchain needed). Since the two devices work at genuinely different levels (CUDA's `LAUNCH` needs a grid/block, emunpu's doesn't and shouldn't pretend to), bytecode is *target-specific*: a CUDA-targeted file and an emunpu-targeted file compute the same thing but encode `LAUNCH` differently — every other opcode is identical between them. `src/test-bytecode/bytecode12_emunpu.txt` is that emunpu-targeted equivalent of `src/test-bytecode/bytecode12.txt`, run end to end via `src/main_emunpu.cpp`, and it produced `0 0 8 0` — the correct result, matching the CUDA version's expected output exactly. The CUDA side of that same comparison is still only assumed correct, not yet confirmed the same way: it needs a run on a real CUDA GPU (Kaggle, since this environment has none), which hasn't happened yet. The full reasoning — why target-specific bytecode over a shared format, the handle-translation contract, what happens when emunpu is missing an operation, how this maps onto IREE's own HAL/executable split — lives in [`hal-design.md`](../bytecode-vm/hal-design.md), kept up to date as each piece lands.
 
 ## File structure
 
@@ -273,17 +366,19 @@ Two structural gaps from the first version of this doc — control flow, and ker
 |---|---|
 | `src/bytecode.{h,cpp}` | Parses the `.txt` bytecode file into instructions, including `@reg` indirect operands |
 | `src/vm_core.{h,cpp}` | The dispatch loop, the register file, jump resolution, and the copy helpers — holds a `Device*`, hardware-neutral, zero CUDA |
-| `src/io_handle.{h,cpp}` | Input/output slots, the host-facing boundary |
-| `src/error.h` | One shared `fail(msg, line_number)` helper, used everywhere |
-| `src/main.cpp` | The CUDA entry point — constructs a `CudaDevice` and runs the two-layer network in `examples/bytecode12.txt` |
-| `src/main_emunpu.cpp` | The emunpu entry point — constructs an `EmunpuDevice` and runs the same network in `examples/bytecode12_emunpu.txt`. A separate hand-maintained file for now; §"Future direction" covers replacing this with real device selection |
-| `src/hal/device.h` | The abstract `Device` interface: `name`/`allocate`/`free`/`upload`/`download`/`dispatch`. No CUDA or emunpu anywhere in this file, on purpose |
+| `src/io_handle.{h,cpp}` | Input/output slots, the host-facing boundary, and the per-slot `written_ok` flag |
+| `src/error.h` | The `Error` struct, the `makeError`/`ok`/`report` helpers, and the `RETURN_IF_ERROR` macro — used everywhere (see §5) |
+| `src/main.cpp` | The CUDA entry point — constructs a `CudaDevice` and runs `bytecode12.txt`. Not yet converted to the `Error` model (§8) |
+| `src/main_emunpu.cpp` | The emunpu entry point — constructs an `EmunpuDevice`, runs `bytecode12_emunpu.txt` through a `run()` helper, and reports once in `main`. A separate hand-maintained file for now; §8 covers replacing it with real device selection |
+| `src/hal/device.h` | The abstract `Device` interface: `name`/`allocate`/`free`/`upload`/`download`/`dispatch`, all returning `Error`. No CUDA or emunpu anywhere in this file, on purpose |
 | `src/hal/cuda_device.{h,cpp}` | `CudaDevice` — real CUDA calls behind `Device`. What used to be `buffer_manager.*` and `kernal_registry.*` now lives here |
 | `src/hal/emunpu_device.{h,cpp}` | `EmunpuDevice` — wraps `emunpu-sim`'s API behind the same `Device` interface. Run end to end; see [What's implemented](#whats-implemented-at-a-glance) |
 | `src/hal/kernels.{h,cu}` | Real CUDA kernel definitions: `vec_mm_Kernel`, `vec_add_Kernel`, `relu_Kernel`, `bias_add_Kernel`. Lives here, not at the top level of `src/`, since `CudaDevice` is its only caller |
-| `examples/bytecode12.txt` | The CUDA-targeted example program: a two-layer network, chained and looped, matching `src/main.cpp` |
-| `examples/bytecode12_emunpu.txt` | The same network, emunpu-targeted, matching `src/main_emunpu.cpp` — identical to `bytecode12.txt` outside the `LAUNCH` lines |
-| `archive/` | Every earlier milestone (`main3.cpp` … `main11.cpp` and the bytecode files each one loads), plus full `src/` snapshots taken before risky steps — see `archive/ARCHIVE.md` |
-| [`hal-design.md`](../bytecode-vm/hal-design.md) | The design document for everything in this section — sits alongside `src/` (not inside it), same as in `pivoted/` |
+| `src/test_runner.cpp` | The test harness (§6) — takes one bytecode filename, runs it, prints a PASS/FAIL verdict by the file's name |
+| `src/test-bytecode/bytecode12.txt` | The CUDA-targeted example program: a two-layer network, chained and looped, matching `src/main.cpp` |
+| `src/test-bytecode/bytecode12_emunpu.txt` | The same network, emunpu-targeted, matching `src/main_emunpu.cpp` — identical to `bytecode12.txt` outside the `LAUNCH` lines |
+| `src/test-bytecode/tests/` | One-case-each test bytecode files for the normal surface, plus `run_all.sh` and a `README.md` (§6) |
+| `src/test-bytecode/stress/` | Production-style stress and adversarial test files, plus their own `run_all.sh` and `README.md` (§6) |
+| [`hal-design.md`](../bytecode-vm/hal-design.md) | The design document for the `Device` split — sits alongside `src/`, not inside it |
 
-`src/main.cpp` loads its bytecode file by a relative path (`bytecode12.txt`), so it needs to be run with its working directory pointing at `examples/` — or the bytecode file copied alongside wherever the compiled binary actually runs.
+Both entry points load their bytecode file by a relative path (`bytecode12.txt`), so each needs its working directory pointing at the folder holding that file (`src/test-bytecode/`), or the file copied alongside wherever the compiled binary runs. The same applies to `test_runner`, which takes the path as an argument.

@@ -4,6 +4,11 @@
 #include "bytecode.h"
 #include "io_handle.h"
 #include "hal/device.h"
+#include <unordered_map>
+#include <climits>
+
+
+static const int MAX_REGISTERS = 1024; // Maximum number of registers allowed
 
 class VM{
 public:
@@ -16,7 +21,7 @@ private:
   
     IOHandler io;
     Device *device;
-    std::vector<int>registers;
+    std::unordered_map<int,int> registers; //registers are stored in a map, key is register id and value is register value
 
     Error copyHostToDevice(int desti, int src_slot, int size, int line_number);
     Error copyDeviceToHost(int dest_slot, int src, int size, int line_number);
@@ -27,6 +32,9 @@ private:
     //registers
     Error writeRegister(int id,int value,int line_number);
     Error readRegister(int id,int &value,int line_number);
-     Error decrementRegister(int reg_id,int line_number);
-      Error incrementRegister(int reg_id,int line_number);
+    Error decrementRegister(int reg_id,int line_number);
+    Error incrementRegister(int reg_id,int line_number);
+      // if arg.is_register, read the register; else use the literal.
+    Error resolveValue(const Arg& arg, int& out, int line);
+
 };

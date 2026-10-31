@@ -1,11 +1,13 @@
-# Error-handling test cases
+# Runtime test cases
 
-Small bytecode files. Each one targets one or two edge cases of the runtime.
-They test the `Error` infrastructure, the parser, and the VM control flow.
+Small bytecode files. Each one targets one or two things. Together they test the
+whole runtime: the parser, the VM control flow, the registers, the device
+boundary, and real kernel compute. The goal is not only to confirm the error
+handling we added. The goal is to run the whole VM and find where it lacks.
 
 ## How to run
 
-Build the test runner once, from `runtime/bytecode-vm`:
+Build the runner once, from `runtime/bytecode-vm`:
 
 ```
 clang++ -std=c++14 -I src -I src/hal -I ../../emunpu-sim/include \
@@ -14,60 +16,75 @@ clang++ -std=c++14 -I src -I src/hal -I ../../emunpu-sim/include \
   -L ../../emunpu-sim/build -lemunpu -lm -o test_runner
 ```
 
-Run one test (the runner takes the file path):
-
-```
-./test_runner src/test-bytecode/tests/err_bad_number.txt
-```
-
-Or run all tests with the helper script (from this folder):
+Run all tests from this folder:
 
 ```
 ./run_all.sh
 ```
 
-## What the runner does
+The summary prints one line per test: `PASS` / `FAIL`, the name, and a short
+detail. The noisy device logs go to `detail.log`, so the table stays readable.
 
-- Loads the file.
-- Sets input slots 0..4, each 16 bytes (four floats).
-- Runs the VM on the emunpu device.
-- Prints `RESULT: ok` or `RESULT: FAIL - <message> (line N)`.
+Run one test directly:
 
-The runner does NOT check a numeric result. The thing under test is the
-`Error` (or `ok`) that comes back.
+```
+../../../test_runner err_parse_bad_number.txt
+```
 
-## The cases
+## The naming rule
 
-A name that starts with `err_` must FAIL. A name that starts with `ok_` must
-pass with `RESULT: ok`.
+The runner decides the expected result from the file name:
 
-| File | Case tested | Expected |
-|------|-------------|----------|
-| `err_bad_number.txt` | a non-number token (`abc`) in an argument | FAIL (invalid integer) |
-| `err_empty_register.txt` | `@` with no register number | FAIL (register argument is empty) |
-| `err_number_trailing_junk.txt` | trailing junk on a number (`16x`) | FAIL (invalid integer) |
-| `err_unknown_opcode.txt` | an opcode name that does not exist | FAIL (unknown opcode) |
-| `err_wrong_arg_count.txt` | `SET` with one argument, not two | FAIL (unknown opcode or wrong arg count) |
-| `err_br_negative.txt` | `BR` to a negative index | FAIL (BR target out of bounds) |
-| `err_br_too_big.txt` | `BR` past the last instruction | FAIL (BR target out of bounds) |
-| `err_condbr_unset_register.txt` | `COND_BR` reads a register never set | FAIL (out of range register id) |
-| `err_register_negative.txt` | `INC` on a negative register id | FAIL (out of range register id) |
-| `err_alloc_negative_size.txt` | `ALLOC` with a negative size | FAIL (negative size, VM check) |
-| `err_alloc_not_multiple_of_4.txt` | `ALLOC 7` (not a multiple of 4) | FAIL (emunpu size check) |
-| `err_copy_size_mismatch.txt` | `COPY_H2D` size does not match the input slot | FAIL (size mismatch) |
-| `err_copy_from_bad_buffer.txt` | `COPY_D2H` from a buffer never allocated | FAIL (invalid buffer id) |
-| `err_free_bad_buffer.txt` | `FREE` a buffer never allocated | FAIL (invalid buffer id) |
-| `err_double_free.txt` | `FREE` the same buffer twice | FAIL (buffer already freed) |
-| `err_launch_unknown_op.txt` | `LAUNCH` with an op id that does not exist | FAIL (unknown op_id) |
-| `err_launch_matmul_wrong_shape.txt` | `LAUNCH` MATMUL with wrong buffer/scalar count | FAIL (wrong number of buffers/scalars) |
-| `ok_comments_and_blanks.txt` | comment and blank lines are skipped | ok |
-| `ok_minimal.txt` | alloc, copy a valid input, free, eof | ok |
-| `ok_eof_in_middle.txt` | `EOF` mid-file halts before later (bad) lines run | ok |
+- `err_*` -> the VM MUST return an Error. PASS means it failed as intended.
+- `ok_*`  -> the VM MUST return ok. PASS means it ran clean.
 
-## A note learned while writing these
+So `PASS` always means "behaved as the name promised", for both kinds.
 
-Parsing and execution are two separate phases. `loadFromFile` parses the WHOLE
-file into opcodes first. `execute` runs them after. So `EOF` in the middle only
-stops EXECUTION of later lines -- every line is still PARSED at load time.
-A syntax error after `EOF` therefore still fails at parse time. `ok_eof_in_middle.txt`
-uses valid syntax after `EOF`, with a double-free that would fail only if executed.
+## Groups
+
+- **A. Parser** — bad number, empty register, trailing junk, double `@`, float,
+  comments and blanks.
+- **B. Opcodes** — unknown name, case sensitivity, wrong argument count.
+- **C. Program end** — no `EOF`, `EOF` mid-file, `EOF` with an argument, empty file.
+- **D. Alloc / free** — negative/zero/odd size, double free, free unallocated,
+  use-after-free, many allocs.
+- **E. Copy** — size mismatch, bad input slot, bad buffer, valid round trip.
+- **F. Registers** — read before set, negative id, set/inc/dec, `@reg` indirection.
+- **G. Control flow** — `BR` out of range, `COND_BR` target/register, forward
+  skip, a real countdown loop, and an infinite loop (must hit the step limit).
+- **H. LAUNCH / kernels** — unknown op, wrong shape, bad buffer, truncated
+  header, negative count, plus real RELU / VEC_ADD / MATMUL runs.
+- **I. End to end** — a small matmul -> relu -> download program.
+
+## Probe tests (expected result UNCERTAIN -- read these first)
+
+These were written to find gaps, not to confirm known behaviour. If one does not
+behave as guessed, that is a finding, not a broken test. Check each against the
+code and decide what the VM SHOULD do.
+
+| File | Question it probes | Guess |
+|------|--------------------|-------|
+| `err_parse_float_value.txt` | Does `strtol` reject `1.5`? (It reads `1`, leaves `.5` -> trailing junk) | FAIL |
+| `err_parse_double_at.txt` | `@@3` -- does the empty-register / strtol guard catch it? | FAIL |
+| `err_op_lowercase.txt` | Are opcode names case sensitive? `alloc` should be unknown | FAIL |
+| `err_op_alloc_two_args.txt` | `ALLOC 16 32` -- arity is checked by `args.size()==1` | FAIL |
+| `err_op_set_too_many.txt` | `SET 0 1 2` -- too many args | FAIL |
+| `ok_end_no_eof.txt` | No `EOF` line. Does the loop fall off the end cleanly? | ok |
+| `ok_end_empty_file.txt` | Empty file -- load ok, execute nothing? | ok |
+| `err_end_eof_with_arg.txt` | `EOF 1` -- dispatch wants `args.size()==0` | FAIL |
+| `err_alloc_zero.txt` | Is `ALLOC 0` rejected? VM checks `size < 0` only, not `<= 0` | UNCERTAIN |
+| `err_use_after_free.txt` | Copy into a freed buffer -- is it caught? | FAIL |
+| `err_condbr_bad_target.txt` | Is the `COND_BR` jump target range-checked in dispatch? | FAIL |
+| `ok_reg_indirect_alloc.txt` | Does `@reg` resolve as the ALLOC size argument? | UNCERTAIN |
+| `err_loop_infinite.txt` | `BR 0` forever -- does the step limit stop it? | FAIL (slow) |
+
+Note on `err_loop_infinite.txt`: the step limit is 1e8, so this test runs for a
+while before it stops. Expect a short wait.
+
+## A design note (learned earlier)
+
+Parse and execute are two phases. `loadFromFile` parses the WHOLE file into
+opcodes first; `execute` runs them after. So `EOF` mid-file only stops EXECUTION
+of later lines -- every line is still PARSED. A syntax error after `EOF` still
+fails at parse time. `ok_end_eof_in_middle.txt` therefore uses valid syntax after
+`EOF` (a double free that would fail only if executed).

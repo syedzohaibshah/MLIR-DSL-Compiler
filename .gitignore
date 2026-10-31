@@ -29,6 +29,7 @@ cmake-build-*/
 *.o.d
 
 
+<<<<<<< HEAD
 # CMake generated files (for build trees outside a "build" directory)
 CMakeCache.txt
 CMakeFiles/
@@ -47,3 +48,10 @@ __pycache__/
 
 
 PROGRESS.md
+=======
+PROGRESS.md
+CMAKE_EXPLAINED.md
+context.md
+
+unit_tests.cpp   
+>>>>>>> bcb5418 (resolved issue #7 -made vm consistent for opcode arguments)

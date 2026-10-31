@@ -1,0 +1,4 @@
+SET 0 5
+INC 0
+DEC 0
+EOF

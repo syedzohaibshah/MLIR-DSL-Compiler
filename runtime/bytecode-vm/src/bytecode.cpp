@@ -21,11 +21,11 @@ Error Bytecode::parseLine(const std::string& line, int line_number,opcode& out_o
             if(reg_no.empty()){
                 return makeError("register argument is empty", line_number);
             }
-            long reg_value;
+            int reg_value;
             RETURN_IF_ERROR(stringToInteger(reg_no, reg_value, line_number));
              args.push_back({reg_value,true}); //ignore @ consider the value as register  after that
         }else{
-             long reg_value;
+             int reg_value;
              RETURN_IF_ERROR(stringToInteger(arg, reg_value, line_number));
          
     
@@ -72,10 +72,13 @@ const std::vector<opcode>& Bytecode::get_instructions() const{
     return instructions;
 }
 
-Error Bytecode::stringToInteger(const std::string& str, long& out_value, int line_number){
+Error Bytecode::stringToInteger(const std::string& str, int& out_value, int line_number){
     char* endptr;
     out_value = std::strtol(str.c_str(), &endptr, 10);
-    if (endptr == str.c_str() || *endptr != '\0') {
+       if (errno == ERANGE) {
+        printf("Out of range error.\n");
+    }
+    else if (endptr == str.c_str() || *endptr != '\0') {
         return makeError("Invalid integer: " + str, line_number);
     }
     return ok();
@@ -160,8 +163,9 @@ bool Bytecode::isSkipable(const std::string& line)  {
     if (start == std::string::npos) {
         return true;  // Ignore empty or whitespace-only lines
     }
+  trimmed_line.erase(0, start);
 
-    trimmed_line.erase(0, start);
+//trim the trailing whitespace
     trimmed_line.erase(
         trimmed_line.find_last_not_of(" \t\n\r\f\v") + 1
     );

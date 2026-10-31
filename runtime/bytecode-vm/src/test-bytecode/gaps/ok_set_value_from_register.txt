@@ -1,0 +1,5 @@
+SET 0 16
+SET 1 @0
+ALLOC @1
+FREE 0
+EOF

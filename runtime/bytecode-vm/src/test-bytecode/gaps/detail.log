@@ -1,0 +1,98 @@
+===== err_copy_d2h_huge_output_slot.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu]  device to host  copy with tensor_id: 1(16 bytes)
+End of file
+FAIL  err_copy_d2h_huge_output_slot.txt  ->  expected an error, got ok
+
+===== err_launch_bias_period_exceeds_bias.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (8 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+Launching kernel ID 3 with 3 buffers and 2 scalar args
+End of file
+FAIL  err_launch_bias_period_exceeds_bias.txt  ->  expected an error, got ok
+
+===== err_launch_matmul_dims_exceed_buffers.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+Launching kernel ID 0 with 3 buffers and 3 scalar args
+End of file
+FAIL  err_launch_matmul_dims_exceed_buffers.txt  ->  expected an error, got ok
+
+===== err_launch_relu_count_exceeds_buffer.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+Launching kernel ID 2 with 2 buffers and 1 scalar args
+End of file
+FAIL  err_launch_relu_count_exceeds_buffer.txt  ->  expected an error, got ok
+
+===== err_launch_vec_add_count_exceeds_buffer.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+Launching kernel ID 1 with 3 buffers and 1 scalar args
+End of file
+FAIL  err_launch_vec_add_count_exceeds_buffer.txt  ->  expected an error, got ok
+
+===== err_leak_buffer_not_freed.txt (exit 1) =====
+[emunpu] alloc buffer 1 (16 bytes)
+End of file
+FAIL  err_leak_buffer_not_freed.txt  ->  expected an error, got ok
+
+===== ok_br_indirect_target.txt (exit 1) =====
+FAIL  ok_br_indirect_target.txt  ->  expected ok, got ERROR: BR argument is a instruction line cannot be a register (line 2)
+
+===== ok_cleanup_loop_frees_all.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] alloc buffer 3 (16 bytes)
+[emunpu] freed buffer with tensor id:3
+[emunpu] freed buffer with tensor id:2
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_cleanup_loop_frees_all.txt  ->  ok
+
+===== ok_condbr_indirect_target.txt (exit 1) =====
+FAIL  ok_condbr_indirect_target.txt  ->  expected ok, got ERROR: COND_BR first argument is already a register id, second and third arguments cannot be registers as they are instruction lines (line 3)
+
+===== ok_copy_d2h_size_indirect.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu]  device to host  copy with tensor_id: 1(16 bytes)
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_copy_d2h_size_indirect.txt  ->  ok
+
+===== ok_copy_h2d_size_indirect.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_copy_h2d_size_indirect.txt  ->  ok
+
+===== ok_free_indirect.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] alloc buffer 2 (16 bytes)
+[emunpu] freed buffer with tensor id:2
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_free_indirect.txt  ->  ok
+
+===== ok_launch_matmul_nonsquare.txt (exit 0) =====
+[emunpu] alloc buffer 1 (32 bytes)
+[emunpu] alloc buffer 2 (48 bytes)
+[emunpu] alloc buffer 3 (24 bytes)
+Launching kernel ID 0 with 3 buffers and 3 scalar args
+[emunpu] freed buffer with tensor id:1
+[emunpu] freed buffer with tensor id:2
+[emunpu] freed buffer with tensor id:3
+End of file
+PASS  ok_launch_matmul_nonsquare.txt  ->  ok
+
+===== ok_set_value_from_register.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_set_value_from_register.txt  ->  ok
+

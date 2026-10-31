@@ -2,11 +2,14 @@
 #include <string>
 #include <vector>
 #include "error.h"
+#include <cstdint>
+#include <climits>
 
 struct Arg{
-    long value;
+    int value;
     bool is_register;
 };
+
 struct opcode{
     std::string name;
     std::vector<Arg> args;
@@ -39,7 +42,7 @@ private:
 
     // Parses one bytecode line into one opcode.
     static Error parseLine(const std::string& line, int line_number,opcode& out_opcode);
-    static Error stringToInteger(const std::string& str, long& out_value, int line_number);
+    static Error stringToInteger(const std::string& str, int& out_value, int line_number);
 
     static bool isSkipable(const std::string& line);
     // used  by expectedInputSize/expectedOutputSize: scans for every
