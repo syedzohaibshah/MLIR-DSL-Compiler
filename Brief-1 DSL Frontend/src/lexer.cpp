@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include <cctype>
 #include <unordered_map>
+#include <cstdio>
 
 //essentially a dictionary that will return the Token as soon as it is matched.
 //only implemebted for Keywords, nothing more.
@@ -173,7 +174,25 @@ std::vector<Token> Lexer::tokenize() {
             tokens_.push_back(read_identifier());    
         }
         else {
-            throw LexerError(std::string("Unexpected character '") + ch + "'", start_line, start_col);
+            //added a UTF-8 decoder, so that it shows the exact character that is creating the issue.
+            //This implementation of decoder is done using AI 
+            std::string bad;
+            bad += advance();
+            unsigned char b0 = static_cast<unsigned char>(ch);
+            int extra = (b0 & 0xE0) == 0xC0 ? 1
+                      : (b0 & 0xF0) == 0xE0 ? 2
+                      : (b0 & 0xF8) == 0xF0 ? 3 : 0;
+            for (int i = 0; i < extra && pos_ < source_.size(); ++i) {
+                if ((static_cast<unsigned char>(peek()) & 0xC0) != 0x80) break;
+                bad += advance();
+            }
+            std::string msg = "Unexpected character '" + bad + "' (bytes:";
+            for (unsigned char b : bad) {
+                char hex[8];
+                std::snprintf(hex, sizeof(hex), " %02X", b);
+                msg += hex;
+            }
+            throw LexerError(msg + ")", start_line, start_col);
         }
     }
     tokens_.emplace_back(TokenType::TOK_EOF, "", line_, column_);

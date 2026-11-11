@@ -1,0 +1,7 @@
+# non_ascii_byte.tldr
+# Regression test: a non-ASCII byte in the source must produce a readable,
+# well-defined error message.
+# Terminals may not support rendering special character
+# Therefore Hex code is provided
+
+main() { x ∂ ∆ ∇ ∑ ∏ ∫ ∈ ∉ ∅ ∩ ∪ ⊂ ⊃ = 1 }
