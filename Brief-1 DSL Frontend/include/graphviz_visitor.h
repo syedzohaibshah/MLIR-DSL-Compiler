@@ -84,8 +84,8 @@ public:
     }
 
     std::any visitForLoopNode(std::shared_ptr<ForLoopNode> node) override {
-        std::string label = "For (" + node->var + " in " + node->bound + ")\\n"
-                          + node->attr_type + "=" + std::to_string(node->tile_or_unroll);
+        std::string label = "For (" + node->var + " in " + expr_to_string(node->bound) + ")\\n"
+        + node->attr_type + "=" + std::to_string(node->tile_or_unroll);
         int myId = emitNode(label, "orange");
 
         for (const auto& stmt : node->body) {

@@ -60,7 +60,7 @@ std::any JsonVisitor::visitForLoopNode(std::shared_ptr<ForLoopNode> node) {
     json j;
     j["kind"] = "For Loop";
     j["var"] = node->var;
-    j["bound"] = node->bound;
+    j["bound"] = expr_to_string(node->bound);
     j["type"] = node->attr_type;
     j["size"] = node->tile_or_unroll;
     add_span(j, node->sp);

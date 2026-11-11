@@ -83,7 +83,7 @@ void ParamNode::print(int indent) const {
 }
 
 void ForLoopNode::print(int indent) const {
-    std::cout << indent_str(indent) << "ForLoopNode(var=" << var << ", bound=" << bound;
+    std::cout << indent_str(indent) << "ForLoopNode(var=" << var << ", bound=" << expr_to_string(bound);
     if (!attr_type.empty())
         std::cout << ", " << attr_type << "=" << tile_or_unroll;
     std::cout << ")\n";
@@ -200,4 +200,37 @@ void PrintNode::print(int indent) const {
 void FunctionCallNode::print(int indent) const {
     std::cout << indent_str(indent) << "FunctionCallNode(name=" << name << ")\n";
     for (auto& a : args) a->print(indent + 1);
+}
+
+std::string expr_to_string(const std::shared_ptr<ASTNode>& expr) {
+    if (!expr) return "";
+    switch (expr->kind()) {
+        case ASTKind::VARIABLE:
+            return std::static_pointer_cast<VariableNode>(expr)->name;
+        case ASTKind::CONSTANT: {
+            auto c = std::static_pointer_cast<ConstantNode>(expr);
+            return c->is_integer ? std::to_string((int64_t)c->value)
+                                 : std::to_string(c->value);
+        }
+        case ASTKind::BINARY_OP: {
+            auto b = std::static_pointer_cast<BinaryOpNode>(expr);
+            return "(" + expr_to_string(b->left) + " " + b->op + " " +
+                   expr_to_string(b->right) + ")";
+        }
+        case ASTKind::UNARY_OP: {
+            auto u = std::static_pointer_cast<UnaryOpNode>(expr);
+            return u->op + expr_to_string(u->operand);
+        }
+        case ASTKind::FUNC_CALL: {
+            auto f = std::static_pointer_cast<FunctionCallNode>(expr);
+            std::string s = f->name + "(";
+            for (size_t i = 0; i < f->args.size(); ++i) {
+                if (i) s += ", ";
+                s += expr_to_string(f->args[i]);
+            }
+            return s + ")";
+        }
+        default:
+            return "?";
+    }
 }

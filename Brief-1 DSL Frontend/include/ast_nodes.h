@@ -54,7 +54,7 @@ struct ParamNode : ASTNode {
 
 struct ForLoopNode : ASTNode {
     std::string var;
-    std::string bound;
+    std::shared_ptr<ASTNode> bound;
     int tile_or_unroll = 0;
     std::string attr_type;
     std::vector<std::shared_ptr<ASTNode>> body;
@@ -223,5 +223,6 @@ public:
 };
 
 std::string indent_str(int depth);
+std::string expr_to_string(const std::shared_ptr<ASTNode>& expr);
 
 #endif

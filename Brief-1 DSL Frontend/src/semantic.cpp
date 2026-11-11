@@ -11,7 +11,7 @@ constexpr int kMaxAnalysisRounds = 8;
 
 void SemanticAnalyzer::semantic_error(const std::string& msg) {
     if (!collect_errors_) return;
-    errors_.push_back(msg);
+    throw SemanticError(msg);
 }
 
 void SemanticAnalyzer::warn(const std::string& msg) {
@@ -143,7 +143,8 @@ void SemanticAnalyzer::analyze_stmt(const std::shared_ptr<ASTNode>& stmt) {
     switch (stmt->kind()) {
         case ASTKind::FOR_LOOP: {
             auto node = std::static_pointer_cast<ForLoopNode>(stmt);
-            symbol_table_[node->var] = TypeInfo{}; // loop variable
+            if (node->bound) analyze_expr(node->bound);
+            symbol_table_[node->var] = TypeInfo{};
             for (const auto& s : node->body) analyze_stmt(s);
             break;
         }

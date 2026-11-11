@@ -235,7 +235,7 @@ std::shared_ptr<ForLoopNode> Parser::parse_for_stmt() {
     expect(TokenType::TOK_LOOP);
     expect(TokenType::TOK_LPAREN);
     auto bound_expr = parse_expr();
-    node->bound = expr_to_bound(bound_expr);
+    node->bound = bound_expr;
     while (match(TokenType::TOK_COMMA)) {
         node->attr_type = expect(TokenType::TOK_IDENT).value;
         expect(TokenType::TOK_EQ);
