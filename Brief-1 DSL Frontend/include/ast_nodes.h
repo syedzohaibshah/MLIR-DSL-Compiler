@@ -52,11 +52,15 @@ struct ParamNode : ASTNode {
     std::any accept(Visitor& visitor) override;
 };
 
+struct LoopAttr {
+    std::string name;
+    int64_t value = 0;
+};
+
 struct ForLoopNode : ASTNode {
     std::string var;
     std::shared_ptr<ASTNode> bound;
-    int tile_or_unroll = 0;
-    std::string attr_type;
+    std::vector<LoopAttr> attrs;
     std::vector<std::shared_ptr<ASTNode>> body;
     ASTKind kind() const override { return ASTKind::FOR_LOOP; }
     void print(int indent) const override;

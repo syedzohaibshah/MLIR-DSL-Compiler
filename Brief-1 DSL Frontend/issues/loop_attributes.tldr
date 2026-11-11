@@ -1,0 +1,6 @@
+main() -> [x] {
+    for k in loop(8, tile=32, unroll=4) {
+        x = k
+    }
+    return x
+}

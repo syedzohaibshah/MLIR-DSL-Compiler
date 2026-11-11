@@ -61,8 +61,11 @@ std::any JsonVisitor::visitForLoopNode(std::shared_ptr<ForLoopNode> node) {
     j["kind"] = "For Loop";
     j["var"] = node->var;
     j["bound"] = expr_to_string(node->bound);
-    j["type"] = node->attr_type;
-    j["size"] = node->tile_or_unroll;
+    json attrs = json::object();
+    for (const auto& attr : node->attrs) {
+        attrs[attr.name] = attr.value;
+    }
+    j["attrs"] = attrs;
     add_span(j, node->sp);
 
     json body_array = json::array();

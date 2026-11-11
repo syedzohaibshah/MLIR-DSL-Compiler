@@ -84,8 +84,8 @@ void ParamNode::print(int indent) const {
 
 void ForLoopNode::print(int indent) const {
     std::cout << indent_str(indent) << "ForLoopNode(var=" << var << ", bound=" << expr_to_string(bound);
-    if (!attr_type.empty())
-        std::cout << ", " << attr_type << "=" << tile_or_unroll;
+    for (const auto& attr : attrs)
+        std::cout << ", " << attr.name << "=" << attr.value;
     std::cout << ")\n";
     for (auto& s : body) s->print(indent + 1);
 }

@@ -237,9 +237,33 @@ std::shared_ptr<ForLoopNode> Parser::parse_for_stmt() {
     auto bound_expr = parse_expr();
     node->bound = bound_expr;
     while (match(TokenType::TOK_COMMA)) {
-        node->attr_type = expect(TokenType::TOK_IDENT).value;
+        const Token& name_tok = expect(TokenType::TOK_IDENT);
+        const std::string attr = name_tok.value;
+        if (attr != "tile" && attr != "unroll") {
+            throw ParseError("Unknown loop attribute '" + attr + "'",
+                             name_tok.line, name_tok.column);
+        }
+        for (const auto& existing : node->attrs) {
+            if (existing.name == attr) {
+                throw ParseError("Duplicate loop attribute '" + attr + "'",
+                                 name_tok.line, name_tok.column);
+            }
+        }
         expect(TokenType::TOK_EQ);
-        node->tile_or_unroll = std::stoi(expect(TokenType::TOK_INTEGER).value);
+        const Token& value_tok = expect(TokenType::TOK_INTEGER);
+        int64_t value = 0;
+        try {
+            value = std::stoll(value_tok.value);
+        } catch (const std::exception&) {
+            throw ParseError("Invalid value for loop attribute '" + attr + "'",
+                             value_tok.line, value_tok.column);
+        }
+        if (value <= 0) {
+            throw ParseError("Loop attribute '" + attr +
+                             "' must be a positive integer",
+                             value_tok.line, value_tok.column);
+        }
+        node->attrs.push_back({attr, value});
     }
     expect(TokenType::TOK_RPAREN);
     expect(TokenType::TOK_LBRACE);

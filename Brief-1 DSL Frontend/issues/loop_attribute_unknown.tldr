@@ -1,0 +1,8 @@
+#   [Parse Error] Parse error at L...: Unknown loop attribute 'banana'
+
+main() -> [x] {
+    for i in loop(8, banana=3) {
+        x = i
+    }
+    return x
+}
