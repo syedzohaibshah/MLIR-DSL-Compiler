@@ -72,11 +72,24 @@ Token Lexer::read_number() {
     int start_line = line_, start_col = column_;
     std::string text;
     bool has_dot = false;
+    bool has_exponent = false;
     while (pos_ < source_.size() && (std::isdigit(source_[pos_]) || (source_[pos_] == '.' && !has_dot))) {
         if (source_[pos_] == '.') has_dot = true;
         text += advance();
     }
-    if (has_dot)
+    if (pos_ < source_.size() && (source_[pos_] == 'e' || source_[pos_] == 'E')) {
+        char next = peek_next();
+        bool ok = std::isdigit(next) || ((next == '+' || next == '-') && pos_ + 2 < source_.size() && std::isdigit(source_[pos_ + 2]));
+        if(ok){
+            text += advance();                                  
+            if (source_[pos_] == '+' || source_[pos_] == '-')   
+                text += advance();
+            while (pos_ < source_.size() && std::isdigit(source_[pos_]))
+                text += advance();
+            has_exponent = true;
+        }
+    }
+    if (has_dot || has_exponent)
         return Token(TokenType::TOK_FLOAT, text, start_line, start_col);
     return Token(TokenType::TOK_INTEGER, text, start_line, start_col);
 }

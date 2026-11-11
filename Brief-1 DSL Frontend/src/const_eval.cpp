@@ -5,7 +5,7 @@
 
 namespace {
 
-// Guards against absurd dimension products overflowing int64.
+//safeguard to prevent extremely large dimensions (2^40)
 constexpr int64_t kMaxElementCount = int64_t(1) << 40;
 
 json scalar_to_json(const Scalar& s) {

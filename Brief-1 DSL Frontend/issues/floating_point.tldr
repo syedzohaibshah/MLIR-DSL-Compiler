@@ -1,0 +1,9 @@
+# floating_point.tldr
+# Is used in Layernorm function
+# All of these must lex as a single FLOAT token, not INTEGER + IDENT + MINUS.
+
+main() -> [C] {
+    C : Tensor[f32, (2, 2)] = [[1e-5, 2e3], [1.5e-2, 1E+4]]
+    print(C)
+    return C
+}
