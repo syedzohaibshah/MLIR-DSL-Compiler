@@ -4,11 +4,10 @@
 #include <iostream>
 #include <string>
 
-
 //links the slot id reurned by the allocated buffer with the actual data
 Error IOHandler::setInput(int slot, void* data, int size){
 
-    if(slot < 0 || data == nullptr || size <= 0){
+    if(slot < 0 || data == nullptr || size <= 0 || slot >= runtime_limits.MAX_INPUT_SLOTS){
         return makeError("input slot is invalid", 0);
     }
    
@@ -22,9 +21,9 @@ Error IOHandler::setInput(int slot, void* data, int size){
 
 
 Error IOHandler::getOutput(int slot, void* out_ptr, int size){
-    if(slot < 0 || slot >= (int)output_slots.size() || !output_slots[slot].written_ok){
+    if(slot < 0 || slot >= (int)output_slots.size() || !output_slots[slot].written_ok ){
       
-        return makeError("output slot not rea./dy", 0);
+        return makeError("output slot not ready for reading", 0);
     }
     if((int)output_slots[slot].data.size() != size){  
 
@@ -35,10 +34,10 @@ Error IOHandler::getOutput(int slot, void* out_ptr, int size){
     return ok();
  }
 
-
 //  Is this slot registered? (not nullptr, not out of bounds)
 // Does the registered size match what the opcode expects?
 //"isnt reduntant?"
+
 Error IOHandler::checkInputSlot(int slot, int expected_size, int line_number){
     if(slot < 0 || slot >= (int)input_slots.size() || input_slots[slot].data == nullptr){
         return makeError("input slot "+std::to_string(slot)+" was never set via vm_set_input",line_number);
@@ -63,7 +62,7 @@ void* IOHandler::inputData(int slot){  //Returns the HOST memory pointer for the
 
 uint8_t* IOHandler::prepareOutputSlot(int slot, int size){
 
-    if(slot < 0){
+    if(slot < 0 || slot >= runtime_limits.MAX_OUTPUT_SLOTS || size <= 0){
         return nullptr;
     }
 
@@ -75,7 +74,9 @@ uint8_t* IOHandler::prepareOutputSlot(int slot, int size){
     return output_slots[slot].data.data();  //return pointer to the output slot where we have to store result
 }
 
- void IOHandler::markOutputSlotWritten(int slot){
+
+
+void IOHandler::markOutputSlotWritten(int slot){
         if (slot >= 0 && slot < (int)output_slots.size()) {
             output_slots[slot].written_ok = true;
         }

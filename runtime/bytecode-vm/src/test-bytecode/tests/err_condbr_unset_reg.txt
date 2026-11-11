@@ -1,2 +1,3 @@
+.version 1
 COND_BR 7 0 1
 EOF

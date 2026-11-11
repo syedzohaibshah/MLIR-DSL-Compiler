@@ -1,2 +1,3 @@
+.version 1
 alloc 16
 EOF

@@ -29,29 +29,8 @@ cmake-build-*/
 *.o.d
 
 
-<<<<<<< HEAD
-# CMake generated files (for build trees outside a "build" directory)
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-CMakeUserPresets.json
-
-
-# Binaries built by the runtime Makefile
-/runtime/bytecode-vm/emunpu_test
-/runtime/bytecode-vm/test_runner
-
-
-# Python
-__pycache__/
-*.pyc
-
-
-PROGRESS.md
-=======
 PROGRESS.md
 CMAKE_EXPLAINED.md
 context.md
 
 unit_tests.cpp   
->>>>>>> bcb5418 (resolved issue #7 -made vm consistent for opcode arguments)

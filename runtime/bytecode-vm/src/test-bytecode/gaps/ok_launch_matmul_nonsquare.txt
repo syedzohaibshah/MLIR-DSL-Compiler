@@ -1,3 +1,4 @@
+.version 1
 ALLOC 32
 ALLOC 48
 ALLOC 24

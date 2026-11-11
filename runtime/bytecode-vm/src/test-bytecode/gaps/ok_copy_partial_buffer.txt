@@ -1,0 +1,9 @@
+.version 1
+.input 0 16 in0
+.output 0 16 out
+// Buffer is 64 bytes. A 16-byte copy in and out is a partial fill, and is legal.
+ALLOC 64
+COPY_H2D 0 0 16
+COPY_D2H 0 0 16
+FREE 0
+EOF

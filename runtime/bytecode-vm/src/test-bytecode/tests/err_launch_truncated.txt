@@ -1,3 +1,4 @@
+.version 1
 ALLOC 16
 LAUNCH 0 5 0
 EOF

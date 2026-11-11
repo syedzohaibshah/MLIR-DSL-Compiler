@@ -1,3 +1,4 @@
+.version 1
 BR 2
 FREE 9
 EOF

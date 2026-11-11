@@ -1,0 +1,7 @@
+.version 1
+.output 0 16 out
+// COPY_D2H size comes from a register holding -16. Must be a VM error.
+ALLOC 16
+SET 5 -16
+COPY_D2H 0 0 @5
+EOF

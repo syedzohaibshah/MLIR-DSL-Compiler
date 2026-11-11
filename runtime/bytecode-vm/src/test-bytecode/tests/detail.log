@@ -1,129 +1,132 @@
 ===== err_alloc_negative.txt (exit 0) =====
-PASS  err_alloc_negative.txt  ->  ERROR: ALLOC has zero or  negative size (line 1)
+PASS  err_alloc_negative.txt  ->  ERROR: size must be greater than 0 (line 2)
 
 ===== err_alloc_not_mult4.txt (exit 0) =====
-PASS  err_alloc_not_mult4.txt  ->  ERROR: size must be a multiple of 4 bytes (line 1)
+PASS  err_alloc_not_mult4.txt  ->  ERROR: size must be a aligned to the device's alignment (line 2)
 
 ===== err_alloc_zero.txt (exit 0) =====
-PASS  err_alloc_zero.txt  ->  ERROR: ALLOC has zero or  negative size (line 1)
+PASS  err_alloc_zero.txt  ->  ERROR: size must be greater than 0 (line 2)
 
 ===== err_br_negative.txt (exit 0) =====
-PASS  err_br_negative.txt  ->  ERROR: BR target index out of bounds (line 1)
+PASS  err_br_negative.txt  ->  ERROR: BR target index out of bounds (line 2)
 
 ===== err_br_too_big.txt (exit 0) =====
-PASS  err_br_too_big.txt  ->  ERROR: BR target index out of bounds (line 1)
+PASS  err_br_too_big.txt  ->  ERROR: BR target index out of bounds (line 2)
 
 ===== err_condbr_bad_target.txt (exit 0) =====
-PASS  err_condbr_bad_target.txt  ->  ERROR: register id not found (line 1)
+PASS  err_condbr_bad_target.txt  ->  ERROR: register id not found (line 2)
 
 ===== err_condbr_unset_reg.txt (exit 0) =====
-PASS  err_condbr_unset_reg.txt  ->  ERROR: register id not found (line 1)
+PASS  err_condbr_unset_reg.txt  ->  ERROR: register id not found (line 2)
 
 ===== err_copy_d2h_bad_buffer.txt (exit 0) =====
-PASS  err_copy_d2h_bad_buffer.txt  ->  ERROR: invalid buffer id (line 1)
+PASS  err_copy_d2h_bad_buffer.txt  ->  ERROR: buffer 3 was never allocated (line 3)
 
 ===== err_copy_h2d_bad_buffer.txt (exit 0) =====
-PASS  err_copy_h2d_bad_buffer.txt  ->  ERROR: invalid buffer id (line 1)
+PASS  err_copy_h2d_bad_buffer.txt  ->  ERROR: buffer 3 was never allocated (line 3)
 
 ===== err_copy_h2d_bad_input_slot.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-PASS  err_copy_h2d_bad_input_slot.txt  ->  ERROR: input slot 99 was never set via vm_set_input (line 2)
+PASS  err_copy_h2d_bad_input_slot.txt  ->  ERROR: input slot 99 is not declared in the signature (line 3)
 
 ===== err_copy_h2d_size_mismatch.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-PASS  err_copy_h2d_size_mismatch.txt  ->  ERROR: input slot 0 holds 16 bytes, COPY_H2D asked for 8 (line 2)
+PASS  err_copy_h2d_size_mismatch.txt  ->  ERROR: input slot 0 (in0) expects 16 bytes, but got 8 (line 4)
+
+===== err_end_empty_file.txt (exit 0) =====
+PASS  err_end_empty_file.txt  ->  ERROR: program has no instructions (line 1)
 
 ===== err_end_eof_with_arg.txt (exit 0) =====
-PASS  err_end_eof_with_arg.txt  ->  ERROR: unknown opcode or incorrect number of arguments EOF (line 1)
+PASS  err_end_eof_with_arg.txt  ->  ERROR: unknown opcode or incorrect number of arguments EOF (line 2)
 
 ===== err_free_double.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] freed buffer with tensor id:1
-PASS  err_free_double.txt  ->  ERROR: buffer already freed (line 3)
+PASS  err_free_double.txt  ->  ERROR: buffer 0 was already freed (line 4)
 
 ===== err_free_negative.txt (exit 0) =====
-PASS  err_free_negative.txt  ->  ERROR: invalid buffer id (line 1)
+PASS  err_free_negative.txt  ->  ERROR: buffer -1 was never allocated (line 2)
 
 ===== err_free_unallocated.txt (exit 0) =====
-PASS  err_free_unallocated.txt  ->  ERROR: invalid buffer id (line 1)
+PASS  err_free_unallocated.txt  ->  ERROR: buffer 5 was never allocated (line 2)
 
 ===== err_launch_bad_buffer.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-PASS  err_launch_bad_buffer.txt  ->  ERROR: invalid buffer id (line 2)
+PASS  err_launch_bad_buffer.txt  ->  ERROR: invalid buffer id (line 3)
 
 ===== err_launch_matmul_wrong_shape.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] alloc buffer 2 (16 bytes)
 Launching kernel ID 0 with 2 buffers and 1 scalar args
-PASS  err_launch_matmul_wrong_shape.txt  ->  ERROR: wrong number of buffers/scalars for MATMUL (line 3)
+PASS  err_launch_matmul_wrong_shape.txt  ->  ERROR: wrong number of buffers/scalars for MATMUL (line 4)
 
 ===== err_launch_negative_nbuf.txt (exit 0) =====
-PASS  err_launch_negative_nbuf.txt  ->  ERROR: LAUNCH has negative num_buffers (line 1)
+PASS  err_launch_negative_nbuf.txt  ->  ERROR: LAUNCH has negative num_buffers (line 2)
 
 ===== err_launch_truncated.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-PASS  err_launch_truncated.txt  ->  ERROR: LAUNCH missing dimensions or num_scalars (line 2)
+PASS  err_launch_truncated.txt  ->  ERROR: LAUNCH missing dimensions or num_scalars (line 3)
 
 ===== err_launch_unknown_op.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] alloc buffer 2 (16 bytes)
 [emunpu] alloc buffer 3 (16 bytes)
 Launching kernel ID 9 with 3 buffers and 3 scalar args
-PASS  err_launch_unknown_op.txt  ->  ERROR: unknown op_id (line 4)
+PASS  err_launch_unknown_op.txt  ->  ERROR: unknown op_id (line 5)
 
 ===== err_loop_infinite.txt (exit 0) =====
-PASS  err_loop_infinite.txt  ->  ERROR: step limit exceeded - possible infinite loop (line 1)
+PASS  err_loop_infinite.txt  ->  ERROR: step limit exceeded - possible infinite loop (line 2)
 
 ===== err_op_alloc_no_args.txt (exit 0) =====
-PASS  err_op_alloc_no_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 1)
+PASS  err_op_alloc_no_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 2)
 
 ===== err_op_alloc_two_args.txt (exit 0) =====
-PASS  err_op_alloc_two_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 1)
+PASS  err_op_alloc_two_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 2)
 
 ===== err_op_lowercase.txt (exit 0) =====
-PASS  err_op_lowercase.txt  ->  ERROR: unknown opcode or incorrect number of arguments alloc (line 1)
+PASS  err_op_lowercase.txt  ->  ERROR: unknown opcode or incorrect number of arguments alloc (line 2)
 
 ===== err_op_set_too_few.txt (exit 0) =====
-PASS  err_op_set_too_few.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 1)
+PASS  err_op_set_too_few.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 2)
 
 ===== err_op_set_too_many.txt (exit 0) =====
-PASS  err_op_set_too_many.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 1)
+PASS  err_op_set_too_many.txt  ->  ERROR: unknown opcode or incorrect number of arguments SET (line 2)
 
 ===== err_op_unknown.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-PASS  err_op_unknown.txt  ->  ERROR: unknown opcode or incorrect number of arguments FOObar (line 2)
+PASS  err_op_unknown.txt  ->  ERROR: unknown opcode or incorrect number of arguments FOObar (line 3)
 
 ===== err_parse_bad_number.txt (exit 0) =====
-PASS  err_parse_bad_number.txt  ->  ERROR: Invalid integer: abc (line 2)
+PASS  err_parse_bad_number.txt  ->  ERROR: Invalid integer: abc (line 3)
 
 ===== err_parse_double_at.txt (exit 0) =====
-PASS  err_parse_double_at.txt  ->  ERROR: Invalid integer: @3 (line 1)
+PASS  err_parse_double_at.txt  ->  ERROR: Invalid integer: @3 (line 2)
 
 ===== err_parse_empty_register.txt (exit 0) =====
-PASS  err_parse_empty_register.txt  ->  ERROR: register argument is empty (line 1)
+PASS  err_parse_empty_register.txt  ->  ERROR: register argument is empty (line 2)
 
 ===== err_parse_float_value.txt (exit 0) =====
-PASS  err_parse_float_value.txt  ->  ERROR: Invalid integer: 1.5 (line 1)
+PASS  err_parse_float_value.txt  ->  ERROR: Invalid integer: 1.5 (line 2)
 
 ===== err_parse_trailing_junk.txt (exit 0) =====
-PASS  err_parse_trailing_junk.txt  ->  ERROR: Invalid integer: 16x (line 1)
+PASS  err_parse_trailing_junk.txt  ->  ERROR: Invalid integer: 16x (line 2)
 
 ===== err_reg_dec_unset.txt (exit 0) =====
-PASS  err_reg_dec_unset.txt  ->  ERROR: register id not found (line 1)
+PASS  err_reg_dec_unset.txt  ->  ERROR: register id not found (line 2)
 
 ===== err_reg_inc_unset.txt (exit 0) =====
-PASS  err_reg_inc_unset.txt  ->  ERROR: register id not found (line 1)
+PASS  err_reg_inc_unset.txt  ->  ERROR: register id not found (line 2)
 
 ===== err_reg_negative_id.txt (exit 0) =====
-PASS  err_reg_negative_id.txt  ->  ERROR: out of range register id (line 1)
+PASS  err_reg_negative_id.txt  ->  ERROR: out of range register id (line 2)
 
 ===== err_reg_set_negative_id.txt (exit 0) =====
-PASS  err_reg_set_negative_id.txt  ->  ERROR: out of range register id (line 1)
+PASS  err_reg_set_negative_id.txt  ->  ERROR: out of range register id (line 2)
 
 ===== err_use_after_free.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] freed buffer with tensor id:1
-PASS  err_use_after_free.txt  ->  ERROR: buffer already freed (line 3)
+PASS  err_use_after_free.txt  ->  ERROR: buffer 0 was already freed (line 5)
 
 ===== ok_alloc_free_many.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
@@ -162,9 +165,6 @@ Launching kernel ID 2 with 2 buffers and 1 scalar args
 [emunpu] freed buffer with tensor id:4
 End of file
 PASS  ok_e2e_matmul_relu.txt  ->  ok
-
-===== ok_end_empty_file.txt (exit 0) =====
-PASS  ok_end_empty_file.txt  ->  ok
 
 ===== ok_end_eof_in_middle.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)

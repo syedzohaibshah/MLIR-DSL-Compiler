@@ -1,2 +1,3 @@
+.version 1
 DEC 0
 EOF

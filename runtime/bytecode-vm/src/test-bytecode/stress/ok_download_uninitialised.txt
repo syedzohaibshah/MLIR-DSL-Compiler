@@ -1,3 +1,5 @@
+.version 1
+.output 0 16 out
 ALLOC 16
 COPY_D2H 0 0 16
 EOF

@@ -2,17 +2,24 @@
 #include <vector>
 #include <cstdint>
 #include "error.h"
+#include "runtime_limits.h"
+
+
 struct Input{
     void* data;
     int size;
 };
+
 struct OutputSlot {
     std::vector<uint8_t> data;
     bool written_ok;   // true only after a clean download
 };
 
+
 class IOHandler{
 public:
+
+    IOHandler(const RuntimeLimits& runtime_limits) : runtime_limits(runtime_limits) {}
     // called  before running the bytecode
     Error setInput(int slot, void* data, int size);
 
@@ -34,4 +41,5 @@ public:
 private:
     std::vector<Input> input_slots;
    std::vector<OutputSlot> output_slots;
+   RuntimeLimits runtime_limits;
 };

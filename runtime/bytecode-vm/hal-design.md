@@ -580,17 +580,38 @@ Each step leaves the VM working. Same discipline as the original roadmap.
    not an assumed one — first real proof the `Device` abstraction holds up
    against a second, structurally different hardware target.
 
-   One real, pre-existing bug surfaced by actually running it: the cleanup
-   loop at the end of `bytecode12.txt`/`bytecode12_emunpu.txt`
-   (`SET 4 7` / `FREE @4` / `DEC 4` / `COND_BR 4 32 29`) loops back to
-   `SET 4 7` instead of `FREE @4`, so it resets the counter every pass and
-   tries to free buffer 7 repeatedly instead of counting down through it.
-   Six "buffer already freed" errors print at the end, harmlessly (the real
-   computation is already done by then), but the loop-back target should be
-   `30`, not `29`. Identical in both bytecode files — not something this
-   sync or the emunpu work introduced, just never triggered before because
-   the CUDA path had never actually been run either. Worth fixing in both
-   files; not blocking anything.
+   Two real, pre-existing bugs surfaced in the cleanup loop at the end of
+   `bytecode12.txt`/`bytecode12_emunpu.txt`. Both are now fixed in those files
+   and in the VM. (Jump targets are 0-based instruction indices; line N is
+   index N-1.)
+
+   1. **`FREE` ignored `@N`.** Each opcode branch in `dispatch()` resolved
+      registers by hand, and `FREE` forgot. So `FREE @4` freed buffer **4**
+      (the literal) instead of the buffer whose handle sits in register 4.
+      The cleanup loop sets register 4 to 7 and counts down, expecting to free
+      buffers 7..0; instead it freed buffer 4 every pass and double-freed it.
+      Fixed by routing every value operand through one helper, `resolveValue`
+      (see §"@N for every value operand" in the VM doc). This was the root
+      cause, not a wrong jump target.
+
+   2. **Countdown off-by-one skipped buffer 0.** The loop tests the counter
+      *after* `DEC`, so it exits when register 4 reaches 0 — before `FREE`
+      runs for buffer 0. The loop frees 7..1, then a single unconditional
+      `FREE 0` after the loop covers buffer 0. The correct cleanup block is:
+
+      ```
+      SET 4 7          # idx 28
+      FREE @4          # idx 29  <- loop body
+      DEC 4            # idx 30
+      COND_BR 4 32 29  # idx 31  zero -> 32 (FREE 0); nonzero -> 29 (FREE)
+      FREE 0           # idx 32
+      EOF              # idx 33
+      ```
+
+   An earlier draft of this note misread the target as 1-based and proposed
+   `30`; that is wrong — index 30 is `DEC`, so looping back to it would skip
+   the `FREE` entirely. Identical in both bytecode files — not introduced by
+   this sync or the emunpu work, just never triggered before.
 5. **Device selection.** ← *we are here*. `main.cpp` picks a `Device` at
    startup (a flag, or read from the bytecode's `.target` line), plus build
    flags (`VM_ENABLE_CUDA` / `VM_ENABLE_EMUNPU`) so a machine without CUDA —

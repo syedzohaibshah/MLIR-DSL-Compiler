@@ -56,6 +56,6 @@ public:
     Error download(DeviceHandle handle, void* dst, int size, int line) override;
     Error dispatch(const std::vector<int>& args, int line) override;
 
- 
+ DeviceLimits limits() const override;
     
 };

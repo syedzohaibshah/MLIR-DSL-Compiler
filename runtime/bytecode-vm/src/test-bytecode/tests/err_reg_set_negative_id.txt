@@ -1,2 +1,3 @@
+.version 1
 SET -2 5
 EOF

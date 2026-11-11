@@ -32,7 +32,7 @@ This doc covers the bytecode format, how the interpreter turns a text file into 
 | `.vmfb`'s VM bytecode section | A hand-written bytecode file, plain text |
 | IREE's compiler, producing that bytecode | Not built. Bytecode is authored directly, by hand |
 | IREE's VM interpreter | A VM/interpreter, built from scratch, that reads the bytecode file |
-| IREE VM's register/value list, used to carry state between instructions | This VM's own register file — a plain, growable array of ints |
+| IREE VM's register/value list, used to carry state between instructions | This VM's own register file — integer registers with ids 0 to 1023 |
 | IREE VM's single branch primitive (its loops and conditionals are both built from just this) | `BR` / `COND_BR` — the same idea: jump forward or backward, optionally testing a register first |
 | HAL — hardware-independent control flow, backend-specific executables underneath | `src/hal/device.h`'s abstract `Device` interface: `allocate`/`free`/`upload`/`download`/`dispatch`, implemented separately per backend |
 | A driver (e.g. the CUDA driver) | `CudaDevice` (`src/hal/cuda_device.{h,cpp}`) — wraps real CUDA calls behind the `Device` interface |
@@ -42,7 +42,7 @@ This doc covers the bytecode format, how the interpreter turns a text file into 
 
 The first version of this VM could only run a straight-line list of five instructions: allocate memory, copy data in, launch one of two kernels, copy data out, free memory. Since then, three real capabilities have been added on top of that:
 
-- **Registers.** A small, growable array of integers the bytecode can read and write (`SET`, `INC`, `DEC`). This is what makes anything below possible — without somewhere to keep a running value, there's no way to count, loop, or make a decision.
+- **Registers.** Up to 1024 integer registers the bytecode can read and write (`SET`, `INC`, `DEC`). This is what makes anything below possible — without somewhere to keep a running value, there's no way to count, loop, or make a decision.
 - **Indirect addressing.** Any **value** operand in the bytecode — a buffer handle, an input slot, a size, a `LAUNCH` argument — can be written as `@N` instead of a plain number, meaning "read register `N` right now and use that." (Id operands — register ids and jump targets — stay bare; see the note above the opcode tables.) The same line of bytecode can then touch a different buffer or slot on every pass through a loop.
 - **Control flow.** `BR` (unconditional jump) and `COND_BR` (jump based on whether a register is zero). Together with registers, this is enough to build real loops — proven end to end in `src/test-bytecode/bytecode12.txt`, which runs a two-layer network by looping the same three-kernel block twice, picking each layer's own weights and bias through register-indexed buffer arguments.
 
@@ -96,7 +96,7 @@ Most opcodes take values, so they accept `@N` or a plain number. A few arguments
 
 | Instruction | Operands | Kind | What it does |
 |---|---|---|---|
-| `SET` | `reg_id`, `value` | id, value | Writes `value` into register `reg_id`. `reg_id` is an id (bare, no `@`); `value` accepts `@N`. So `SET 4 @3` writes the contents of register 3 into register 4. Registers grow automatically — writing register 5 when only 2 exist extends the register file, filling the gap with zeros. |
+| `SET` | `reg_id`, `value` | id, value | Writes `value` into register `reg_id`. `reg_id` is an id (bare, no `@`); `value` accepts `@N`. So `SET 4 @3` writes the contents of register 3 into register 4. The register id must be from 0 to 1023. |
 | `INC` | `reg_id` | id | Adds 1 to the register's current value. `reg_id` is an id — bare, no `@`. |
 | `DEC` | `reg_id` | id | Subtracts 1. `reg_id` is an id — bare, no `@`. Nothing stops it going negative. |
 
@@ -160,11 +160,16 @@ An argument token starting with `@` is stored with `is_register = true` and `val
 
 All of this gets collected into one `std::vector<opcode>` — the parsed program. The whole file is parsed up front, before any instruction executes. So parsing and execution are two separate phases: a syntax error anywhere in the file fails at load time, and `EOF` in the middle of a file (§4.7) stops *execution* of later lines, but does not stop them being *parsed*. By the end of this step, the whole program exists in host memory as that list. Nothing has touched the device yet, and no register has actually been read — that only happens once the VM runs the instruction.
 
-### 4.3 Checking sizes before anything runs
+### 4.3 Checking sizes against the signature
 
-Before the VM runs a single instruction, it checks that the data the host is about to hand over actually matches what the bytecode expects, by scanning every `COPY_H2D`/`COPY_D2H` line up front for the size it declares for a given slot.
+The old scan of `COPY_H2D` / `COPY_D2H` lines is gone (D14 step 3, 2026-11-11). The header declares each slot's name and size. The host binds it with `bindSignature` before the run.
 
-One real gap here: if a `COPY_H2D` or `COPY_D2H`'s slot number is written as `@reg` instead of a plain number, this check has no way to know what it'll resolve to ahead of time — it skips that instruction rather than guessing. That instruction's actual size is only ever validated the moment it runs for real.
+- `setInput` and `getOutput` check the slot and the size against the header.
+- `COPY_H2D` and `COPY_D2H` check the slot and the size when they run. A `@N` slot is checked at that time.
+- Before the first instruction, every declared input must be set.
+- After the last instruction, every declared slot must have been used (R12).
+
+See [`validation-design.md`](../bytecode-vm/validation-design.md) and [`bytecode-contract.md`](bytecode-contract.md).
 
 ### 4.4 Setting up input
 
@@ -193,7 +198,7 @@ Two guards sit in this loop that were not there before. A **step counter** bound
 
 ### 4.6 Registers and indirect addressing
 
-Registers are a plain `std::vector<int>` inside the VM, starting empty. Writing to a register that doesn't exist yet (`SET`) grows the vector to fit, filling any new slots with zero. Reading a register that's genuinely out of range — never written, and past the current size — is an error; reading one that exists but was never explicitly set just returns 0.
+Registers are stored in a `std::unordered_map<int,int>` inside the VM, starting empty. A register id must be from 0 to `MAX_REGISTERS - 1` (1023); any other id is an error. `SET` creates or overwrites a register. Reading a register that was never set is an error, not 0. `INC` and `DEC` stop with an error instead of overflowing past `INT_MAX` or `INT_MIN`.
 
 `INC` and `DEC` are both read-modify-write: read the current value, add or subtract 1, write it back. `DEC` doesn't stop at zero — it'll happily go negative if asked to.
 
@@ -330,7 +335,7 @@ There are two folders:
 | `src/test-bytecode/tests/` | The normal surface: parser, opcodes, program end, alloc/free, copy, registers, control flow, LAUNCH and real kernel compute, and a small end-to-end matmul→relu program. |
 | `src/test-bytecode/stress/` | Production-style attacks: integer overflow, resource exhaustion against the real device limit (256 MB global memory, the default capacity our runtime gets), size-contract violations, adversarial text (CRLF, embedded NUL, 10000-arg lines), and a real 16×16 MMA tile. |
 
-**Probe tests.** Some files are deliberate probes — their correct outcome is not known in advance, and a `FAIL` on one may mean a real gap *or* a wrong guess in the name. Both are findings. Each folder's `README.md` marks these and records the gaps most likely to be real: the parser does not check `strtol`'s `ERANGE`, so an overflowing number is silently clamped; the VM checks a copy's size against the host slot but not against the device buffer's own allocated size; and `INC`/`DEC` have no overflow guard.
+**Probe tests.** Some files are deliberate probes — their correct outcome is not known in advance, and a `FAIL` on one may mean a real gap *or* a wrong guess in the name. Both are findings. Each folder's `README.md` marks these and records the gaps most likely to be real: the parser does not stop on `strtol`'s `ERANGE`, so an overflowing number is clamped; and the VM checks a copy's size against the host slot but not against the device buffer's own allocated size. (The `INC`/`DEC` overflow guard has been added since.)
 
 This section closes the "deliberate error-path testing" gap that earlier versions of this doc listed as not-yet-done.
 
@@ -343,14 +348,16 @@ This section closes the "deliberate error-path testing" gap that earlier version
 - The static size check (§4.3) can't see through `@reg` indirect addressing. Any `COPY_H2D`/`COPY_D2H` whose slot is register-based silently skips the pre-run check and is only validated when it actually executes.
 - No function calls or subroutines. Repeating a sequence still means either writing it twice, or looping it with `COND_BR` — which only supports "repeat the same block," not "call this block from several different places and come back."
 - No type system for buffers. A buffer is just N raw bytes as far as the VM is concerned — nothing records whether it holds floats, ints, or anything else. Whichever kernel reads it just assumes a type. This is fine while every kernel agrees on `float*`, but it's a real gap against hardware that tracks data types itself — `EmunpuDevice` currently papers over this by committing every allocation to `EMUNPU_DT_FP32` (see [`hal-design.md`](../bytecode-vm/hal-design.md) §8).
-- Registers only grow, never shrink, and there's no overflow/underflow protection on `INC`/`DEC`.
-- A copy's size is checked against the host input slot, but not against the device buffer's own allocated size. Uploading more bytes than a buffer holds is not caught in the VM layer — only by the device, if it catches it at all.
-- The parser's number conversion does not check `strtol`'s `ERANGE`. A number past `LONG_MAX` is silently clamped instead of rejected.
-- The `ALLOC` handle returned by the device is captured but not stored. The VM still assumes a buffer's handle equals its allocation order, which happens to hold for emunpu but is not guaranteed.
+- A copy's size is checked against the host input slot, but not against the device buffer's own allocated size. Uploading more bytes than a buffer holds is not caught in the VM layer — only by the device, if it catches it at all. The planned `BufferTable` closes this ([`validation-design.md`](../bytecode-vm/validation-design.md)).
+- The parser's number conversion detects `strtol`'s `ERANGE` but only prints a message; it does not return an error. A number that does not fit in an `int` is not rejected either.
+- The `ALLOC` handle returned by the device is captured but not stored. The VM still assumes a buffer's handle equals its allocation order, which happens to hold for emunpu but is not guaranteed. The planned `BufferTable` stores it ([`validation-design.md`](../bytecode-vm/validation-design.md)).
+- LAUNCH dimensions are not checked against buffer sizes. A wrong `M`, `N`, `K` or `count` makes the kernel read or write past its buffer.
 
 ## Future direction
 
 Two structural gaps from the first version of this doc — control flow, and kernel chaining without a host round trip — are done now (§4.7 and §4.8). What's left:
+
+**Validation architecture (D14).** One struct for all limits, a load-time verifier, a declared `.input` / `.output` signature, and a VM buffer table. The design is in [`validation-design.md`](../bytecode-vm/validation-design.md). The bytecode format the compiler must emit is in [`bytecode-contract.md`](bytecode-contract.md).
 
 **Function calls.** Still the most IREE-like addition left. Right now, running the same sequence of instructions from two different places in a program means writing it twice, or reshaping the whole thing into one loop. A `CALL`/`RETURN` pair would let a block be defined once and invoked from multiple places, returning to wherever it was called from — genuinely different from `COND_BR` looping back to a fixed point.
 
@@ -380,5 +387,7 @@ Two structural gaps from the first version of this doc — control flow, and ker
 | `src/test-bytecode/tests/` | One-case-each test bytecode files for the normal surface, plus `run_all.sh` and a `README.md` (§6) |
 | `src/test-bytecode/stress/` | Production-style stress and adversarial test files, plus their own `run_all.sh` and `README.md` (§6) |
 | [`hal-design.md`](../bytecode-vm/hal-design.md) | The design document for the `Device` split — sits alongside `src/`, not inside it |
+| [`validation-design.md`](../bytecode-vm/validation-design.md) | D14: where each limit, slot, size and buffer check lives, and the migration plan |
+| [`bytecode-contract.md`](bytecode-contract.md) | The bytecode format agreed with the compiler team (draft v0.1) |
 
 Both entry points load their bytecode file by a relative path (`bytecode12.txt`), so each needs its working directory pointing at the folder holding that file (`src/test-bytecode/`), or the file copied alongside wherever the compiled binary runs. The same applies to `test_runner`, which takes the path as an argument.

@@ -1,2 +1,4 @@
+.version 1
+.output 0 16 out
 COPY_D2H 0 3 16
 EOF

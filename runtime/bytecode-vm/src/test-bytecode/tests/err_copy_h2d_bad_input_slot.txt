@@ -1,3 +1,4 @@
+.version 1
 ALLOC 16
 COPY_H2D 0 99 16
 EOF

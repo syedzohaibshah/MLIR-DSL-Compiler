@@ -1,8 +1,44 @@
-===== err_copy_d2h_huge_output_slot.txt (exit 1) =====
+===== err_br_indirect_target.txt (exit 0) =====
+PASS  err_br_indirect_target.txt  ->  ERROR: BR argument is a instruction line cannot be a register (line 3)
+
+===== err_condbr_indirect_reg.txt (exit 0) =====
+PASS  err_condbr_indirect_reg.txt  ->  ERROR: COND_BR first argument is already a register id, second and third arguments cannot be registers as they are instruction lines (line 4)
+
+===== err_copy_d2h_huge_output_slot.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
-[emunpu]  device to host  copy with tensor_id: 1(16 bytes)
-End of file
-FAIL  err_copy_d2h_huge_output_slot.txt  ->  expected an error, got ok
+PASS  err_copy_d2h_huge_output_slot.txt  ->  ERROR:  output slot is out of bounds (line 4)
+
+===== err_copy_d2h_negative_size.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_d2h_negative_size.txt  ->  ERROR: size must be greater than 0 (line 5)
+
+===== err_copy_d2h_negative_size_indirect.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_d2h_negative_size_indirect.txt  ->  ERROR: size must be greater than 0 (line 6)
+
+===== err_copy_d2h_oversize_buffer.txt (exit 0) =====
+[emunpu] alloc buffer 1 (8 bytes)
+PASS  err_copy_d2h_oversize_buffer.txt  ->  ERROR: COPY_D2H size 16 exceeds buffer size 8 (line 5)
+
+===== err_copy_d2h_zero_size.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_d2h_zero_size.txt  ->  ERROR: size must be greater than 0 (line 6)
+
+===== err_copy_h2d_negative_size.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_h2d_negative_size.txt  ->  ERROR: size must be greater than 0 (line 5)
+
+===== err_copy_h2d_negative_size_indirect.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_h2d_negative_size_indirect.txt  ->  ERROR: size must be greater than 0 (line 6)
+
+===== err_copy_h2d_oversize_buffer.txt (exit 0) =====
+[emunpu] alloc buffer 1 (8 bytes)
+PASS  err_copy_h2d_oversize_buffer.txt  ->  ERROR: COPY_H2D size 16 exceeds buffer size 8 (line 5)
+
+===== err_copy_h2d_zero_size.txt (exit 0) =====
+[emunpu] alloc buffer 1 (16 bytes)
+PASS  err_copy_h2d_zero_size.txt  ->  ERROR: size must be greater than 0 (line 5)
 
 ===== err_launch_bias_period_exceeds_bias.txt (exit 1) =====
 [emunpu] alloc buffer 1 (16 bytes)
@@ -40,9 +76,6 @@ FAIL  err_launch_vec_add_count_exceeds_buffer.txt  ->  expected an error, got ok
 End of file
 FAIL  err_leak_buffer_not_freed.txt  ->  expected an error, got ok
 
-===== ok_br_indirect_target.txt (exit 1) =====
-FAIL  ok_br_indirect_target.txt  ->  expected ok, got ERROR: BR argument is a instruction line cannot be a register (line 2)
-
 ===== ok_cleanup_loop_frees_all.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] alloc buffer 2 (16 bytes)
@@ -52,9 +85,6 @@ FAIL  ok_br_indirect_target.txt  ->  expected ok, got ERROR: BR argument is a in
 [emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_cleanup_loop_frees_all.txt  ->  ok
-
-===== ok_condbr_indirect_target.txt (exit 1) =====
-FAIL  ok_condbr_indirect_target.txt  ->  expected ok, got ERROR: COND_BR first argument is already a register id, second and third arguments cannot be registers as they are instruction lines (line 3)
 
 ===== ok_copy_d2h_size_indirect.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
@@ -70,6 +100,14 @@ PASS  ok_copy_d2h_size_indirect.txt  ->  ok
 [emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_copy_h2d_size_indirect.txt  ->  ok
+
+===== ok_copy_partial_buffer.txt (exit 0) =====
+[emunpu] alloc buffer 1 (64 bytes)
+[emunpu] host to device copy with tensor_id: 1 (16 bytes)
+[emunpu]  device to host  copy with tensor_id: 1(16 bytes)
+[emunpu] freed buffer with tensor id:1
+End of file
+PASS  ok_copy_partial_buffer.txt  ->  ok
 
 ===== ok_free_indirect.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)

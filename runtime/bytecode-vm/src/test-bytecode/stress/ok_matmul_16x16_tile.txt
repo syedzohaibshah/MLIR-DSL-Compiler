@@ -1,3 +1,5 @@
+.version 1
+.output 0 1024 out
 ALLOC 1024
 ALLOC 1024
 ALLOC 1024

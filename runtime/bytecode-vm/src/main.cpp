@@ -13,20 +13,22 @@
 #include <iostream>
 #include "bytecode.h"
 #include "vm_core.h"
+#include "error.h"
 #include "hal/cuda_device.h"
 
-int main(){
+// Same shape as main_emunpu.cpp: every call returns an Error, and the first
+// Error stops the run. main() prints it.
+Error run(){
 
     Bytecode bytecode;
 
-    if(!bytecode.loadFromFile("bytecode12.txt")) return 1;
+    RETURN_IF_ERROR(bytecode.loadFromFile("bytecode12.txt"));
 
     std::cout<<"No of opcodes: "<<bytecode.size()<<std::endl;
 
     cudaDevice gpu;
     VM vm(&gpu);
-
-   
+    RETURN_IF_ERROR(vm.bindSignature(bytecode));
 
     float X[4]  = {1.0f, 2.0f, 3.0f, 4.0f};
     float W0[4] = {2.0f, 0.0f, 0.0f, 2.0f};
@@ -34,30 +36,31 @@ int main(){
     float W1[4] = {1.0f, -1.0f, 1.0f, -1.0f};
     float B1[2] = {-8.0f, -8.0f};
 
-    bytecode.checkInputSize(0, sizeof(X));
-    bytecode.checkInputSize(1, sizeof(W0));
-    bytecode.checkInputSize(2, sizeof(B0));
-    bytecode.checkInputSize(3, sizeof(W1));
-    bytecode.checkInputSize(4, sizeof(B1));
+    RETURN_IF_ERROR(vm.setInput(0, X,  sizeof(X)));
+    RETURN_IF_ERROR(vm.setInput(1, W0, sizeof(W0)));
+    RETURN_IF_ERROR(vm.setInput(2, B0, sizeof(B0)));
+    RETURN_IF_ERROR(vm.setInput(3, W1, sizeof(W1)));
+    RETURN_IF_ERROR(vm.setInput(4, B1, sizeof(B1)));
 
-    vm.setInput(0, X,  sizeof(X));
-    vm.setInput(1, W0, sizeof(W0));
-    vm.setInput(2, B0, sizeof(B0));
-    vm.setInput(3, W1, sizeof(W1));
-    vm.setInput(4, B1, sizeof(B1));
-
-    vm.execute(bytecode.get_instructions());
+    RETURN_IF_ERROR(vm.execute(bytecode.get_instructions()));
 
     float result[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
-    bytecode.checkOutputSize(0, sizeof(result));
-
-    vm.getOutput(0, result, sizeof(result));
+    RETURN_IF_ERROR(vm.getOutput(0, result, sizeof(result)));
 
     std::cout<<"Result (2-layer network, chained + looped): ";
     for(float v : result) std::cout<<v<<" ";
     std::cout<<std::endl;
     std::cout<<"Expected:                                    0 0 8 0"<<std::endl;
 
+    return ok();
+}
+
+int main(){
+    Error err = run();
+    if(!err.ok){
+        report(err);
+        return 1;
+    }
     return 0;
 }

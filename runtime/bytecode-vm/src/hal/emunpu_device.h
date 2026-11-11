@@ -38,10 +38,13 @@ public:
  Error status() const;
     
     std::string name() const override;
+    DeviceLimits limits() const override;
+    
      Error allocate(int size,int line,DeviceHandle& out_handle) override;
 
      Error free(DeviceHandle handle,int line)override;
      Error upload(DeviceHandle handle, const void* src, int size, int line)override;
     Error download(DeviceHandle handle, void* dst, int size, int line) override;
     Error dispatch(const std::vector<int>& args, int line) override;
+
 };

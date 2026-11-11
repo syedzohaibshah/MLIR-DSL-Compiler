@@ -1,0 +1,7 @@
+.version 1
+.output 0 16 out
+// COPY_D2H with size 0 must be a VM error. Today the message is misleading
+// ("output slot is out of bounds"), because prepareOutputSlot returns nullptr.
+ALLOC 16
+COPY_D2H 0 0 0
+EOF

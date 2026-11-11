@@ -8,6 +8,8 @@
 #include "vm_core.h"
 #include "hal/emunpu_device.h"
 #include "error.h"
+#include "io_handle.h"
+#include "runtime_limits.h"
 
 Error run( std::string filename ){
 
@@ -19,7 +21,9 @@ Error run( std::string filename ){
 
     emunpuDevice npu;
     RETURN_IF_ERROR(npu.status());  // Check if the device was created successfully
-    VM vm(&npu);
+    RuntimeLimits runtime_limits;
+    VM vm(&npu, runtime_limits);
+    RETURN_IF_ERROR(vm.bindSignature(bytecode));
 
     float X[4]  = {1.0f, 2.0f, 3.0f, 4.0f};
     float W0[4] = {2.0f, 0.0f, 0.0f, 2.0f};
@@ -27,11 +31,6 @@ Error run( std::string filename ){
     float W1[4] = {1.0f, -1.0f, 1.0f, -1.0f};
     float B1[2] = {-8.0f, -8.0f};
 
-    RETURN_IF_ERROR(bytecode.checkInputSize(0, sizeof(X)));
-    RETURN_IF_ERROR(bytecode.checkInputSize(1, sizeof(W0)));
-    RETURN_IF_ERROR(bytecode.checkInputSize(2, sizeof(B0)));
-    RETURN_IF_ERROR(bytecode.checkInputSize(3, sizeof(W1)));
-    RETURN_IF_ERROR(bytecode.checkInputSize(4, sizeof(B1)));
 
     RETURN_IF_ERROR(vm.setInput(0, X,  sizeof(X)));
     RETURN_IF_ERROR(vm.setInput(1, W0, sizeof(W0)));
@@ -42,8 +41,6 @@ Error run( std::string filename ){
     RETURN_IF_ERROR(vm.execute(bytecode.get_instructions()));
 
     float result[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-    RETURN_IF_ERROR(bytecode.checkOutputSize(0, sizeof(result)));
 
     RETURN_IF_ERROR(vm.getOutput(0, result, sizeof(result)));
 

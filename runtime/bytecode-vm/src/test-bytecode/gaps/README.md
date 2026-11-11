@@ -65,6 +65,24 @@ Every buffer below is 16 bytes (4 floats) unless stated. emunpu does not compare
 
 `ok_launch_matmul_nonsquare.txt` is a **guard**. It should pass today, and it must still pass after the dimension checks are added. It stops a check that is too strict.
 
+### E. COPY size and buffer checks (D14 step 2b)
+
+`test_runner` gives input slots 0..7 a size of 16 bytes each. The `COPY_H2D` tests rely on this.
+
+| File | Issue | Today | After the fix |
+|---|---|---|---|
+| `err_copy_h2d_zero_size.txt` | size 0 | rejected by the slot check, with a message about 16 bytes | VM rejects size 0 first |
+| `err_copy_h2d_negative_size.txt` | size -16 | rejected by the slot check, with a message about 16 bytes | VM rejects size first |
+| `err_copy_h2d_negative_size_indirect.txt` | size `@5` = -16 | same as above | same, after resolving `@5` |
+| `err_copy_d2h_zero_size.txt` | size 0 | "output slot is out of bounds" (misleading) | VM rejects size first, with a size message |
+| `err_copy_d2h_negative_size.txt` | size -16 | same misleading message | same as above |
+| `err_copy_d2h_negative_size_indirect.txt` | size `@5` = -16 | same misleading message | same, after resolving `@5` |
+| `err_copy_h2d_oversize_buffer.txt` | 16 bytes into an 8-byte buffer | emunpu decides (may overrun on CUDA) | VM rejects: copy larger than buffer |
+| `err_copy_d2h_oversize_buffer.txt` | 16 bytes out of an 8-byte buffer | emunpu decides | VM rejects: copy larger than buffer |
+| `ok_copy_partial_buffer.txt` | 16 bytes into a 64-byte buffer | passes | **guard**: must still pass. A copy smaller than the buffer is legal. |
+
+The `err_` files pass today when the copy is rejected for any reason. After the fix, read `detail.log` and check the **message**. It must name the size or the buffer. A message from the device means the VM check did not run.
+
 ## Tests that are not here
 
-Some issues cannot be reached from a bytecode file, because `test_runner` does not call `getOutput` or `checkInputSize`. Those are in `src/unit_tests.cpp`. Run them with `./build/unit_tests`.
+Some issues cannot be reached from a bytecode file, because `test_runner` does not call `getOutput` or the signature checks in `setInput`. Those are in `src/unit_tests.cpp`. Run them with `./build/unit_tests`.

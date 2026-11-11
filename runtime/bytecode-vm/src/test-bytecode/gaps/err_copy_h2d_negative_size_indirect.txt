@@ -1,0 +1,7 @@
+.version 1
+.input 0 16 in0
+// COPY_H2D size comes from a register holding -16. Must be a VM error.
+ALLOC 16
+SET 5 -16
+COPY_H2D 0 0 @5
+EOF

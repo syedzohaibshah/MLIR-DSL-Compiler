@@ -33,13 +33,17 @@ static Error runFile(const char* path){
     emunpuDevice npu;
     RETURN_IF_ERROR(npu.status());
     VM vm(&npu);
+    RETURN_IF_ERROR(vm.bindSignature(bytecode));
 
-    // Generic inputs: slots 0..7, 16 bytes each (four floats). A COPY_H2D on any
-    // of these slots with size 16 gets a valid, consistent source. A test about
-    // a MISSING input simply targets a slot above 7.
+    // Feed every input the file declares. The runner has one 16-byte array, so
+    // it can only feed 16-byte inputs. A test about a MISSING input simply
+    // leaves that slot undeclared.
     static float a[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    for(int slot = 0; slot < 8; ++slot){
-        RETURN_IF_ERROR(vm.setInput(slot, a, sizeof(a)));
+    for(const auto& decl : bytecode.inputs()){
+        if(decl.second.bytes != (int)sizeof(a)){
+            return makeError("test_runner feeds only 16-byte inputs", decl.second.line_number);
+        }
+        RETURN_IF_ERROR(vm.setInput(decl.first, a, decl.second.bytes));
     }
 
     RETURN_IF_ERROR(vm.execute(bytecode.get_instructions()));

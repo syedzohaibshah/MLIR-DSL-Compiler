@@ -88,6 +88,17 @@ Error cudaDevice:: download(DeviceHandle buffer_id, void* dst, int size, int lin
         return "cuda";
     }
 
+    DeviceLimits cudaDevice::limits() const {
+
+        //values here are temporary, we can query the device for actual values if needed
+        //we will handle it when we implement the actual cuda device
+        DeviceLimits limits;
+        limits.max_allocation_bytes = 1073741824; // 1 GB
+        limits.total_memory_bytes = 1073741824;   // 1 GB
+        limits.alignment_bytes = 4;               // 4 bytes for FP32
+        limits.max_live_buffers = 0;              // no limit on live buffers
+        return limits;
+    }
 
 
     Error cudaDevice::registerKernels(){

@@ -4,6 +4,11 @@
 #include "error.h"
 #include <cstdint>
 #include <climits>
+#include <map>
+#include <sstream>
+
+// The only bytecode format version this runtime reads.
+static const int SUPPORTED_VERSION = 1;
 
 struct Arg{
     int value;
@@ -16,40 +21,49 @@ struct opcode{
     int line_number;
 };
 
+struct SlotDecl {
+    int slot;
+    int bytes;
+    std::string name;
+    int line_number;     // for "already declared on line N" errors
+};
+
+
 
 class Bytecode{
 public:
+
+    int version = 0;
+const std::map<int, SlotDecl>& inputs() const;   // getters
+const std::map<int, SlotDecl>& outputs() const;
+
     // reads the file line by line, parses each line, and stores the result.
     Error loadFromFile(const std::string& filename);
-
+    
     size_t size() const;
     
     const std::vector<opcode>& get_instructions() const;
 
-    // Derived from COPY_H2D's third argument (buffer_id input_slot size).
-
-    int expectedInputSize(int slot) const;
-
-    // Derived from COPY_D2H's third argument (output_slot buffer_id size).
-    int expectedOutputSize(int slot) const;
-
-    // Checks a host array's real size against what the bytecode declares for that slot , catches a mismatch here
-    Error checkInputSize(int slot, int actual_size) const;
-    Error checkOutputSize(int slot, int actual_size) const;
+  
   
 private:
     std::vector<opcode> instructions;
+
+    std::map<int, SlotDecl> input_decls;
+    std::map<int, SlotDecl> output_decls;
+
+    // Dispatches one header line (".version", ".input" or ".output") to its handler.
+    // it writes version, input_decls and output_decls.
+    Error parseDirective(const std::string& line, int line_number, bool& seen_version);
+    Error parseVersionDirective(std::istringstream& ss, int line_number, bool& seen_version);
+    Error parseSlotDirective(std::istringstream& ss, int line_number,
+                              const std::string& keyword, std::map<int, SlotDecl>& decls);
 
     // Parses one bytecode line into one opcode.
     static Error parseLine(const std::string& line, int line_number,opcode& out_opcode);
     static Error stringToInteger(const std::string& str, int& out_value, int line_number);
 
     static bool isSkipable(const std::string& line);
-    // used  by expectedInputSize/expectedOutputSize: scans for every
-    // instruction named `opcode_name`, whose argument at `slot_arg_index`
-    // equals `slot`, and returns its size argument,
-    int expectedSize(const std::string& opcode_name, int slot_arg_index, int slot) const;
 
-//check is sze is defined in bytecode and if they both are the same sizes
-    Error checkSize(const std::string& label, int slot, int expected, int actual_size) const;
+
 };

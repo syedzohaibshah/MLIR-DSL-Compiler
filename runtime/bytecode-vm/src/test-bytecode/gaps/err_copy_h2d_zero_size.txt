@@ -1,0 +1,6 @@
+.version 1
+.input 0 16 in0
+// COPY_H2D with size 0 must be a VM error.
+ALLOC 16
+COPY_H2D 0 0 0
+EOF

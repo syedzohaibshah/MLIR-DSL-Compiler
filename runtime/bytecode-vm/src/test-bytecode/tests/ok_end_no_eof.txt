@@ -1,2 +1,3 @@
+.version 1
 ALLOC 16
 FREE 0

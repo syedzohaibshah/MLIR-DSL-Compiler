@@ -1,2 +1,3 @@
+.version 1
 // nothing but a comment
 EOF

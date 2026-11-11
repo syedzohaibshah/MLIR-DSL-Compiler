@@ -26,12 +26,13 @@ emunpuDevice::emunpuDevice(){
    Error emunpuDevice::allocate(int size,int line,DeviceHandle& out_handle){
     if(emu_device == nullptr) return makeError("emunpu device not initialised", line);
 
-    if(size%4!=0){
+    int alignment = limits().alignment_bytes;
+    if(size%alignment!=0){
         
-        return makeError("size must be a multiple of 4 bytes",line);
+        return makeError("size must be a aligned to the device's alignment",line);
     }
 
-       uint32_t num_floats=(uint32_t)(size/4);
+       uint32_t num_floats=(uint32_t)(size/alignment); //size in bytes to number of floats
 
        emunpu_tensor_id_t tensor_id;
        
@@ -276,7 +277,27 @@ std::string emunpuDevice::name() const {
                  return "emunpu";
              }
 
-             
+DeviceLimits emunpuDevice::limits() const {
+    DeviceLimits limits;
+     limits.alignment_bytes = 4; // default alignment for emunpu device
+
+   emunpu_global_mem_t* global_mem = (emu_device!=nullptr)? emunpu_device_global_mem(emu_device):nullptr;
+
+
+
+if( global_mem == nullptr) {
+        limits.max_allocation_bytes = 0;
+        limits.total_memory_bytes = 0;
+        limits.max_live_buffers = 0;
+        return limits;
+    }
+
+    limits.max_allocation_bytes = global_mem->capacity; 
+    limits.total_memory_bytes = global_mem->capacity;  
+    limits.max_live_buffers = 1024;             //  max tensor on emunpu
+    return limits;
+}
+
 Error emunpuDevice::status() const {
     if(emu_device == nullptr) return makeError("emunpu device was not created", 0);
     return ok();

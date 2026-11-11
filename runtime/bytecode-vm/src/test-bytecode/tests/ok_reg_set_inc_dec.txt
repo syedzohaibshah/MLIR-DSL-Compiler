@@ -1,3 +1,4 @@
+.version 1
 SET 0 5
 INC 0
 DEC 0

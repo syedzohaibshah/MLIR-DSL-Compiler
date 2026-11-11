@@ -1,3 +1,5 @@
+.version 1
+.output 2000000000 16 out
 ALLOC 16
 COPY_D2H 2000000000 0 16
 EOF

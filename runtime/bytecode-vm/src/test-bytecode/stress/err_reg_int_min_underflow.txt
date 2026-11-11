@@ -1,3 +1,4 @@
+.version 1
 SET 0 -2147483648
 DEC 0
 EOF

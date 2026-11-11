@@ -1,3 +1,4 @@
+.version 1
 SET 0 16
 ALLOC @0
 EOF

@@ -1,2 +1,3 @@
+.version 1
 INC -2
 EOF
