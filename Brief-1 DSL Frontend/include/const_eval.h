@@ -11,8 +11,9 @@
 
 using json = nlohmann::json;
 
-// A compile-time scalar. Mirrors ConstantNode, which stores every literal as a
-// double plus a flag telling whether it was written as an integer.
+// A compile-time scalar. ConstantNode keeps integer literals in an exact
+// int64_t; this struct folds them as a double plus a flag saying whether the
+// value came from an integer.
 struct Scalar {
     double value = 0.0;
     bool is_int = false;

@@ -213,7 +213,9 @@ public:
     }
 
     std::any visitConstantNode(std::shared_ptr<ConstantNode> node) override {
-        return emitNode("Const: " + std::to_string(node->value), "gray");
+        std::string text = node->is_integer ? std::to_string(node->int_value)
+                                            : std::to_string(node->value);
+        return emitNode("Const: " + text, "gray");
     }
 
     std::any visitReturnNode(std::shared_ptr<ReturnNode> node) override {

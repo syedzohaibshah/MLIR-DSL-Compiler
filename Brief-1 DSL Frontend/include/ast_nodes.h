@@ -6,6 +6,7 @@
 #include <memory>
 #include <variant>
 #include <any>
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 
@@ -145,8 +146,9 @@ struct VariableNode : ASTNode {
 };
 
 struct ConstantNode : ASTNode {
-    double value;
-    bool is_integer;
+    double value = 0.0;
+    int64_t int_value = 0; // exact value when is_integer is true
+    bool is_integer = false;
     ASTKind kind() const override { return ASTKind::CONSTANT; }
     void print(int indent) const override;
     std::any accept(Visitor& visitor) override;

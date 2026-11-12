@@ -1,0 +1,6 @@
+#   [Parse Error] ... Integer literal '99999999999999999999' is out of range
+
+main() -> [b] {
+    b = 99999999999999999999
+    return b
+}

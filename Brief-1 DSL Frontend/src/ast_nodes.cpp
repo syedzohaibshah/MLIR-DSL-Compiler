@@ -158,7 +158,13 @@ void VariableNode::print(int indent) const {
 }
 
 void ConstantNode::print(int indent) const {
-    std::cout << indent_str(indent) << "ConstantNode(value=" << value << ")\n";
+    std::cout << indent_str(indent) << "ConstantNode(value=";
+    if (is_integer) {
+        std::cout << int_value;
+    } else {
+        std::cout << value;
+    }
+    std::cout << ")\n";
 }
 
 void ReturnNode::print(int indent) const {
@@ -209,7 +215,7 @@ std::string expr_to_string(const std::shared_ptr<ASTNode>& expr) {
             return std::static_pointer_cast<VariableNode>(expr)->name;
         case ASTKind::CONSTANT: {
             auto c = std::static_pointer_cast<ConstantNode>(expr);
-            return c->is_integer ? std::to_string((int64_t)c->value)
+            return c->is_integer ? std::to_string(c->int_value)
                                  : std::to_string(c->value);
         }
         case ASTKind::BINARY_OP: {

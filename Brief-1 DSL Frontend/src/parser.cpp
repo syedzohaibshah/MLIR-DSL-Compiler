@@ -284,7 +284,7 @@ std::shared_ptr<ForLoopNode> Parser::parse_for_stmt() {
 std::string Parser::expr_to_bound(const std::shared_ptr<ASTNode>& expr) {
     if (auto var = dynamic_cast<VariableNode*>(expr.get())) return var->name;
     if (auto c = dynamic_cast<ConstantNode*>(expr.get())) {
-        if (c->is_integer) return std::to_string((int64_t)c->value);
+        if (c->is_integer) return std::to_string(c->int_value);
         return std::to_string(c->value);
     }
     if (auto bin = dynamic_cast<BinaryOpNode*>(expr.get()))
@@ -487,7 +487,14 @@ std::shared_ptr<ASTNode> Parser::parse_primary() {
     if (tok.type == TokenType::TOK_INTEGER) {
         advance();
         auto node = std::make_shared<ConstantNode>();
-        node->value = std::stod(tok.value);
+        try {
+            node->int_value = std::stoll(tok.value);
+        } catch (const std::exception&) {
+            throw ParseError("Integer literal '" + tok.value +
+                             "' is out of range",
+                             tok.line, tok.column);
+        }
+        node->value = static_cast<double>(node->int_value);
         node->is_integer = true;
         node->sp.line = tok.line;
         node->sp.col = tok.column;

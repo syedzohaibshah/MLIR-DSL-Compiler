@@ -1,0 +1,12 @@
+# After the fix the dump and JSON show the exact integers:
+#   1234567, 9007199254740993, 9223372036854775807
+
+main() -> [e] {
+    c = 1234567
+    e = 9007199254740993
+    m = 9223372036854775807
+    print(c)
+    print(e)
+    print(m)
+    return e
+}

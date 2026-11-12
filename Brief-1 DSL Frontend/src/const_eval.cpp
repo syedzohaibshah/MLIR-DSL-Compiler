@@ -121,7 +121,8 @@ bool eval_scalar(const std::shared_ptr<ASTNode>& node, Scalar& out) {
     switch (node->kind()) {
         case ASTKind::CONSTANT: {
             auto c = std::static_pointer_cast<ConstantNode>(node);
-            out.value = c->value;
+            out.value = c->is_integer ? static_cast<double>(c->int_value)
+                                      : c->value;
             out.is_int = c->is_integer;
             return true;
         }

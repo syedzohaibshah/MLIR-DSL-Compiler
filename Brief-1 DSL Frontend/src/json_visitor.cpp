@@ -213,7 +213,7 @@ std::any JsonVisitor::visitConstantNode(std::shared_ptr<ConstantNode> node) {
     j["kind"] = "Constant";
     add_span(j, node->sp);
     if (node->is_integer) {
-        j["value"] = static_cast<int64_t>(node->value);
+        j["value"] = node->int_value;
     } else {
         j["value"] = node->value;
     }
