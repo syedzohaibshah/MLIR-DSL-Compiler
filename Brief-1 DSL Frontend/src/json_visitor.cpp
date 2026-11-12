@@ -118,9 +118,7 @@ std::any JsonVisitor::visitTensorDeclNode(std::shared_ptr<TensorDeclNode> node) 
     for (const auto& d : node->shape) {
         if (std::holds_alternative<std::string>(d)) { has_symbolic = true; break; }
     }
-    if (has_symbolic) {
-        j["data"] = nullptr;
-    } else if (node->init_value) {
+    if (node->init_value) {
         j["data"] = std::any_cast<json>(node->init_value->accept(*this));
     } else {
         j["data"] = nullptr;

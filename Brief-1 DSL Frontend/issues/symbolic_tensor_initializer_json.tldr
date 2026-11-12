@@ -1,0 +1,6 @@
+# Regression test for JSON serialization of symbolic-shape tensor initializers.
+# Expected: the tensor's data contains the scalar initializer 0, not null.
+main() {
+    x : Tensor[f32, (N,)] = [0]
+    return x
+}
