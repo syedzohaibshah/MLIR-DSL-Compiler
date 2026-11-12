@@ -8,7 +8,7 @@ __global__ void vec_mm_Kernel(float* x, float* y, float* z, int n, int width, in
         int out_indx = row * width + col;
         float sum = 0;
         for(int i = 0; i < n; i++){
-            sum += x[row * width + i] * y[i * width + col];
+            sum += x[row * n + i] * y[i * width + col];
         }
         z[out_indx] = sum;
     }

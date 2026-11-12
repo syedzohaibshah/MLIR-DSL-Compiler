@@ -17,7 +17,12 @@
 struct BufferSlot {
     int  size;   // bytes ALLOC asked for
     bool live;
+    int  alloc_line;
 };
+
+// What execute() does with a buffer still live at the end of a run.
+// STRICT: an error. WARN_AND_FREE: a warning, then the VM frees it.
+enum class LeakPolicy { STRICT, WARN_AND_FREE };
 
 class VM{
 public:
@@ -27,6 +32,8 @@ public:
 
     // Copies the program's declared slots in header into the VM. Call before setInput.
     Error bindSignature(const Bytecode& bytecode);
+
+    void setLeakPolicy(LeakPolicy policy);
 
     VM(Device* device, RuntimeLimits limits = RuntimeLimits());
     const RuntimeLimits runtime_limits;
@@ -51,6 +58,10 @@ private:
     // see device.h). Never shrinks, so the live count is counted, not derived.
     std::vector<BufferSlot> buffers;
     int live_buffer_count = 0; 	//How many are live buffers right now. Grows and shrinks.
+    LeakPolicy leak_policy = LeakPolicy::STRICT;
+
+    // Runs at the end of execute(). Handles every buffer still live (see LeakPolicy).
+    Error handleLiveBuffers();
 
     // Device-independent buffer checks (rule D7).
     Error allocateBuffer(int size, int line_number);

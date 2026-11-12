@@ -69,7 +69,8 @@ code and decide what the VM SHOULD do.
 | `err_op_lowercase.txt` | Are opcode names case sensitive? `alloc` should be unknown | FAIL |
 | `err_op_alloc_two_args.txt` | `ALLOC 16 32` -- arity is checked by `args.size()==1` | FAIL |
 | `err_op_set_too_many.txt` | `SET 0 1 2` -- too many args | FAIL |
-| `ok_end_no_eof.txt` | No `EOF` line. Does the loop fall off the end cleanly? | ok |
+| `err_end_no_eof.txt` | No `EOF` line. Rule R10: the verifier rejects it at load time. | FAIL |
+| `err_end_eof_in_middle.txt` | `EOF` is not the last line. Rule R10 rejects it before execution. | FAIL |
 | `ok_end_empty_file.txt` | Empty file -- load ok, execute nothing? | ok |
 | `err_end_eof_with_arg.txt` | `EOF 1` -- dispatch wants `args.size()==0` | FAIL |
 | `err_alloc_zero.txt` | Is `ALLOC 0` rejected? VM checks `size < 0` only, not `<= 0` | UNCERTAIN |
@@ -86,5 +87,6 @@ while before it stops. Expect a short wait.
 Parse and execute are two phases. `loadFromFile` parses the WHOLE file into
 opcodes first; `execute` runs them after. So `EOF` mid-file only stops EXECUTION
 of later lines -- every line is still PARSED. A syntax error after `EOF` still
-fails at parse time. `ok_end_eof_in_middle.txt` therefore uses valid syntax after
-`EOF` (a double free that would fail only if executed).
+fails at parse time. `err_end_eof_in_middle.txt` therefore uses valid syntax after
+`EOF` (a double free that would fail only if executed). The verifier rejects it
+before execution because `EOF` must be the last instruction (rule R10).

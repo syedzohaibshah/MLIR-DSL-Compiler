@@ -514,31 +514,28 @@
 PASS  err_alloc_exhaust_mem.txt  ->  ERROR: device allocation failed (line 514)
 
 ===== err_alloc_over_global_mem.txt (exit 0) =====
-PASS  err_alloc_over_global_mem.txt  ->  ERROR: device allocation failed (line 2)
+PASS  err_alloc_over_global_mem.txt  ->  ERROR: opcode ALLOC argument 0 must be in (0, 268435456], but got 314572800 (line 2)
 
 ===== err_bare_register_as_opcode.txt (exit 0) =====
-PASS  err_bare_register_as_opcode.txt  ->  ERROR: unknown opcode or incorrect number of arguments @5 (line 2)
+PASS  err_bare_register_as_opcode.txt  ->  ERROR: unknown opcode: @5 (line 2)
 
 ===== err_br_int_max.txt (exit 0) =====
-PASS  err_br_int_max.txt  ->  ERROR: BR target index out of bounds (line 2)
+PASS  err_br_int_max.txt  ->  ERROR: opcode BR argument 0 must be in [0, 2), but got 2147483647 (line 2)
 
 ===== err_condbr_int_max.txt (exit 0) =====
-PASS  err_condbr_int_max.txt  ->  ERROR: COND_BR target index out of bounds (line 3)
+PASS  err_condbr_int_max.txt  ->  ERROR: opcode COND_BR argument 1 must be in [0, 3), but got 2147483647 (line 3)
 
 ===== err_condbr_self_loop.txt (exit 0) =====
 PASS  err_condbr_self_loop.txt  ->  ERROR: step limit exceeded - possible infinite loop (line 3)
 
 ===== err_copy_exceeds_buffer.txt (exit 0) =====
-[emunpu] alloc buffer 1 (16 bytes)
-PASS  err_copy_exceeds_buffer.txt  ->  ERROR: input slot 0 (in0) expects 16 bytes, but got 64 (line 4)
+PASS  err_copy_exceeds_buffer.txt  ->  ERROR: opcode COPY_H2D argument 2 size 64 does not match declared input slot bytes 16 (line 4)
 
 ===== err_copy_negative_size.txt (exit 0) =====
-[emunpu] alloc buffer 1 (16 bytes)
-PASS  err_copy_negative_size.txt  ->  ERROR: size must be greater than 0 (line 4)
+PASS  err_copy_negative_size.txt  ->  ERROR: opcode COPY_H2D argument 2 size -16 does not match declared input slot bytes 16 (line 4)
 
 ===== err_copy_zero_bytes.txt (exit 0) =====
-[emunpu] alloc buffer 1 (16 bytes)
-PASS  err_copy_zero_bytes.txt  ->  ERROR: size must be greater than 0 (line 4)
+PASS  err_copy_zero_bytes.txt  ->  ERROR: opcode COPY_H2D argument 2 size 0 does not match declared input slot bytes 16 (line 4)
 
 ===== err_crlf_line_endings.txt (exit 0) =====
 PASS  err_crlf_line_endings.txt  ->  ERROR: carriage return character is not allowed (line 1)
@@ -552,10 +549,10 @@ PASS  err_digit_flood.txt  ->  ERROR: Integer out of range: 99999999999999999999
 PASS  err_download_exceeds_buffer.txt  ->  ERROR: COPY_D2H size 64 exceeds buffer size 16 (line 6)
 
 ===== err_embedded_nul.txt (exit 0) =====
-PASS  err_embedded_nul.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 2)
+PASS  err_embedded_nul.txt  ->  ERROR: opcode ALLOC expects 1 arguments, but got 2 (line 2)
 
 ===== err_int_max_alloc.txt (exit 0) =====
-PASS  err_int_max_alloc.txt  ->  ERROR: size must be a aligned to the device's alignment (line 2)
+PASS  err_int_max_alloc.txt  ->  ERROR: opcode ALLOC argument 0 must be in (0, 268435456], but got 2147483647 (line 2)
 
 ===== err_int_overflow_alloc.txt (exit 0) =====
 PASS  err_int_overflow_alloc.txt  ->  ERROR: Integer out of range: 99999999999999999999 (line 2)
@@ -568,10 +565,10 @@ PASS  err_int_overflow_alloc.txt  ->  ERROR: Integer out of range: 9999999999999
 PASS  err_launch_after_free.txt  ->  ERROR: buffer already freed (line 6)
 
 ===== err_line_too_many_args.txt (exit 0) =====
-PASS  err_line_too_many_args.txt  ->  ERROR: unknown opcode or incorrect number of arguments ALLOC (line 2)
+PASS  err_line_too_many_args.txt  ->  ERROR: program must end with an EOF instruction (line 2)
 
 ===== err_reg_huge_id.txt (exit 0) =====
-PASS  err_reg_huge_id.txt  ->  ERROR: out of range register id (line 2)
+PASS  err_reg_huge_id.txt  ->  ERROR: opcode SET argument 0 must be in [0, 1024), but got 2000000000 (line 2)
 
 ===== err_reg_int_min_underflow.txt (exit 0) =====
 PASS  err_reg_int_min_underflow.txt  ->  ERROR: register value underflow (line 3)
@@ -583,11 +580,13 @@ PASS  ok_br_to_eof.txt  ->  ok
 ===== ok_download_uninitialised.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu]  device to host  copy with tensor_id: 1(16 bytes)
+[emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_download_uninitialised.txt  ->  ok
 
 ===== ok_leading_whitespace.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_leading_whitespace.txt  ->  ok
 
@@ -605,11 +604,13 @@ PASS  ok_matmul_16x16_tile.txt  ->  ok
 
 ===== ok_tabs_between_tokens.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_tabs_between_tokens.txt  ->  ok
 
 ===== ok_trailing_whitespace.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
+[emunpu] freed buffer with tensor id:1
 End of file
 PASS  ok_trailing_whitespace.txt  ->  ok
 

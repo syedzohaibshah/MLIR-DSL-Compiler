@@ -1,5 +1,6 @@
 #include "vm_core.h"
 #include "error.h"
+#include "verifier.h"   
 #include <iostream>
 
 
@@ -11,6 +12,10 @@ VM::VM(Device* device, RuntimeLimits limits)
       device(device)                // 3rd declared
 {}
 
+
+void VM::setLeakPolicy(LeakPolicy policy){
+    leak_policy = policy;
+}
 
 Error VM::bindSignature(const Bytecode& bytecode){
 
@@ -72,6 +77,12 @@ Error VM::execute(const std::vector<opcode>& opcodes){
         return makeError("bindSignature must be called before execute()", 0);
     }
 
+    // check the whole program before the first device call.(see verifer.cpp)
+
+    const DeviceLimits device_limits = device->limits();
+    VerifyContext ctx{runtime_limits, device_limits, bound_inputs, bound_outputs};
+    RETURN_IF_ERROR(verifyProgram(opcodes, ctx));
+
     //  before the first instruction, every declared input must be set.
     //  loop over bound_inputs. For each slot, ask io whether it was set.  if a slot is not set, return an error 
     for (const auto& input : bound_inputs) {
@@ -105,6 +116,7 @@ Error VM::execute(const std::vector<opcode>& opcodes){
 
     }
     RETURN_IF_ERROR(checkDeclaredSlotsUsed());
+    RETURN_IF_ERROR(handleLiveBuffers());
     return  ok();
 }
 
@@ -188,7 +200,7 @@ Error VM::allocateBuffer(int size, int line_number){
                          line_number);
     }
 
-    buffers.push_back(BufferSlot{size, true});
+    buffers.push_back(BufferSlot{size, true, line_number});
     live_buffer_count++;
     return ok();
 }
@@ -203,6 +215,22 @@ Error VM::freeBuffer(int handle, int line_number){
     // Mark dead, never erase: the index must keep matching the handle.
     buffers[handle].live = false;
     live_buffer_count--;
+    return ok();
+}
+
+Error VM::handleLiveBuffers(){
+    for(int handle = 0; handle < (int)buffers.size(); ++handle){
+        const BufferSlot& slot = buffers[handle];
+        if(!slot.live) continue;
+
+        if(leak_policy == LeakPolicy::STRICT){
+            return makeError("buffer " + std::to_string(handle) + " (" + std::to_string(slot.size) +
+                             " bytes) was allocated here and never freed", slot.alloc_line);
+        }
+        std::cerr << "Warning: buffer " << handle << " (" << slot.size
+                  << " bytes) was never freed; freeing it at the end of the run" << std::endl;
+        RETURN_IF_ERROR(freeBuffer(handle, slot.alloc_line));
+    }
     return ok();
 }
 
@@ -222,6 +250,8 @@ Error VM::checkBuffer(int handle, int& out_size, int line_number) const{
     return ok();
 }
 
+// REG_ID and TARGET arguments reach here only as literals: verifyProgram
+// rejects `@` on them before execute() starts the dispatch loop (rule R8).
 Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int line_number,int index,int opcode_size, int& next_index){
 
 
@@ -288,6 +318,9 @@ Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int li
         for(auto arg: args){
             int arg_value=-1;
             RETURN_IF_ERROR(resolveValue(arg, arg_value, line_number));
+            if(arg_value<0){
+                return makeError("LAUNCH argument cannot be negative", line_number);
+            }
 
             int_args.push_back(arg_value);
         }
@@ -301,27 +334,17 @@ Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int li
        int set_value;
        RETURN_IF_ERROR(resolveValue(args[1], set_value, line_number));
 
-       if(args[0].is_register==true){
-           return makeError("SET first argument is already a register id", line_number);
-       }
        RETURN_IF_ERROR(writeRegister(args[0].value,set_value,line_number));
         next_index = index+1;
         return ok();
     }
     else if(name=="DEC" && args.size()==1){ //id
 
-       if(args[0].is_register==true){
-           return makeError("DEC  argument is already a register id", line_number);
-       }
-
         RETURN_IF_ERROR(decrementRegister(args[0].value,line_number));
         next_index = index+1;
         return ok();
     }
     else if(name=="INC" && args.size()==1){//id
-        if(args[0].is_register==true){
-           return makeError("INC  argument is already a register id", line_number);
-       }
 
         RETURN_IF_ERROR(incrementRegister(args[0].value,line_number));
         next_index = index+1;
@@ -330,9 +353,6 @@ Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int li
     else if (name=="BR" && args.size()==1){
         //just jump to the target_index
 
-        if(args[0].is_register==true){
-           return makeError("BR argument is a instruction line cannot be a register", line_number);
-       }
         next_index = args[0].value;
         //out of bounds check
         if(next_index<0 || next_index>=opcode_size){
@@ -341,11 +361,6 @@ Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int li
         return ok();
     }
     else if(name=="COND_BR" && args.size()==3){//ids
-
-        //ist arguemnt is already a register id, second and third argument are instruction line numbers
-        if(args[0].is_register==true || args[1].is_register==true || args[2].is_register==true){
-            return makeError("COND_BR first argument is already a register id, second and third arguments cannot be registers as they are instruction lines", line_number);
-        }
 
         int reg_value;
         RETURN_IF_ERROR(readRegister(args[0].value,reg_value,line_number));

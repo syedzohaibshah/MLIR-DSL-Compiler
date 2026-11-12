@@ -1,6 +1,6 @@
 # Validation design: limits, binding, and checks
 
-**Status:** adopted as decision D14 (2026-11-01). Steps 1, 2 and 3 done (2026-11-11). Step 4 (verifier) and step 5 (kernel shapes) are open. See [Migration plan](#9-migration-plan).
+**Status:** adopted as decision D14 (2026-11-01). Steps 1 to 5 done, and the leak policy (D12) done (2026-11-11). Every step is complete. See [Migration plan](#9-migration-plan).
 
 This document defines where the runtime checks each fact about a bytecode program: limits, slots, sizes, buffers, and operands. It is the reference for every new check. Before you add a check, find its owner in [the ownership table](#8-ownership-table).
 
@@ -132,6 +132,13 @@ The verifier checks:
 - A literal TARGET is inside the program.
 - A literal ALLOC size is above 0 and at most `max_alloc_bytes`.
 - A literal COPY slot is declared in the signature, and a literal copy size equals the declared slot size.
+- The last instruction is `EOF` (R10).
+- No literal `LAUNCH` argument is negative (R13). A literal scalar of 0 is rejected by the device, because the device knows which arguments are scalars.
+
+The table row also holds `slot_check`, `slot_arg` and `size_arg`. These fields
+describe COPY-shaped opcodes, so the slot check needs no per-name branch.
+
+Values that come from a register are checked at run time, because only the run knows them.
 
 Reasons:
 
@@ -219,8 +226,8 @@ A running **total** across buffers can already pass `INT_MAX` today, so any memo
 | `FREE` | The handle exists and is live. The VM marks it not live. |
 | `COPY_H2D` | The buffer is live, and the copy size ≤ the buffer size. |
 | `COPY_D2H` | The buffer is live, and the copy size ≤ the buffer size. |
-| `LAUNCH` | Every buffer operand is live. |
-| End of run | The VM lists the buffers that are still live. The leak policy (D12) uses this list. |
+| `LAUNCH` | Every buffer operand is live (VM). Each buffer holds the elements the kernel reads or writes (device). No scalar is zero (device, R13). No literal argument is negative (verifier, R13). |
+| End of run | Every live buffer is an error (`LeakPolicy::STRICT`, the default) or a warning that frees it (`LeakPolicy::WARN_AND_FREE`). |
 
 Reasons:
 
@@ -272,8 +279,8 @@ Do the steps in this order. Each step is small and has its own tests.
 | 2a | `BufferTable` in the VM; store the ALLOC handle | double free, stale handle, B1 option A | 1 | done |
 | 2b | Copy checks: `COPY_H2D` / `COPY_D2H` consult the table | copy size vs buffer size (both devices) | 2a | done |
 | 3 | Signature `.input` / `.output`; delete the `expectedSize` scan | slot binding, `@N` blind spot | compiler team agreement | done (2026-11-11). Compiler team still to confirm the format. |
-| 4 | Verifier and the opcode table; move the `@` guards out of the handlers | late errors, repeated guards | 1 | open |
-| 5 | Device kernel-shape checks with buffer sizes | `gaps/err_launch_*` (D1) | 2b | open |
+| 4 | Verifier and the opcode table; move the `@` guards out of the handlers | late errors, repeated guards | 1 | done (2026-11-11). Runs in `VM::execute` before the first device call. `EOF` must be last (R10). The handler `@` guards are removed. |
+| 5 | Device kernel-shape checks with buffer sizes | `gaps/err_launch_*` (D1) | 2b | done (2026-11-11). Each kernel checks its buffers with `requireElements`. The device rejects zero scalars (R13). |
 
 ## 10. Failure modes
 
@@ -284,6 +291,8 @@ Do the steps in this order. Each step is small and has its own tests.
 | The VM table and the device table disagree | The device error stops the run. The message is less clear, but no memory is corrupted. |
 | Offset copies (future) | Check `offset + size ≤ buffer size` in 64-bit. In 32-bit, a large offset wraps around and passes. |
 | Limits too small for real Llama | Change the `RuntimeLimits` default. No code change. |
+| A buffer leaks in a decode loop | Strict mode fails the run. Warn-and-free mode frees it at the end of each run, so memory does not grow. |
+| ALLOC size above 2 GiB | Rejected at parse, because the size is `int`. Widen it before the Llama work (PROGRESS.md to-do). |
 
 ## 11. References
 
