@@ -54,6 +54,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../emunpu-sim emunpu-sim-build)
 # ----------------------------------------------------------------------------
 set(VM_SOURCES
     src/bytecode.cpp
+    src/verifier.cpp
     src/vm_core.cpp
     src/io_handle.cpp
     src/hal/emunpu_device.cpp

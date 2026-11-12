@@ -5,4 +5,5 @@
 	
    // indented
 ALLOC 16
+FREE 0
 EOF

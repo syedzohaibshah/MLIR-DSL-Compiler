@@ -152,6 +152,7 @@ The Llama-3 operators (RMS norm, SiLU, softmax, RoPE, gather, transpose, element
 | R10 | `EOF` is the last instruction. | implemented | Ends the program clearly. |
 | R11 | The file starts with `.version 1`, then the header, then the instructions. | implemented | The runtime checks the format version before it reads anything else. |
 | R12 | Every declared input is read by a `COPY_H2D`. Every declared output is written by a `COPY_D2H`. The runtime checks this at `EOF`, so it also sees slots that use `@N`. | implemented | An unused declaration usually means a lowering bug. |
+| R13 | No `LAUNCH` argument is negative. Every `LAUNCH` scalar (count or dimension) is at least 1. | implemented | A zero-size tensor cannot be allocated (R1), so a zero count is almost always a lowering bug. The verifier checks literals. The run checks `@N` values. |
 
 ## 7. Limits
 

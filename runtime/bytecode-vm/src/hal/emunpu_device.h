@@ -8,6 +8,7 @@
 struct TensorSlot {
     emunpu_tensor_id_t real_id;
     bool freed;
+    int64_t bytes;   // size given to ALLOC; kernel shape checks read it
 };
 
 class emunpuDevice:public Device{
@@ -15,7 +16,10 @@ class emunpuDevice:public Device{
     emunpu_device_t* emu_device;
     std::vector<TensorSlot> buffer_table;
     Error isValidHandle(DeviceHandle h, int line);
-   
+
+    // Checks that buffer `h` holds at least `elements` fp32 values.
+    Error requireElements(DeviceHandle h, int64_t elements, const char* what, int line);
+
 
     //kernels
 

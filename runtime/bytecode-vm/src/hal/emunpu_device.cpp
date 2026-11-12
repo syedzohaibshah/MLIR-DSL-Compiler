@@ -46,7 +46,7 @@ emunpuDevice::emunpuDevice(){
         return makeError("device allocation failed",line);
        }
 
-       buffer_table.push_back({tensor_id,false});
+       buffer_table.push_back({tensor_id, false, size});
        
        std::cout<<"[emunpu] alloc buffer "<<tensor_id<<" ("<<size<<" bytes)"<<std::endl;
 
@@ -67,6 +67,29 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
     return ok();
 
    }
+
+
+Error emunpuDevice::requireElements(DeviceHandle h, int64_t elements, const char* what, int line){
+//  checks that buffer `h` holds at least `elements` fp32 values.
+//   - Compute the needed bytes as int64_t: elements * sizeof(float). (D10)
+//   - Reject elements < 0. Decide: is 0 a valid count? (see TODO 3)
+//   - The error text must give the name `what`, the needed bytes and the buffer bytes.
+//   - Read the buffer size from buffer_table[h].bytes.
+
+if (elements < 0) {
+    return makeError("negative element count for " + std::string(what), line);
+}
+int64_t needed_bytes = elements * sizeof(float);
+
+//verify that each input/output buffer has enough memory to
+// hold the number of elements required 
+if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
+    return makeError("buffer " + std::to_string(h) + " for " + std::string(what) + " needs " +
+                      std::to_string(needed_bytes) + " bytes, but has only " + std::to_string(buffer_table[h].bytes), line);
+}
+
+    return ok();
+}
 
 
     Error emunpuDevice::upload(DeviceHandle handle, const void* src, int size, int line){
@@ -142,7 +165,13 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
     for(size_t i = buffer_start; i < num_scalars_index; ++i){
         RETURN_IF_ERROR(isValidHandle(args[i], line));
     }
-    
+
+    // Every scalar is a count or a dimension. A zero-size tensor cannot be
+    // allocated (R1), so a zero here is almost always a lowering bug.
+    for(size_t i = scalars_start; i < (size_t)expected_total; ++i){
+        if(args[i] == 0) { return makeError("LAUNCH scalar must be greater than 0", line); }
+    }
+
     std::cout<<"Launching kernel ID "<<op_id<<" with "<<num_buffers<<" buffers and "
         <<num_scalars<<" scalar args"<<std::endl;
 
@@ -208,6 +237,14 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
         uint32_t M = args[scalars_start+0];
         uint32_t N = args[scalars_start+1];
         uint32_t K = args[scalars_start+2];
+
+        //  check the three buffers against the shape, before the emunpu call.
+        //   A holds M*K values, B holds K*N, C holds M*N. Use requireElements.
+        //   Compute each product as int64_t, so large Llama shapes do not overflow.
+        //   Pass args[buffer_start+i] as the handle. Use the handle, not the real id.
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)M * K, "MATMUL A", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)K * N, "MATMUL B", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)M * N, "MATMUL C", line));
         emunpu_status_t status = emunpu_matmul(emu_device, nullptr, c, a, b, M, N, K, 0);
         if (status != EMUNPU_OK) {
         
@@ -228,6 +265,12 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
         emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
         uint32_t count = args[scalars_start+0];
+
+
+        //  check a, b and c each hold `count` values (requireElements).
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "VEC_ADD A", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)count, "VEC_ADD B", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)count, "VEC_ADD C", line));
         emunpu_status_t status = emunpu_vector_op(emu_device, nullptr, c, a, b, count, EMUNPU_EW_ADD, 0);
         if (status != EMUNPU_OK) {
             return makeError("emunpu_vector_op failed", line);
@@ -244,6 +287,10 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
         uint32_t count = args[scalars_start+0];
+
+        //  check a (input) and c (output) each hold `count` values (requireElements).
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "RELU input", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)count, "RELU output", line));
         emunpu_status_t status = emunpu_activation(emu_device, nullptr, c, a, count, EMUNPU_ACT_RELU, 0, 0);
         if (status != EMUNPU_OK) {
             return makeError("emunpu_activation failed", line);
@@ -262,6 +309,18 @@ Error emunpuDevice::isValidHandle(DeviceHandle h, int line){
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
         uint32_t count = args[scalars_start+0];
         uint32_t out_features = args[scalars_start+1];
+
+
+        //  check a and c each hold `count` values. Check bias holds out_features values.
+        //   Also check out_features > 0 and out_features <= the bias element count.
+        //   Decide: must count be a multiple of out_features? Ask the compiler team
+        //   what the bias period means before you write this rule.
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "BIAS_ADD input", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)out_features, "BIAS_ADD bias", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)count, "BIAS_ADD output", line));
+        if (out_features > count) {
+            return makeError("BIAS_ADD out_features cannot exceed count", line);
+        }
         emunpu_status_t status = emunpu_vector_op(emu_device, nullptr, c, a, bias, count, EMUNPU_EW_ADD, out_features);
         if (status != EMUNPU_OK) {
             return makeError("emunpu_vector_op failed", line);
