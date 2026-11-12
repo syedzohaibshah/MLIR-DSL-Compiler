@@ -1,11 +1,17 @@
 # bad_softmax_scalar_arg.tldr
-# softmax only accepts tensor arguments; here argument 2 is a scalar.
-# Expect: [Semantic Error] 'softmax' expects tensor argument(s), but argument 2 is not a tensor
+# softmax takes a tensor and a scalar axis; the second call passes a tensor
+# where the scalar axis is required.
+# Expect: [Semantic Error] 'softmax' expects a scalar argument at position 2
 
 main(){
-    A : Tensor[f32, (2,2)] = [[][]] 
+    A : Tensor[f32, (2,2)]
     x : f32
     C : Tensor[f32, (2,2)]
-    print(softmax(A, x))
+    for i in loop(2) {
+        for j in loop(2) {
+            A[i, j] = 1.0
+        }
+    }
+    print(softmax(A, 1))
     C = softmax(A, A)
 }

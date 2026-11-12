@@ -15,7 +15,7 @@ main() -> [out] {
             }
         }
     }
-    out = layernorm(x, gamma, beta, out)
-    print(layernorm(x, gamma, beta, out))
+    out = layernorm(x, gamma, beta, 0.00001)
+    print(layernorm(x, gamma, beta, 0.00001))
     return out
 }

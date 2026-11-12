@@ -1,0 +1,24 @@
+# Regression test for builtin scalar arguments.
+# softmax's axis and layernorm's epsilon are scalar arguments, not tensors.
+# Expected: semantic analysis succeeds and emits an AST.
+main() -> [normalized] {
+    input : Tensor[f32, (4, 4)]
+    gamma : Tensor[f32, (4,)]
+    beta : Tensor[f32, (4,)]
+    normalized : Tensor[f32, (4, 4)]
+    epsilon : f32
+    epsilon = 0.00001
+
+    for i in loop(4) {
+        for j in loop(4) {
+            input[i, j] = 1.0
+            normalized[i, j] = 0.0
+        }
+        gamma[i] = 1.0
+        beta[i] = 0.0
+    }
+
+    normalized = softmax(input, 1)
+    normalized = layernorm(normalized, gamma, beta, epsilon)
+    return normalized
+}

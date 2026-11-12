@@ -2,10 +2,9 @@
 # A tensor that was declared but never given any data is empty; custom
 # operators must not receive it.
 # Expect: [Semantic Error] 'softmax' does not accept empty tensors, but argument 1 holds no data (never written)
-# Expect: [Semantic Error] 'softmax' does not accept empty tensors, but argument 2 holds no data (never written)
 
 main() {
     A : Tensor[f32, (64, 64)]
     B : Tensor[f32, (64, 64)]
-    print(softmax(A, B))
+    print(softmax(A, 1))
 }

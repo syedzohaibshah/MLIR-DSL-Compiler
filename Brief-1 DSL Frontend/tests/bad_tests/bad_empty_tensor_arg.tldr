@@ -10,6 +10,6 @@ main() {
     ids : Tensor[i32, (0,)]
     w : Tensor[f32, (10000, 64)]
     emb : Tensor[f32, (0, 64)]
-    print(softmax(A, Z))
+    print(softmax(Z, 1))
     emb = embedding(ids, w)
 }

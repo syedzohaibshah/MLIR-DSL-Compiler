@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 // Single source of truth for every builtin operator of the DSL.
 // To add a new operator, add one entry to builtin_ops() below.
@@ -12,27 +13,33 @@
 //
 // These names are reserved: a call to one always resolves to the builtin, so
 // defining a function with the same name is rejected by the parser.
+
+enum class BuiltinArgType {
+    TENSOR,
+    SCALAR
+};
+
 struct BuiltinOpSpec
 {
     std::string name;
     size_t arity;              // exact number of arguments the call must have
-    bool requires_tensor_args; // every argument must be a non-empty tensor
+    std::vector<BuiltinArgType> arg_types; // expected type of each argument
     bool returns_tensor;       // the call result is a tensor
 };
 
 inline const std::unordered_map<std::string, BuiltinOpSpec>& builtin_ops()
 {
     static const std::unordered_map<std::string, BuiltinOpSpec> ops = {
-        {"relu",          {"relu",          1, true, true}},
-        {"softmax",       {"softmax",       2, true, true}},
-        {"embedding",     {"embedding",     2, true, true}},
-        {"layernorm",     {"layernorm",     4, true, true}},
-        {"mha_attention", {"mha_attention", 3, true, true}},
+        {"relu",          {"relu",          1, {BuiltinArgType::TENSOR}, true}},
+        {"softmax",       {"softmax",       2, {BuiltinArgType::TENSOR, BuiltinArgType::SCALAR}, true}},
+        {"embedding",     {"embedding",     2, {BuiltinArgType::TENSOR, BuiltinArgType::TENSOR}, true}},
+        {"layernorm",     {"layernorm",     4, {BuiltinArgType::TENSOR, BuiltinArgType::TENSOR, BuiltinArgType::TENSOR, BuiltinArgType::SCALAR}, true}},
+        {"mha_attention", {"mha_attention", 3, {BuiltinArgType::TENSOR, BuiltinArgType::TENSOR, BuiltinArgType::TENSOR}, true}},
     };
     return ops;
 }
 
-//making this function for modularity. Will be used for 
+// Making this function for modularity.
 inline const BuiltinOpSpec* find_builtin_op(const std::string& name)
 {
     const auto& ops = builtin_ops();

@@ -19,6 +19,13 @@ main()
     A : Tensor[f32, (64, 64)] 
     B : Tensor[f32, (64, 64)]
     C : Tensor[f32, (64, 64)]
+    for i in loop(64) {
+        for j in loop(64) {
+            A[i, j] = 1.0
+            B[i, j] = 1.0
+            C[i, j] = 0.0
+        }
+    }
     C = matmul(A,B,C)
-    print(softmax(A,B))
+    print(softmax(A, 1))
 }

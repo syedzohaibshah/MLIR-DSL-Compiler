@@ -283,28 +283,33 @@ void SemanticAnalyzer::analyze_expr(const std::shared_ptr<ASTNode>& expr) {
         case ASTKind::CUSTOM_OP: {
             auto node = std::static_pointer_cast<BuiltinCallNode>(expr);
             for (const auto& arg : node->args) analyze_expr(arg);
-            // Operators declared in the registry as tensor-only (softmax, relu,
-            // ...) accept non-empty tensor arguments. Unknown ops fall back to
-            // the same check for backwards compatibility.
             const BuiltinOpSpec* spec = find_builtin_op(node->op);
-            if (!spec || spec->requires_tensor_args) {
-                for (size_t i = 0; i < node->args.size(); i++) {
+            if (spec) {
+                for (size_t i = 0; i < node->args.size(); ++i) {
                     const std::string loc =
                         " at L" + std::to_string(node->sp.line) + ":" +
                         std::to_string(node->sp.col);
                     const std::string arg = std::to_string(i + 1);
-                    if (!is_tensor_expr(node->args[i])) {
+                    const bool is_tensor = is_tensor_expr(node->args[i]);
+
+                    if (spec->arg_types[i] == BuiltinArgType::TENSOR) {
+                        if (!is_tensor) {
+                            semantic_error("[Semantic Error] '" + node->op +
+                                           "' expects a tensor argument at position " +
+                                           arg + loc);
+                        } else if (tensor_is_empty(node->args[i])) {
+                            semantic_error("[Semantic Error] '" + node->op +
+                                           "' does not accept empty tensors, but argument " +
+                                           arg + " has a zero-sized dimension" + loc);
+                        } else if (is_uninitialized_tensor(node->args[i])) {
+                            semantic_error("[Semantic Error] '" + node->op +
+                                           "' does not accept uninitialized tensors, but argument " +
+                                           arg + " holds no data" + loc);
+                        }
+                    } else if (is_tensor) {
                         semantic_error("[Semantic Error] '" + node->op +
-                                       "' expects tensor argument(s), but argument " +
-                                       arg + " is not a tensor" + loc);
-                    } else if (tensor_is_empty(node->args[i])) {
-                        semantic_error("[Semantic Error] '" + node->op +
-                                       "' does not accept empty tensors, but argument " +
-                                       arg + " has a zero-sized dimension" + loc);
-                    } else if (is_uninitialized_tensor(node->args[i])) {
-                        semantic_error("[Semantic Error] '" + node->op +
-                                       "' does not accept empty tensors, but argument " +
-                                       arg + " holds no data (never written)" + loc);
+                                       "' expects a scalar argument at position " +
+                                       arg + loc);
                     }
                 }
             }

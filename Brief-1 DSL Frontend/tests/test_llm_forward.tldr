@@ -41,10 +41,10 @@ main() -> [probs] {
     }
 
     hidden = embedding(ids, w_emb)
-    normed = layernorm(hidden, gamma, beta, normed)
+    normed = layernorm(hidden, gamma, beta, 0.00001)
     attn = mha_attention(Q, K, V)
     gate = relu(attn)
-    probs = softmax(logits, probs)
-    print(softmax(logits, probs))
+    probs = softmax(logits, 1)
+    print(softmax(logits, 1))
     return probs
 }

@@ -9,7 +9,7 @@ main() -> [probs] {
             probs[i, j] = 0.0
         }
     }
-    probs = softmax(logits, probs)
-    print(softmax(logits, probs))
+    probs = softmax(logits, 1)
+    print(softmax(logits, 1))
     return probs
 }

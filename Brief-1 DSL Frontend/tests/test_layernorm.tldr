@@ -1,4 +1,4 @@
-layernorm(
+layernorm_kernel(
     X : Tensor[f32, (M, N)],
     gamma : Tensor[f32, (N,)],
     beta : Tensor[f32, (N,)],
@@ -30,7 +30,7 @@ main() -> [out] {
             out[i, j] = 0.0
         }
     }
-    out = layernorm(X, gamma, beta, out)
-    print(layernorm(X, gamma, beta, out))
+    out = layernorm(X, gamma, beta, 0.00001)
+    print(layernorm(X, gamma, beta, 0.00001))
     return out
 }

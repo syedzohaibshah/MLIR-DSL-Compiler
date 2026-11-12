@@ -278,11 +278,11 @@ The following built-in operations are recognized as function calls:
 
 | Name | Arity | Description |
 |------|-------|-------------|
-| `relu` | 1 | Rectified linear unit |
-| `softmax` | 2 | Softmax over input |
-| `embedding` | 2 | Embedding lookup |
-| `layernorm` | 4 | Layer normalization |
-| `mha_attention` | 3 | Multi-head attention (GQA) |
+| `relu` | 1 | `relu(input: Tensor)` |
+| `softmax` | 2 | `softmax(input: Tensor, axis: scalar)` |
+| `embedding` | 2 | `embedding(ids: Tensor, weights: Tensor)` |
+| `layernorm` | 4 | `layernorm(input: Tensor, gamma: Tensor, beta: Tensor, epsilon: scalar)` |
+| `mha_attention` | 3 | `mha_attention(query: Tensor, key: Tensor, value: Tensor)` |
 
 These names are reserved: a call such as `relu(...)` always resolves to the
 builtin operator, so defining a user function with one of these names is a
