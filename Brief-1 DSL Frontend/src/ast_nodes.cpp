@@ -192,7 +192,8 @@ void ListNode::print(int indent) const {
 }
 
 void BuiltinCallNode::print(int indent) const{
-    std::cout << indent_str(indent) << "Custom_OP()\n";
+    std::cout << indent_str(indent) << "BuiltinCallNode(op=" << op << ")\n";
+    for (auto& a : args) a->print(indent + 1);
 };
 
 void PrintNode::print(int indent) const {

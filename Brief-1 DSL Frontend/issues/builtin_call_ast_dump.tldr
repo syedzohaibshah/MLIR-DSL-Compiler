@@ -1,0 +1,62 @@
+# builtin_call_ast_dump.tldr
+# Regression test: the AST dump must show a builtin call's op name and its
+# argument subtrees, like every other node.
+#
+# Root cause: BuiltinCallNode::print() ignored the node's 'op' and 'args'
+# members and always emitted the literal text "Custom_OP()".
+#
+# Before the fix the dump contained only lines like:
+#   Custom_OP()
+# After the fix it contains, for example:
+#   BuiltinCallNode(op=relu)
+#     VariableNode(name=attn)
+
+main() -> [probs] {
+    ids : Tensor[i32, (2,)]
+    w_emb : Tensor[f32, (2, 2, 2)]
+    hidden : Tensor[f32, (2, 2, 2)]
+    gamma : Tensor[f32, (2, 2, 2)]
+    beta : Tensor[f32, (2, 2, 2)]
+    normed : Tensor[f32, (2, 2, 2)]
+    Q : Tensor[f32, (2, 2, 2)]
+    K : Tensor[f32, (2, 2, 2)]
+    V : Tensor[f32, (2, 2, 2)]
+    attn : Tensor[f32, (2, 2, 2)]
+    gate : Tensor[f32, (2, 2, 2)]
+    logits : Tensor[f32, (2, 2)]
+    probs : Tensor[f32, (2, 2)]
+
+    for i in loop(2) {
+        ids[i] = i
+    }
+    for i in loop(2) {
+        for j in loop(2) {
+            for x in loop(2) {
+                w_emb[i, j, x] = 1.0
+                hidden[i, j, x] = 0.0
+                gamma[i, j, x] = 1.0
+                beta[i, j, x] = 0.0
+                normed[i, j, x] = 0.0
+                Q[i, j, x] = 0.5
+                K[i, j, x] = 0.25
+                V[i, j, x] = 1.0
+                attn[i, j, x] = 0.0
+                gate[i, j, x] = 0.0
+            }
+        }
+    }
+    for i in loop(2) {
+        for j in loop(2) {
+            logits[i, j] = 1.0
+            probs[i, j] = 0.0
+        }
+    }
+
+    hidden = embedding(ids, w_emb)
+    normed = layernorm(hidden, gamma, beta, normed)
+    attn = mha_attention(Q, K, V)
+    gate = relu(attn)
+    probs = softmax(logits, probs)
+    print(softmax(logits, probs))
+    return probs
+}
