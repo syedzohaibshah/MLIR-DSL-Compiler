@@ -63,6 +63,15 @@ std::shared_ptr<FuncNode> Parser::parse_func_def() {
     node->name = tok.value; //.value is the member variable, of the token returned by expect
     node->sp.line = tok.line;
     node->sp.col = tok.column;
+    // Builtin operator names are reserved. The parser always resolves a call
+    // with one of these names to the builtin (see parse_primary), so a
+    // user-defined function with the same name could never be called. Reject
+    // the definition instead of silently shadowing the kernel.
+    if (find_builtin_op(node->name) != nullptr) {
+        throw ParseError("Cannot define function '" + node->name +
+                         "': the name is reserved for a builtin operator",
+                         tok.line, tok.column);
+    }
     expect(TokenType::TOK_LPAREN);
     node->params = parse_param_list();
     expect(TokenType::TOK_RPAREN);

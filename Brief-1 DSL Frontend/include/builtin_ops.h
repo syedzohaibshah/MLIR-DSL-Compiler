@@ -9,6 +9,9 @@
 // The lexer emits builtin names as plain identifiers, and the parser,
 // the semantic analyzer and the error messages are all driven from this
 // table, so no other file has to be touched.
+//
+// These names are reserved: a call to one always resolves to the builtin, so
+// defining a function with the same name is rejected by the parser.
 struct BuiltinOpSpec
 {
     std::string name;

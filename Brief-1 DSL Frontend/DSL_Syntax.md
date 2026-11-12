@@ -284,6 +284,10 @@ The following built-in operations are recognized as function calls:
 | `layernorm` | 4 | Layer normalization |
 | `mha_attention` | 3 | Multi-head attention (GQA) |
 
+These names are reserved: a call such as `relu(...)` always resolves to the
+builtin operator, so defining a user function with one of these names is a
+parse error.
+
 ---
 
 ## 7. Full Example -- Fused GEMM + Bias + LayerNorm
