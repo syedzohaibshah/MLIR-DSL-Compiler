@@ -75,6 +75,10 @@ Rules:
 
 A later version adds dtype and shape: `.input <slot> <dtype> <shape> <name>`, for example `.input 0 f32 4x4 x`. See [Open items](#9-open-items).
 
+### Why the header exists
+
+The header declares every slot before the first instruction runs. The runtime checks the host and the program at load time. It finds a missing input, an unused slot, or a wrong size before any device work starts. Without the header, these errors appear only during the run.
+
 ## 3. Operands
 
 **Status: implemented.**
@@ -133,8 +137,13 @@ All buffers hold fp32 data. Buffers are flat (rank 1); a matrix is stored row-ma
 | 1 | VEC_ADD | `A, B, C` | `count` | `C[i] = A[i] + B[i]` for `count` elements |
 | 2 | RELU | `A, C` | `count` | `C[i] = max(0, A[i])` for `count` elements |
 | 3 | BIAS_ADD | `A, bias, C` | `count, out_features` | `C[i] = A[i] + bias[i mod out_features]` for `count` elements |
+| 4 | RMS_NORM | `A, C` **or** `A, gamma, C` | `rows, width` | `C[r][i] = A[r][i] / sqrt(mean(A[r]^2) + eps) * gamma[i]` for each of `rows` rows of `width` elements. `eps` is fixed at `1e-5`, not an operand. |
 
-The Llama-3 operators (RMS norm, SiLU, softmax, RoPE, gather, transpose, element-wise multiply) are not available yet. Their op ids and operands will be added to this table by agreement.
+RMS_NORM's `gamma` (the learned per-column scale) is optional. `n_buf = 2` (`A, C`) skips it; `n_buf = 3` (`A, gamma, C`) applies it. The runtime picks the meaning of each buffer slot from `n_buf`, the same way RELU (`n_buf = 2`) and VEC_ADD (`n_buf = 3`) already differ. No new LAUNCH encoding was needed for this.
+
+The remaining Llama-3 operators (SiLU, softmax, RoPE, gather, transpose, element-wise multiply) are not available yet. Their op ids and operands will be added to this table by agreement.
+
+**Verifier note.** `LAUNCH` has one generic rule in `verifier.cpp` (arity ≥ 2, every argument a VALUE, no negative literal) and no per-op_id table. A new op_id, including RMS_NORM, needs no verifier change — the op_id-specific buffer/scalar count is checked at run time in the device layer (`emunpuDevice::do_rms_norm`), not in the verifier.
 
 ## 6. Rules the compiler must follow
 
@@ -143,7 +152,7 @@ The Llama-3 operators (RMS norm, SiLU, softmax, RoPE, gather, transpose, element
 | R1 | An `ALLOC` size is greater than 0 and is a multiple of 4. | implemented | emunpu stores every buffer as fp32. |
 | R2 | A copy size **equals** the declared slot size. A partial copy is an error. | implemented | Keeps the binding simple. Partial copies come later, with copy offsets for tiling. |
 | R3 | A copy size is not larger than the buffer size. | implemented | Stops a copy past the end of a buffer. |
-| R4 | A LAUNCH reads and writes only inside its buffers. For example, for MATMUL: `M·K·4 ≤ size(A)`, `K·N·4 ≤ size(B)`, `M·N·4 ≤ size(C)`. | planned | The device does not stop a kernel that writes past a buffer. |
+| R4 | A LAUNCH reads and writes only inside its buffers. For example, for MATMUL: `M·K·4 ≤ size(A)`, `K·N·4 ≤ size(B)`, `M·N·4 ≤ size(C)`. | implemented | The device does not stop a kernel that writes past a buffer. The runtime checks every buffer before each launch. |
 | R5 | Do not use a buffer after `FREE`, and do not free it twice. | implemented | The runtime rejects it. |
 | R6 | Free every buffer before `EOF`. | open (D12) | Device memory is limited (256 MB on emunpu). |
 | R7 | Every jump target is a valid instruction number. | implemented | The runtime rejects an out-of-range target. |

@@ -147,6 +147,7 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
      int op_id = args[0];
      int num_buffers = args[1];
  
+     //no of buffer must be non negative
      if(num_buffers < 0) { return makeError("LAUNCH has negative num_buffers", line); }
 
      int buffer_start = 2;
@@ -197,6 +198,12 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
         // BIAS_ADD
         return do_bais_add(num_buffers,num_scalars, scalars_start,
             buffer_start,args,line);
+    }else if(op_id==4){
+// RMS_NORM
+return do_rms_norm( 
+num_buffers,num_scalars, scalars_start,
+buffer_start,args,line
+);
     } else {
         return makeError("unknown op_id", line);
     }
@@ -329,7 +336,43 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
     }
 
 
-       
+    Error emunpuDevice::do_rms_norm(int num_buffers,int num_scalars,
+        int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+        if((num_buffers != 2 && num_buffers != 3) || num_scalars != 2) {
+            return makeError("wrong number of buffers/scalars for RMS_NORM", line);
+        }
+
+        const double eps = 1e-5;
+        bool has_gamma = (num_buffers == 3);
+        uint32_t rows = args[scalars_start+0];
+        uint32_t width = args[scalars_start+1];
+
+        emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*width, "RMS_NORM input", line));
+
+        emunpu_tensor_id_t gamma = 0;   // 0 tells emunpu "no gamma" (device.c: if (gamma))
+        emunpu_tensor_id_t c;
+
+        if(has_gamma) {
+            gamma = buffer_table[args[buffer_start+1]].real_id;
+            c = buffer_table[args[buffer_start+2]].real_id;
+            RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)width, "RMS_NORM gamma", line));
+            RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)rows*width, "RMS_NORM output", line));
+        } else {
+            c = buffer_table[args[buffer_start+1]].real_id;
+            RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)rows*width, "RMS_NORM output", line));
+        }
+
+        emunpu_status_t status = emunpu_rmsnorm(emu_device, nullptr, c, a, gamma, rows, width, eps);
+        if(status != EMUNPU_OK){
+            return makeError("emunpu_rmsnorm failed", line);
+        }
+
+        return ok();
+    }
+
+
 std::string emunpuDevice::name() const {
 
 

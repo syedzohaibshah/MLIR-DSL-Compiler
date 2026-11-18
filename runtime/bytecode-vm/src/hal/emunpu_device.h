@@ -35,7 +35,10 @@ class emunpuDevice:public Device{
 
      Error  do_bais_add(int num_buffers,int num_scalars,
          int scalars_start,int buffer_start,const std::vector<int>& args,int line);
-     
+
+    Error do_rms_norm(int num_buffers,int num_scalars,
+        int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
 public:
     emunpuDevice();
     ~emunpuDevice() override;
