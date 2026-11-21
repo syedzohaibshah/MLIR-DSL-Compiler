@@ -1,7 +1,7 @@
 # Bytecode contract: compiler → runtime
 
-**Version:** 0.2 (draft for agreement)
-**Date:** 2026-11-02
+**Version:** 0.3 (draft for agreement)
+**Date:** 2026-11-18
 **Owner (runtime):** Syed Zohaib Shah
 **For:** the compiler team (MLIR lowering and bytecode emission)
 
@@ -135,15 +135,58 @@ All buffers hold fp32 data. Buffers are flat (rank 1); a matrix is stored row-ma
 |---|---|---|---|---|
 | 0 | MATMUL | `A, B, C` | `M, N, K` | `C[M×N] = A[M×K] · B[K×N]` |
 | 1 | VEC_ADD | `A, B, C` | `count` | `C[i] = A[i] + B[i]` for `count` elements |
-| 2 | RELU | `A, C` | `count` | `C[i] = max(0, A[i])` for `count` elements |
+| 2 | RELU | `A, C` | `count` | `C[i] = max(0, A[i])` for `count` elements. Forwards to the same `emunpu_activation` call ACTIVATION (op id 7) uses, with `kind` fixed to RELU — not a separate implementation. |
 | 3 | BIAS_ADD | `A, bias, C` | `count, out_features` | `C[i] = A[i] + bias[i mod out_features]` for `count` elements |
 | 4 | RMS_NORM | `A, C` **or** `A, gamma, C` | `rows, width` | `C[r][i] = A[r][i] / sqrt(mean(A[r]^2) + eps) * gamma[i]` for each of `rows` rows of `width` elements. `eps` is fixed at `1e-5`, not an operand. |
+| 5 | SOFTMAX | `A, C` | `rows, width, log_softmax` | Row-wise softmax over `rows` rows of `width` elements. `log_softmax = 0` gives `softmax(A)`; `log_softmax = 1` gives `log(softmax(A))`. |
+| 6 | TRANSPOSE | `A, C` | `rows, cols` | `C[cols×rows] = transpose(A[rows×cols])`. `rows` and `cols` describe the **input**. Both buffers hold `rows·cols` elements; only the shape differs. |
+| 7 | ACTIVATION | `A, C` | `count, kind, alpha_bits, beta_bits` | `C[i] = act(A[i], alpha, beta)` for `count` elements. `kind` selects one of emunpu's 24 activation kinds (0 = RELU, 8 = SiLU, …; see `emunpu/arch.h`'s `emunpu_act_kind_t`). `alpha_bits`/`beta_bits` are `FLOAT_BITS` scalars — always present, even for kinds that ignore them (pass the bits of `0.0f`). Only `LEAKY_RELU`/`ELU` (alpha only) and `CLAMP` (both) read them. See the `FLOAT_BITS` row below. |
 
-RMS_NORM's `gamma` (the learned per-column scale) is optional. `n_buf = 2` (`A, C`) skips it; `n_buf = 3` (`A, gamma, C`) applies it. The runtime picks the meaning of each buffer slot from `n_buf`, the same way RELU (`n_buf = 2`) and VEC_ADD (`n_buf = 3`) already differ. No new LAUNCH encoding was needed for this.
+RMS_NORM's `gamma` (the learned per-column scale) is optional. `n_buf = 2` (`A, C`) skips it; `n_buf = 3` (`A, gamma, C`) applies it. The runtime picks the meaning of each buffer slot from `n_buf`, the same way ACTIVATION (`n_buf = 2`) and VEC_ADD (`n_buf = 3`) already differ. No new LAUNCH encoding was needed for this.
 
-The remaining Llama-3 operators (SiLU, softmax, RoPE, gather, transpose, element-wise multiply) are not available yet. Their op ids and operands will be added to this table by agreement.
+**O9 decided (2026-11-21): one shared op id per emunpu call family, with the kind as an `ENUM` scalar.** ACTIVATION (op id 7, above) is the first instance — it covers RELU, SiLU, GELU, sigmoid, tanh and 15 more kinds behind one op id, instead of one op id per kind. op id 2 (RELU) keeps its own LAUNCH shape (`count` only, no `kind` scalar) for compatibility, but no longer has its own implementation — `dispatch()` forwards it into the same code path as ACTIVATION, with `kind` fixed rather than read from `args`. See O9's entry below. The same shape will be used for element-wise ops (`emunpu_vector_op`'s 9 kinds) and reductions (`emunpu_reduce`'s 5 kinds) when they are wired.
 
-**Verifier note.** `LAUNCH` has one generic rule in `verifier.cpp` (arity ≥ 2, every argument a VALUE, no negative literal) and no per-op_id table. A new op_id, including RMS_NORM, needs no verifier change — the op_id-specific buffer/scalar count is checked at run time in the device layer (`emunpuDevice::do_rms_norm`), not in the verifier.
+The remaining Llama-3 operators (element-wise multiply, RoPE, gather) are not available yet. Their op ids and operands will be added to this table by agreement.
+
+### 5.1 Scalar kinds
+
+Not every `LAUNCH` scalar is a dimension. The runtime keeps one **signature row per op_id**
+(`KERNEL_TABLE` in `hal/emunpu_device.cpp`) that names each scalar position's kind, and checks
+the range that kind allows. A blanket rule over all scalars is wrong: SOFTMAX's `log_softmax`
+is legitimately `0`, while MATMUL's `M` never is.
+
+| Kind | Allowed values | Used by today | Why |
+|---|---|---|---|
+| `DIM` | `> 0` | every scalar of op ids 0–4, 6; `rows`, `width` of op id 5; `count` of op id 7 | A count or a dimension. A zero-size tensor cannot be allocated (R1), so a zero is a lowering bug. |
+| `FLAG` | `0` or `1` | `log_softmax` (op id 5) | A mode selector. Both values are meaningful. |
+| `PARAM` | any `int`, negative allowed | none yet | A tuning value, for example a signed offset. Reserved so a future kernel does not need a format change. |
+| `ENUM` | `0` to `count-1`, where `count` is declared per scalar position | `kind` (op id 7) | Selects one of a fixed, kernel-specific set of kinds. `DIM` would wrongly reject kind `0` (e.g. `ACT_RELU = 0`), the same mistake the old blanket zero-rule made with `log_softmax`. The valid count travels with the scalar position (`ScalarSpec::enum_count` in `hal/emunpu_device.h`), since it differs per kernel — 24 for ACTIVATION (`EMUNPU_ACT_COUNT` in `emunpu/arch.h`), 9 for the planned element-wise op, 5 for the planned reduce op. |
+| `FLOAT_BITS` | any 32-bit pattern | `alpha_bits, beta_bits` (op id 7) | Carries a `float`'s raw bits inside an `int` scalar — not a numeric value. The emitter does `memcpy(&bits, &my_float, 4)`; the device does `memcpy(&my_float, &bits, 4)` to recover the exact value, then widens to `double` before calling `emunpu_activation`. A C-style cast (`(int)my_float`) would be wrong here — it converts the *value* (truncates), destroying the float; `memcpy` only relocates bytes. `0` is the correct literal for "pass `0.0f`" (all-zero bytes decode to `0.0f` exactly), which is why kinds that ignore alpha/beta still pass literal `0`s for those scalars. |
+
+**Adding a kernel.** Add one row to `KERNEL_TABLE` naming the buffer-count range and the kind of
+each scalar, then write its `do_*` body. The generic check in `dispatch` needs no change, and the
+`do_*` body does not repeat the count checks — the table has already guaranteed them.
+
+**Non-integer tuning values.** Every `LAUNCH` argument is an `int`, so a float constant such as
+RMS_NORM's `eps` cannot travel in the bytecode today; it is fixed inside the kernel. If a kernel
+ever needs a float the compiler chooses, the planned encoding is a `FLOAT_BITS` scalar kind: the
+compiler emits the float's 32-bit pattern as an `int`, and the device reads it back. The format
+stays integer-only. This is not implemented; see `PROGRESS.md`.
+
+**Where each `LAUNCH` rule is checked.** The split follows D7: a device-independent fact is
+checked in the verifier, a kernel-specific fact in the device.
+
+| Checked | Where | Why there |
+|---|---|---|
+| Arity ≥ 2; every argument is a VALUE | verifier | True of `LAUNCH` itself, whatever the kernel. |
+| `op_id`, `n_buf`, every buffer id, `n_scalar` are not negative | verifier | Structural. No kernel can make a negative count or id meaningful. |
+| Total equals `2 + n_buf + 1 + n_scalar` | device | Needs `n_buf` and `n_scalar` resolved, including `@N`. |
+| Buffer count is in the kernel's range | device | Needs the signature row. |
+| Each scalar's range, by its kind | device | Needs the signature row: which position is a `DIM`, a `FLAG` or a `PARAM`. |
+
+The verifier deliberately does **not** check the trailing scalars. Their valid range depends on
+the kernel, and the signature table that knows this is emunpu-specific, while the verifier is
+device-independent. A new op_id therefore needs no verifier change — only a table row.
 
 ## 6. Rules the compiler must follow
 
@@ -161,7 +204,7 @@ The remaining Llama-3 operators (SiLU, softmax, RoPE, gather, transpose, element
 | R10 | `EOF` is the last instruction. | implemented | Ends the program clearly. |
 | R11 | The file starts with `.version 1`, then the header, then the instructions. | implemented | The runtime checks the format version before it reads anything else. |
 | R12 | Every declared input is read by a `COPY_H2D`. Every declared output is written by a `COPY_D2H`. The runtime checks this at `EOF`, so it also sees slots that use `@N`. | implemented | An unused declaration usually means a lowering bug. |
-| R13 | No `LAUNCH` argument is negative. Every `LAUNCH` scalar (count or dimension) is at least 1. | implemented | A zero-size tensor cannot be allocated (R1), so a zero count is almost always a lowering bug. The verifier checks literals. The run checks `@N` values. |
+| R13 | No `LAUNCH` argument is negative. Every `LAUNCH` scalar obeys the range of its **kind**: a `DIM` is at least 1, a `FLAG` is 0 or 1, a `PARAM` is any value. See [Scalar kinds](#51-scalar-kinds). | implemented | A zero-size tensor cannot be allocated (R1), so a zero `DIM` is almost always a lowering bug. A `FLAG` is a mode, so 0 is valid. The verifier checks literals; the run checks `@N` values against the op's signature row. |
 
 ## 7. Limits
 
@@ -200,6 +243,7 @@ These need a decision from both teams before version 1.0.
 | O6 | The downsized Llama-3 configuration | Needed to set the limits and the operator list. |
 | O7 | Version line | **Proposed (§2):** `.version 1` is the first line. The runtime rejects any other version. |
 | O8 | Which weight goes in each slot | **Proposed (§2):** the name is on each header line, for example `.input 3 1048576 layers.0.wq`. A separate manifest was rejected: two files can disagree. |
+| O9 | One op id per activation, or one `ACTIVATION` op id with the kind as a scalar? | **Decided 2026-11-21: one shared `ACTIVATION` op id** (op id 7) taking `count, kind, alpha_bits, beta_bits` as scalars, `kind` a new `ENUM` scalar range-checked against the 24 kinds `emunpu_activation` supports, `alpha_bits`/`beta_bits` a new `FLOAT_BITS` scalar kind always present (kinds that ignore them pass the bits of `0.0f`). Adds every activation at once instead of one op id each. RELU keeps op id 2 and its own LAUNCH shape (`count` only), but `do_relu` is now a thin wrapper around the same `emunpu_activation` call ACTIVATION uses (`kind` fixed to RELU, `alpha`/`beta` defaulted to `0.0` instead of read from `args`) — one implementation, two LAUNCH spellings, not two code paths. The signature row, dispatch wiring and `do_activation`'s body (including the `FLOAT_BITS` encode/decode) are fully implemented. |
 
 ## 10. Example
 

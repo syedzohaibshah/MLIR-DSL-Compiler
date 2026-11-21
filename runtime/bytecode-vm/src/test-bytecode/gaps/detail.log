@@ -53,8 +53,8 @@ PASS  err_launch_matmul_dims_exceed_buffers.txt  ->  ERROR: buffer 0 for MATMUL 
 ===== err_launch_relu_count_exceeds_buffer.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] alloc buffer 2 (16 bytes)
-Launching kernel ID 2 with 2 buffers and 1 scalar args
-PASS  err_launch_relu_count_exceeds_buffer.txt  ->  ERROR: buffer 0 for RELU input needs 4000 bytes, but has only 16 (line 4)
+Launching kernel ID 7 with 2 buffers and 4 scalar args
+PASS  err_launch_relu_count_exceeds_buffer.txt  ->  ERROR: buffer 0 for ACTIVATION input needs 4000 bytes, but has only 16 (line 4)
 
 ===== err_launch_vec_add_count_exceeds_buffer.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)

@@ -2,10 +2,85 @@
 
 #include "../error.h"
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <iostream>
 
 
+
+//----------------
+// Kernel signature table. One row per op_id, indexed by op_id.
+// Add a kernel here first, then write its do_* body. dispatch() checks the
+// buffer count and every scalar range from this row, so no do_* repeats them.
+//-----------------
+// Every non-ENUM entry leaves enum_count unused; 0 is the convention for "not an enum".
+static const ScalarSpec MATMUL_SCALARS[]   = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+static const ScalarSpec VEC_ADD_SCALARS[]  = {{ScalarKind::DIM,0}};
+static const ScalarSpec RELU_SCALARS[]     = {{ScalarKind::DIM,0}};
+static const ScalarSpec BIAS_ADD_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+static const ScalarSpec RMS_NORM_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+static const ScalarSpec SOFTMAX_SCALARS[]  = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::FLAG,0}};
+static const ScalarSpec TRANSPOSE_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+
+
+// The activation kernel has a fixed set of kinds, so it uses an ENUM scalar to
+// select one. The enum_count is the number of kinds, so checkScalar can validate
+// the scalar value against that range.
+// EMUNPU_ACT_COUNT (arch.h) is 24: kinds 0 (RELU) .. 23 (ERF).
+static const int EMUNPU_ACTIVATION_KIND_COUNT = 24;
+// alpha/beta always ride along as FLOAT_BITS, even for kinds that ignore them
+// (callers pass the bits of 0.0f) -- ACTIVATION_SCALARS's length cannot vary
+// by kind, since KernelSignature declares one fixed num_scalars per op_id.
+static const ScalarSpec ACTIVATION_SCALARS[] = {
+    {ScalarKind::DIM,0},                                   // count
+    {ScalarKind::ENUM, EMUNPU_ACTIVATION_KIND_COUNT},       // kind
+    {ScalarKind::FLOAT_BITS,0},                             // alpha (LEAKY_RELU slope, CLAMP lower bound)
+    {ScalarKind::FLOAT_BITS,0},                             // beta  (CLAMP upper bound)
+};
+
+static const KernelSignature KERNEL_TABLE[] = {
+    {"MATMUL",     3, 3, MATMUL_SCALARS,     3},
+    {"VEC_ADD",    3, 3, VEC_ADD_SCALARS,    1},
+    {"RELU",       2, 2, RELU_SCALARS,       1},   // scalars: count only. dispatch forwards to do_activation(kind=RELU)
+    {"BIAS_ADD",   3, 3, BIAS_ADD_SCALARS,   2},
+    {"RMS_NORM",   2, 3, RMS_NORM_SCALARS,   2},   // 2 buffers skips gamma, 3 applies it
+    {"SOFTMAX",    2, 2, SOFTMAX_SCALARS,    3},
+    {"TRANSPOSE",  2, 2, TRANSPOSE_SCALARS, 2},
+    {"ACTIVATION", 2, 2, ACTIVATION_SCALARS, 4},   // op_id 7. count, kind, alpha_bits, beta_bits
+};
+
+static const int KERNEL_TABLE_SIZE = (int)(sizeof(KERNEL_TABLE) / sizeof(KERNEL_TABLE[0]));
+
+const KernelSignature* lookupKernelSignature(int op_id){
+    if(op_id < 0 || op_id >= KERNEL_TABLE_SIZE) return nullptr;
+    return &KERNEL_TABLE[op_id];
+}
+
+// Checks one scalar against the range its kind allows.
+static Error checkScalar(const ScalarSpec& spec, int value, const char* kernel_name,
+                         int position, int line){
+    std::string where = std::string(kernel_name) + " scalar " + std::to_string(position);
+    switch(spec.kind){
+        case ScalarKind::DIM:
+            if(value <= 0) return makeError(where + " is a dimension and must be greater than 0", line);
+            break;
+        case ScalarKind::FLAG:
+            if(value != 0 && value != 1) return makeError(where + " is a flag and must be 0 or 1", line);
+            break;
+        case ScalarKind::PARAM:
+            break;   // any value is valid, including negative
+        case ScalarKind::ENUM:
+            if(value < 0 || value >= spec.enum_count){
+                return makeError(where + " is an enum and must be 0 to " +
+                                  std::to_string(spec.enum_count - 1), line);
+            }
+            break;
+        case ScalarKind::FLOAT_BITS:
+            // all float bits are valid, including negative. The VM passes the bits of a float.
+            break;
+    }
+    return ok();
+}
 
 
 emunpuDevice::emunpuDevice(){
@@ -167,10 +242,21 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
         RETURN_IF_ERROR(isValidHandle(args[i], line));
     }
 
-    // Every scalar is a count or a dimension. A zero-size tensor cannot be
-    // allocated (R1), so a zero here is almost always a lowering bug.
-    for(size_t i = scalars_start; i < (size_t)expected_total; ++i){
-        if(args[i] == 0) { return makeError("LAUNCH scalar must be greater than 0", line); }
+    // The signature row decides the counts and every scalar range, so a new
+    // kernel never needs a special case here.
+    const KernelSignature* sig = lookupKernelSignature(op_id);
+    if(sig == nullptr) return makeError("unknown op_id", line);
+
+    if(num_buffers < sig->min_buffers || num_buffers > sig->max_buffers){
+        return makeError(std::string("wrong number of buffers for ") + sig->name, line);
+    }
+    if(num_scalars != sig->num_scalars){
+        return makeError(std::string("wrong number of scalars for ") + sig->name, line);
+    }
+    // Check each scalar against the range its kind allows. The signature row has 
+    //one entry per scalar position, in order.
+    for(int i = 0; i < sig->num_scalars; ++i){
+        RETURN_IF_ERROR(checkScalar(sig->scalars[i], args[scalars_start + i], sig->name, i, line));
     }
 
     std::cout<<"Launching kernel ID "<<op_id<<" with "<<num_buffers<<" buffers and "
@@ -179,32 +265,41 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
     if (op_id == 0) {
         // MATMUL
  
-      return do_matmul(num_buffers,num_scalars, scalars_start,buffer_start,args,line);
+      return do_matmul(scalars_start,buffer_start,args,line);
 
   
 
     } else if (op_id == 1) {
         // VEC_ADD
         
-        return do_vec_add(num_buffers,num_scalars, scalars_start,
-            buffer_start,args,line);
+        return do_vec_add(scalars_start,buffer_start,args,line);
 
     } else if (op_id == 2) {
-        // RELU
-        return do_relu(num_buffers,num_scalars, scalars_start,
-            buffer_start,args,line);
+        // RELU — forwards to the same emunpu_activation call ACTIVATION uses,
+        // with kind fixed. See runActivation.
+        return do_relu(scalars_start,buffer_start,args,line);
 
     } else if (op_id == 3) {
         // BIAS_ADD
-        return do_bais_add(num_buffers,num_scalars, scalars_start,
-            buffer_start,args,line);
+        return do_bais_add(scalars_start,buffer_start,args,line);
     }else if(op_id==4){
-// RMS_NORM
-return do_rms_norm( 
-num_buffers,num_scalars, scalars_start,
-buffer_start,args,line
-);
-    } else {
+        // RMS_NORM
+        return do_rms_norm(num_buffers, scalars_start, buffer_start, args, line);
+    } else if(op_id==5){
+
+        return do_softmax(scalars_start,buffer_start,args,line);
+
+
+    }else if(op_id==6){
+
+        return do_transpose(scalars_start,buffer_start,args,line);
+
+    }else if(op_id==7){
+      
+        return do_activation(scalars_start,buffer_start,args,line);
+
+    }
+    else {
         return makeError("unknown op_id", line);
     }
     return ok();
@@ -232,12 +327,9 @@ buffer_start,args,line
             
         }
 
-    Error emunpuDevice::do_matmul(int num_buffers,int num_scalars,int scalars_start,
+    Error emunpuDevice::do_matmul(int scalars_start,
         int buffer_start,const std::vector<int>& args,int line){
 
-        if (num_buffers != 3 || num_scalars != 3) {
-            return makeError("wrong number of buffers/scalars for MATMUL", line);
-        }
         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
         emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
@@ -262,12 +354,9 @@ buffer_start,args,line
         return ok();
     }
 
-    Error emunpuDevice::do_vec_add(int num_buffers,int num_scalars,int scalars_start,
+    Error emunpuDevice::do_vec_add(int scalars_start,
         int buffer_start,const std::vector<int>& args,int line){
 
-        if (num_buffers != 3 || num_scalars != 1) {
-            return makeError("wrong number of buffers/scalars for VEC_ADD", line);
-        }
         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
         emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
@@ -285,32 +374,8 @@ buffer_start,args,line
         return ok();
     }
 
-    Error emunpuDevice::do_relu(int num_buffers,int num_scalars,
-        int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+    Error emunpuDevice::do_bais_add(int scalars_start,int buffer_start,const std::vector<int>& args,int line){
 
-        if (num_buffers != 2 || num_scalars != 1) {
-            return makeError("wrong number of buffers/scalars for RELU", line);
-        }
-        emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
-        emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
-        uint32_t count = args[scalars_start+0];
-
-        //  check a (input) and c (output) each hold `count` values (requireElements).
-        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "RELU input", line));
-        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)count, "RELU output", line));
-        emunpu_status_t status = emunpu_activation(emu_device, nullptr, c, a, count, EMUNPU_ACT_RELU, 0, 0);
-        if (status != EMUNPU_OK) {
-            return makeError("emunpu_activation failed", line);
-        }
-        return ok();
-    }
-
-    Error emunpuDevice::do_bais_add(int num_buffers,int num_scalars,
-        int scalars_start,int buffer_start,const std::vector<int>& args,int line){
-
-        if (num_buffers != 3 || num_scalars != 2) {
-            return makeError("wrong number of buffers/scalars for BIAS_ADD", line);
-        }
         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
         emunpu_tensor_id_t bias = buffer_table[args[buffer_start+1]].real_id;
         emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
@@ -336,12 +401,7 @@ buffer_start,args,line
     }
 
 
-    Error emunpuDevice::do_rms_norm(int num_buffers,int num_scalars,
-        int scalars_start,int buffer_start,const std::vector<int>& args,int line){
-
-        if((num_buffers != 2 && num_buffers != 3) || num_scalars != 2) {
-            return makeError("wrong number of buffers/scalars for RMS_NORM", line);
-        }
+    Error emunpuDevice::do_rms_norm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
 
         const double eps = 1e-5;
         bool has_gamma = (num_buffers == 3);
@@ -370,6 +430,104 @@ buffer_start,args,line
         }
 
         return ok();
+    }
+
+    Error emunpuDevice:: do_softmax(int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+            emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+            emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
+
+            uint32_t rows = args[scalars_start+0];
+            uint32_t width = args[scalars_start+1];
+            int log_softmax = args[scalars_start+2]; 
+
+            RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*width, "SOFTMAX input", line));
+            RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)rows*width, "SOFTMAX output", line));
+
+        //log_softmax is a boolean flag, but we pass it as an int to the emunpu_softmax function.
+        // The emunpu_softmax function will interpret any non-zero value as true, and zero as false.
+emunpu_status_t status= emunpu_softmax(emu_device, nullptr,
+                               c,  a, rows,width, int(log_softmax));
+
+                               if(status != EMUNPU_OK){
+                                return makeError("emunpu_softmax failed", line);
+                               }
+                               return ok();
+
+
+        }
+
+       Error emunpuDevice::do_transpose(int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+        emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+        emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
+
+        uint32_t rows = args[scalars_start+0];
+        uint32_t cols = args[scalars_start+1];
+
+        // rows and cols describe the INPUT. The output is [cols, rows], so it
+        // holds the same number of elements. The two counts are equal on
+        // purpose; only the shape differs.
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*cols, "TRANSPOSE input", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)rows*cols, "TRANSPOSE output", line));
+
+
+
+emunpu_status_t status=  emunpu_transpose(emu_device,
+                                nullptr,  c,  a,rows,  cols);
+
+
+        if(status != EMUNPU_OK){
+        return makeError("emunpu_transpose failed", line);
+         }
+        return ok();
+
+
+       }
+
+
+    // Shared body for RELU and ACTIVATION. Neither reads `kind` differently —
+    // RELU just never lets the caller choose it.
+    Error emunpuDevice::runActivation(int buffer_start,const std::vector<int>& args,
+                                      uint32_t count,emunpu_act_kind_t kind,int line,double alpha,double beta){
+
+        emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+        emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
+
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "ACTIVATION input", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)count, "ACTIVATION output", line));
+
+      
+        emunpu_status_t status = emunpu_activation(emu_device, nullptr, c, a, count, kind, alpha, beta);
+        if (status != EMUNPU_OK) {
+            return makeError("emunpu_activation failed", line);
+        }
+
+        return ok();
+    }
+
+    // RELU (op_id 2). LAUNCH only carries `count`; `kind` is fixed to RELU,
+    // not read from args — RELU's signature row has no kind scalar at all.
+    Error emunpuDevice::do_relu(int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+        uint32_t count = args[scalars_start+0];
+        return runActivation(buffer_start, args, count, EMUNPU_ACT_RELU, line);
+    }
+
+    Error emunpuDevice::do_activation(int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+        uint32_t count = args[scalars_start+0];
+        emunpu_act_kind_t kind = (emunpu_act_kind_t)args[scalars_start+1];
+
+        // alpha/beta are always present (ACTIVATION_SCALARS has 4 scalars for
+        // every kind), so they are always decoded. Kinds that ignore them
+        // (RELU, SiLU, ...) simply never read the result inside emunpu_activation;
+        // callers that don't need them pass the FLOAT_BITS encoding of 0.0f.
+        int32_t alpha_bits = args[scalars_start+2];
+        int32_t beta_bits  = args[scalars_start+3];
+
+        float alpha_f, beta_f;
+        memcpy(&alpha_f, &alpha_bits, sizeof(float));   // reinterpret the bits, not convert the value
+        memcpy(&beta_f,  &beta_bits,  sizeof(float));
+
+        return runActivation(buffer_start, args, count, kind, line, double(alpha_f), double(beta_f));
     }
 
 

@@ -102,15 +102,46 @@ static Error checkSlotArgs(const opcode& op, const OpcodeSpec& spec, const Verif
     return ok();
 }
 
-// Every LAUNCH argument is a value: ids, counts, dimensions and op_id. None may be negative.
+// Rejects a negative literal at position `i`. A register (@N) holds no value
+// yet, so it is skipped here and checked during the run.
+static Error rejectNegativeLiteral(const opcode& op, size_t i, const std::string& what){
+    if(i >= op.args.size()) return ok();
+    if(op.args[i].is_register) return ok();
+    if(op.args[i].value >= 0) return ok();
+
+    return makeError("opcode LAUNCH " + what + " cannot be negative, but got " +
+                      std::to_string(op.args[i].value), op.line_number);
+}
+
+// Checks only LAUNCH's STRUCTURAL arguments: op_id, n_buf, the buffer ids and
+// n_scalar. None of these can be negative for any kernel, so the verifier can
+// judge them without knowing which kernel runs.
+//
+// The trailing SCALARS are deliberately NOT checked here. Their valid range
+// depends on the kernel: a dimension must be > 0, a flag is 0 or 1, and a
+// tuning value may be negative. Only the device knows which position is which
+// (the signature table in hal/emunpu_device.cpp), and the verifier stays
+// device-independent. See bytecode-contract.md section 5.1.
 static Error checkLaunchLiterals(const opcode& op){
-    for(size_t i = 0; i < op.args.size(); ++i){
-        const Arg& arg = op.args[i];
-        if(!arg.is_register && arg.value < 0){
-            return makeError("opcode LAUNCH argument " + std::to_string(i) +
-                              " cannot be negative, but got " + std::to_string(arg.value), op.line_number);
-        }
+    // Layout: op_id, n_buf, buf_0 .. buf_n-1, n_scalar, scalar_0 .. scalar_m-1
+    RETURN_IF_ERROR(rejectNegativeLiteral(op, 0, "op_id"));
+    RETURN_IF_ERROR(rejectNegativeLiteral(op, 1, "num_buffers"));
+
+    // The buffer ids start at 2, but we can only find them if n_buf is a
+    // literal. If it is @N, its value is unknown until the run, so stop here
+    // and let the device check the layout.
+    if(op.args.size() < 2 || op.args[1].is_register) return ok();
+
+    int num_buffers = (int)op.args[1].value;
+    if(num_buffers < 0) return ok();   // already reported above
+
+    size_t buffer_start = 2;
+    for(int i = 0; i < num_buffers; ++i){
+        RETURN_IF_ERROR(rejectNegativeLiteral(op, buffer_start + i,
+                                              "buffer id " + std::to_string(i)));
     }
+
+    RETURN_IF_ERROR(rejectNegativeLiteral(op, buffer_start + num_buffers, "num_scalars"));
     return ok();
 }
 

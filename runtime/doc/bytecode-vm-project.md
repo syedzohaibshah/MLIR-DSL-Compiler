@@ -242,16 +242,38 @@ flowchart TD
 
 **Finding the kernel.** Every kernel gets registered ahead of time under a small integer ID, inside whichever `Device` is loaded — this used to live in a standalone `KernelRegistry` class; that logic now lives directly inside `CudaDevice`. Launching one is a lookup — take the ID out of the instruction, find the matching entry, hand off to it. Unregistered ID, the instruction fails cleanly instead of running whatever happens to sit at that number.
 
-**Running it.** Four kernels are registered right now:
+**Running it.** On the emunpu path, these kernels are wired right now:
 
-| `kernel_id` | Kernel | Buffers | Scalars | What it computes |
+| `op_id` | Name | Buffers | Scalars | What it computes |
 |---|---|---|---|---|
-| 0 | `vec_mm_Kernel` | x, y, z | n, width, height | `z = x @ y` (matrix multiply) |
-| 1 | `vec_add_Kernel` | x, y, z | n | `z = x + y`, elementwise |
-| 2 | `relu_Kernel` | x, z | n | `z = max(x, 0)`, elementwise |
-| 3 | `bias_add_Kernel` | x, bias, z | n, out_features | `z = x + bias`, bias broadcast per output column |
+| 0 | MATMUL | A, B, C | M, N, K | `C = A · B` |
+| 1 | VEC_ADD | A, B, C | count | `C[i] = A[i] + B[i]` |
+| 2 | RELU | A, C | count | `C[i] = max(0, A[i])`. Kept as its own LAUNCH shape for compatibility, but `do_relu` is a thin wrapper that calls the same `emunpu_activation` path as ACTIVATION, with `kind` fixed to RELU instead of read from `args`. Not a duplicate implementation. |
+| 3 | BIAS_ADD | A, bias, C | count, out_features | `C[i] = A[i] + bias[i mod out_features]` |
+| 4 | RMS_NORM | A, C *or* A, gamma, C | rows, width | `C[r][i] = A[r][i] / sqrt(mean(A[r]²) + eps) * gamma[i]`; `eps` fixed at `1e-5` |
+| 5 | SOFTMAX | A, C | rows, width, log_softmax | Row-wise softmax; `log_softmax = 1` gives log-softmax |
+| 6 | TRANSPOSE | A, C | rows, cols | `C[cols×rows] = transpose(A[rows×cols])`; `rows`/`cols` describe the input |
+| 7 | ACTIVATION | A, C | count, kind, alpha_bits, beta_bits | `C[i] = act(A[i], alpha, beta)`; `kind` selects 1 of 24 emunpu activation kinds (0 = RELU, 8 = SiLU, …). `alpha_bits`/`beta_bits` are `FLOAT_BITS` scalars, always present; only `LEAKY_RELU`/`ELU` (alpha) and `CLAMP` (both) actually use them. |
 
-All four happen to take the same *shape* of arguments — some number of buffers, then some number of plain numbers — so all four go through one shared piece of launch code instead of four hand-written ones. That shared code checks the exact buffer/scalar count the specific kernel expects, resolves each buffer ID into a real device address, reads the scalar arguments, and starts the kernel running.
+(The CUDA path still has its own four kernels — `vec_mm_Kernel`, `vec_add_Kernel`, `relu_Kernel`, `bias_add_Kernel` — matching op ids 0 to 3. These are a separate, device-local table and were not changed by ACTIVATION's addition on the emunpu side.)
+
+**The kernel signature table (D16).** Every kernel takes the same *shape* of arguments — some buffers, then some scalars — so all of them go through one shared launch path. What differs per kernel is the counts and the valid range of each scalar, and that lives in one static table, `KERNEL_TABLE` in `hal/emunpu_device.cpp`, with one row per `op_id`. Each row names the kernel, the buffer-count range it accepts, and the **kind** of each scalar position:
+
+| Scalar kind | Allowed values | Example |
+|---|---|---|
+| `DIM` | `> 0` | `M`, `count`, `rows`, `width` |
+| `FLAG` | `0` or `1` | `log_softmax` |
+| `PARAM` | any int, negative allowed | reserved; nothing uses it yet |
+| `ENUM` | `0` to a per-scalar count, declared with the scalar (`ScalarSpec::enum_count`) | `kind` on ACTIVATION (op id 7), 24 values |
+| `FLOAT_BITS` | any 32-bit pattern (not range-checked) | `alpha_bits`/`beta_bits` on ACTIVATION — a `float`'s raw bits, carried through an `int` scalar via `memcpy`, not a cast |
+
+`dispatch()` reads the row, checks the buffer count and every scalar against its kind, and only then calls the kernel. Because the table has already guaranteed the counts, no `do_*` function repeats that check — each one just reads arguments it knows are well-formed. Adding a kernel is one table row, one `do_*` body, one dispatch branch; the shared validation never changes.
+
+**`ENUM`'s one wrinkle.** Unlike `DIM`/`FLAG`/`PARAM`, an `ENUM`'s valid range is not fixed — it differs per kernel (24 activation kinds, 9 planned element-wise kinds, 5 planned reduce kinds). So the scalar table entry is not a bare `ScalarKind` but a `ScalarSpec{kind, enum_count}`, and `enum_count` only means something when `kind == ENUM`. This is the first kernel (ACTIVATION) to use it.
+
+**`FLOAT_BITS`.** `emunpu_activation`'s `alpha`/`beta` are `double`s, but LAUNCH only carries `int` scalars. A C-style cast (`(int)alpha`) would convert the *value* (truncating `0.2` to `0`), not preserve it — the wrong operation. `FLOAT_BITS` instead carries a `float`'s raw 4 bytes inside an `int` scalar: the emitter does `memcpy(&bits, &my_float, 4)`, the device does `memcpy(&my_float, &bits, 4)` to recover the exact value, then widens to `double` (a safe, lossless conversion, unlike the int-to-float direction). `checkScalar` does not range-check it — every 32-bit pattern is a valid float.
+
+This replaced a blanket rule that rejected *any* zero scalar. That rule was correct for the first five kernels (every scalar was a dimension) and wrong for the sixth: SOFTMAX's `log_softmax = 0` is a valid mode, not a lowering bug.
 
 **Why the explicit wait.** Launching a kernel isn't instant. The device starts running it and immediately hands control back, so right after the launch, the VM explicitly waits for the kernel to finish and checks whether anything went wrong during that run. Skip that wait, and the VM moves on to the next instruction before the kernel's actually done.
 
@@ -345,13 +367,14 @@ This section closes the "deliberate error-path testing" gap that earlier version
 - Kernel arguments go through `cudaLaunchKernel`'s `void**` interface rather than a typed call, which means a wrong argument type or order is no longer caught by the compiler — only at runtime, if at all.
 - The shared launch path only covers kernels shaped as "some buffers, then some plain numbers." A kernel needing a different argument type needs its own launch code.
 - The CUDA path only runs against real CUDA — no local GPU to test against directly, hence a remote Kaggle GPU instance. This is exactly the gap `EmunpuDevice` (see [Future direction](#future-direction)) exists to close: a hardware target that needs no GPU at all.
-- The static size check (§4.3) can't see through `@reg` indirect addressing. Any `COPY_H2D`/`COPY_D2H` whose slot is register-based silently skips the pre-run check and is only validated when it actually executes.
+- The static size check (§4.3) can't see through `@reg` indirect addressing. Any `COPY_H2D`/`COPY_D2H` whose slot is register-based skips the load-time check and is validated when it actually executes.
 - No function calls or subroutines. Repeating a sequence still means either writing it twice, or looping it with `COND_BR` — which only supports "repeat the same block," not "call this block from several different places and come back."
 - No type system for buffers. A buffer is just N raw bytes as far as the VM is concerned — nothing records whether it holds floats, ints, or anything else. Whichever kernel reads it just assumes a type. This is fine while every kernel agrees on `float*`, but it's a real gap against hardware that tracks data types itself — `EmunpuDevice` currently papers over this by committing every allocation to `EMUNPU_DT_FP32` (see [`hal-design.md`](../bytecode-vm/hal-design.md) §8).
-- A copy's size is checked against the host input slot, but not against the device buffer's own allocated size. Uploading more bytes than a buffer holds is not caught in the VM layer — only by the device, if it catches it at all. The planned `BufferTable` closes this ([`validation-design.md`](../bytecode-vm/validation-design.md)).
+- **Buffers are flat (rank 1), and every wired kernel is at most 2-D.** Most of Llama-3 survives this, because a row-independent operation can fold its leading dimensions into `rows` — softmax over `[heads, seq, seq]` is identical to a 2-D softmax with `rows = heads*seq`. Batched matmul and RoPE cannot be folded that way: each head needs a *different slice* of its operands. Fixing that needs copies and bindings with an **offset** (issue B5), not a wider kernel signature.
+- **No float can travel in the bytecode.** Every `LAUNCH` argument is an `int`, so a constant like RMS_NORM's `eps` is hardcoded in the kernel and the compiler cannot tune it. The planned fix is a `FLOAT_BITS` scalar kind carrying the float's 32-bit pattern in an `int`; not built, because nothing needs it yet.
 - The parser's number conversion detects `strtol`'s `ERANGE` but only prints a message; it does not return an error. A number that does not fit in an `int` is not rejected either.
-- The `ALLOC` handle returned by the device is captured but not stored. The VM still assumes a buffer's handle equals its allocation order, which happens to hold for emunpu but is not guaranteed. The planned `BufferTable` stores it ([`validation-design.md`](../bytecode-vm/validation-design.md)).
-- LAUNCH dimensions are not checked against buffer sizes. A wrong `M`, `N`, `K` or `count` makes the kernel read or write past its buffer.
+
+Several limitations listed in earlier versions of this doc are now closed: the `ALLOC` handle *is* stored (the VM's `BufferTable`, D14 step 2); a copy's size *is* checked against the device buffer's own size; and LAUNCH dimensions *are* checked against buffer sizes before every launch (`requireElements`, D14 step 5).
 
 ## Future direction
 

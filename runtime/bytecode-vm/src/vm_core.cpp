@@ -314,14 +314,16 @@ Error VM::dispatch(const std::string& name, const std::vector<Arg>& args, int li
     }
     else if(name=="LAUNCH"){//value
 
+        // No blanket sign check here. Which LAUNCH positions may be negative
+        // depends on the kernel (a FLOAT_BITS scalar's bit pattern can be any
+        // int, including negative, while a DIM/count must not be) -- only the
+        // device's dispatch() knows that, via its signature table. See D7 and
+        // the verifier's own checkLaunchLiterals, which was narrowed the same
+        // way for the same reason.
         std::vector<int>int_args;
         for(auto arg: args){
             int arg_value=-1;
             RETURN_IF_ERROR(resolveValue(arg, arg_value, line_number));
-            if(arg_value<0){
-                return makeError("LAUNCH argument cannot be negative", line_number);
-            }
-
             int_args.push_back(arg_value);
         }
        // kernels.launch(int_args, line_number, buffers);

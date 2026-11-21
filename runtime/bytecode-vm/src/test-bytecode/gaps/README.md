@@ -58,7 +58,7 @@ Every buffer below is 16 bytes (4 floats) unless stated. emunpu does not compare
 | File | Launch | Needs | Has |
 |---|---|---|---|
 | `err_launch_matmul_dims_exceed_buffers.txt` | MATMUL M=N=K=16 | 1024 bytes per operand | 16 |
-| `err_launch_relu_count_exceeds_buffer.txt` | RELU count=1000 | 4000 bytes | 16 |
+| `err_launch_relu_count_exceeds_buffer.txt` | ACTIVATION count=1000, kind=0 (RELU) | 4000 bytes | 16 |
 | `err_launch_vec_add_count_exceeds_buffer.txt` | VEC_ADD count=1000 | 4000 bytes | 16 |
 | `err_launch_bias_period_exceeds_bias.txt` | BIAS_ADD out_features=100 | bias of 400 bytes | 8 |
 | `ok_launch_matmul_nonsquare.txt` | MATMUL 2x4 by 4x3 | 32, 48, 24 bytes | exactly that |
