@@ -38,6 +38,16 @@ static const ScalarSpec ACTIVATION_SCALARS[] = {
     {ScalarKind::FLOAT_BITS,0},                             // beta  (CLAMP upper bound)
 };
 
+static const int EMUNPU_EW_KIND_COUNT=9;
+// bcast_period: PARAM, not DIM -- 0 is emunpu_vector_op's documented meaning
+// for "no broadcast, equal shape" (device.h), i.e. the common case, not an
+// edge case. DIM's `> 0` rule would reject the normal value
+static const ScalarSpec VECTOR_OP_SCALARS[] = {
+    {ScalarKind::DIM,0},                                   // count
+    {ScalarKind::ENUM, EMUNPU_EW_KIND_COUNT},               // kind
+    {ScalarKind::PARAM,0},                                 // broadcast period
+};
+
 static const KernelSignature KERNEL_TABLE[] = {
     {"MATMUL",     3, 3, MATMUL_SCALARS,     3},
     {"VEC_ADD",    3, 3, VEC_ADD_SCALARS,    1},
@@ -47,6 +57,9 @@ static const KernelSignature KERNEL_TABLE[] = {
     {"SOFTMAX",    2, 2, SOFTMAX_SCALARS,    3},
     {"TRANSPOSE",  2, 2, TRANSPOSE_SCALARS, 2},
     {"ACTIVATION", 2, 2, ACTIVATION_SCALARS, 4},   // op_id 7. count, kind, alpha_bits, beta_bits
+    // 2 buffers (a, c) for a unary kind (RELU, COPY); 3 (a, b, c) for a binary
+    // kind.
+    {"VECTOR_OP",  2, 3, VECTOR_OP_SCALARS, 3},   // op_id 8. count, kind, broadcast period
 };
 
 static const int KERNEL_TABLE_SIZE = (int)(sizeof(KERNEL_TABLE) / sizeof(KERNEL_TABLE[0]));
@@ -299,6 +312,12 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
         return do_activation(scalars_start,buffer_start,args,line);
 
     }
+    else if(op_id==8){
+
+        return do_vector_op(num_buffers,scalars_start,buffer_start,args,line);
+
+
+    }
     else {
         return makeError("unknown op_id", line);
     }
@@ -531,6 +550,48 @@ emunpu_status_t status=  emunpu_transpose(emu_device,
     }
 
 
+
+     Error emunpuDevice::do_vector_op(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+         uint32_t count = args[scalars_start+0];
+         emunpu_ew_kind_t kind = (emunpu_ew_kind_t)args[scalars_start+1];
+         uint32_t bcast_period = args[scalars_start+2];
+
+         bool is_binary = emunpu_ew_is_binary(kind) != 0;  // true for kinds that read both A and B, false for unary kinds that ignore B.
+         bool has_b = (num_buffers == 3);
+
+         // Check that the number of buffers matches the kind.
+         if(is_binary && !has_b){
+             return makeError("VECTOR_OP kind needs an operand B buffer (3 buffers), got 2", line);
+         }
+         if(!is_binary && has_b){
+             return makeError("VECTOR_OP kind is unary and takes no operand B buffer, got 3", line);
+         }
+
+         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+         emunpu_tensor_id_t c = buffer_table[args[buffer_start + (has_b ? 2 : 1)]].real_id;
+         // 0 is emunpu's "no tensor" sentinel for a unary kind -- the engine
+         // ignores b entirely when emunpu_ew_is_binary(kind) is false.
+         emunpu_tensor_id_t b = has_b ? buffer_table[args[buffer_start+1]].real_id : 0;
+
+         RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "VECTOR_OP input A", line));
+         if(has_b){
+             // With bcast_period != 0, the device only reads `bcast_period`
+             // elements of B and repeats them (core.c: b_elems = period ? period : n).
+             // Requiring B to hold `count` elements would reject a correctly
+             // sized, legitimately smaller broadcast buffer.
+             int64_t b_elements = bcast_period != 0 ? (int64_t)bcast_period : (int64_t)count;
+             RETURN_IF_ERROR(requireElements(args[buffer_start+1], b_elements, "VECTOR_OP input B", line));
+         }
+         RETURN_IF_ERROR(requireElements(args[buffer_start + (has_b ? 2 : 1)], (int64_t)count, "VECTOR_OP output", line));
+
+         emunpu_status_t status = emunpu_vector_op(emu_device, nullptr, c, a, b, count, kind, bcast_period);
+         if(status != EMUNPU_OK){
+             return makeError("emunpu_vector_op failed", line);
+         }
+
+         return ok();
+    }
 std::string emunpuDevice::name() const {
 
 

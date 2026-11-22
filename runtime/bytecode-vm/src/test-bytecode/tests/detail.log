@@ -70,7 +70,7 @@ PASS  err_launch_negative_nbuf.txt  ->  ERROR: opcode LAUNCH num_buffers cannot 
 [emunpu] alloc buffer 1 (16 bytes)
 [emunpu] alloc buffer 2 (16 bytes)
 [emunpu] alloc buffer 3 (16 bytes)
-PASS  err_launch_negative_scalar.txt  ->  ERROR: LAUNCH argument cannot be negative (line 5)
+PASS  err_launch_negative_scalar.txt  ->  ERROR: VEC_ADD scalar 0 is a dimension and must be greater than 0 (line 5)
 
 ===== err_launch_truncated.txt (exit 0) =====
 [emunpu] alloc buffer 1 (16 bytes)

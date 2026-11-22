@@ -88,6 +88,12 @@ class emunpuDevice:public Device{
     // emunpu_act_kind_t kinds.
     Error do_activation(int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
+
+    // Elementwise sub-operation (EMUNPU_I_EW). num_buffers tells apart a unary
+    // kind's LAUNCH (2 buffers: a, c) from a binary kind's (3: a, b, c), the
+    // same way RMS_NORM's num_buffers tells its 2- and 3-buffer forms apart.
+    Error do_vector_op(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
 public:
     emunpuDevice();
     ~emunpuDevice() override;
