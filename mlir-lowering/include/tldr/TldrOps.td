@@ -29,16 +29,9 @@ def Tldr_SoftmaxOp : Tldr_Op<"softmax", [Pure, AllTypesMatch<["input", "result"]
   let hasVerifier = 1;
 }
 
-// LAUNCH op_id 0 (MATMUL). result = lhs @ rhs, all rank-2, K dims must agree.
-def Tldr_MatMulOp : Tldr_Op<"matmul", [Pure]> {
-  let summary = "C = A @ B. Maps to LAUNCH op_id 0 (MATMUL).";
-  let arguments = (ins
-    RankedTensorOf<[F32]>:$lhs,
-    RankedTensorOf<[F32]>:$rhs
-  );
-  let results = (outs RankedTensorOf<[F32]>:$result);
-  let assemblyFormat = "$lhs `,` $rhs attr-dict `:` functional-type(operands, results)";
-  let hasVerifier = 1;
-}
+// LAUNCH op_id 0 (MATMUL) deliberately has no op here. linalg.matmul
+// already means exactly this -- two rank-2 f32 tensors in, one out, same
+// shape rules -- so the importer emits that directly instead of a
+// redundant tldr op. See mlir-lowering/test/smoke.mlir.
 
 #endif // TLDR_OPS

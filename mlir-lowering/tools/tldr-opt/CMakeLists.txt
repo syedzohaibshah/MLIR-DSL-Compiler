@@ -5,6 +5,8 @@ target_link_libraries(tldr-opt PRIVATE
   MLIRTldr
   MLIROptLib
   MLIRFuncDialect
+  MLIRLinalgDialect
+  MLIRTensorDialect
 )
 
 mlir_check_all_link_libraries(tldr-opt)
