@@ -1,0 +1,6 @@
+relu_kernel(
+    A : Tensor[f32, (64,)],
+    B : Tensor[f32, (64,)]
+) -> [B] {
+    B = relu(A)
+}
