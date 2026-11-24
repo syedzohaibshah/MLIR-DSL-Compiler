@@ -23,6 +23,7 @@ static const ScalarSpec SOFTMAX_SCALARS[]  = {{ScalarKind::DIM,0}, {ScalarKind::
 static const ScalarSpec TRANSPOSE_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
 
 
+
 // The activation kernel has a fixed set of kinds, so it uses an ENUM scalar to
 // select one. The enum_count is the number of kinds, so checkScalar can validate
 // the scalar value against that range.
@@ -48,6 +49,16 @@ static const ScalarSpec VECTOR_OP_SCALARS[] = {
     {ScalarKind::PARAM,0},                                 // broadcast period
 };
 
+static const int  EMUNPU_REDUCE_KIND_COUNT=7;
+
+static const ScalarSpec REDUCE_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //rows
+    {ScalarKind::DIM,0},        //width                            
+    {ScalarKind::ENUM, EMUNPU_REDUCE_KIND_COUNT},               // kind
+                     
+};
+
+
 static const KernelSignature KERNEL_TABLE[] = {
     {"MATMUL",     3, 3, MATMUL_SCALARS,     3},
     {"VEC_ADD",    3, 3, VEC_ADD_SCALARS,    1},
@@ -60,6 +71,7 @@ static const KernelSignature KERNEL_TABLE[] = {
     // 2 buffers (a, c) for a unary kind (RELU, COPY); 3 (a, b, c) for a binary
     // kind.
     {"VECTOR_OP",  2, 3, VECTOR_OP_SCALARS, 3},   // op_id 8. count, kind, broadcast period
+    {"REDUCE_OP",  2, 2, REDUCE_OP_SCALARS, 3},   // op_id 9. rows, width, kind
 };
 
 static const int KERNEL_TABLE_SIZE = (int)(sizeof(KERNEL_TABLE) / sizeof(KERNEL_TABLE[0]));
@@ -317,6 +329,10 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
         return do_vector_op(num_buffers,scalars_start,buffer_start,args,line);
 
 
+    }
+    else if(op_id==9){
+
+        return do_reduce_op(num_buffers,scalars_start,buffer_start,args,line);
     }
     else {
         return makeError("unknown op_id", line);
@@ -592,6 +608,31 @@ emunpu_status_t status=  emunpu_transpose(emu_device,
 
          return ok();
     }
+
+
+    Error emunpuDevice:: do_reduce_op(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+    emunpu_tensor_id_t c = buffer_table[args[buffer_start + 1]].real_id;
+
+    uint32_t rows = args[scalars_start+0];
+    uint32_t width = args[scalars_start+1];
+    emunpu_reduce_kind_t kind = (emunpu_reduce_kind_t)args[scalars_start+2];
+
+    RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*width, "REDUCE input", line));
+    RETURN_IF_ERROR(requireElements(args[buffer_start + 1], (int64_t)rows, "REDUCE output", line));
+
+emunpu_status_t status =emunpu_reduce(emu_device, nullptr, c, a,
+                                                    rows, width,kind);
+
+
+if(status != EMUNPU_OK){
+    return makeError("emunpu_reduce failed", line);     
+}
+
+return ok();
+    }
+
 std::string emunpuDevice::name() const {
 
 

@@ -254,6 +254,7 @@ flowchart TD
 | 5 | SOFTMAX | A, C | rows, width, log_softmax | Row-wise softmax; `log_softmax = 1` gives log-softmax |
 | 6 | TRANSPOSE | A, C | rows, cols | `C[cols×rows] = transpose(A[rows×cols])`; `rows`/`cols` describe the input |
 | 7 | ACTIVATION | A, C | count, kind, alpha_bits, beta_bits | `C[i] = act(A[i], alpha, beta)`; `kind` selects 1 of 24 emunpu activation kinds (0 = RELU, 8 = SiLU, …). `alpha_bits`/`beta_bits` are `FLOAT_BITS` scalars, always present; only `LEAKY_RELU`/`ELU` (alpha) and `CLAMP` (both) actually use them. |
+| 8 | VECTOR_OP | A, C *or* A, B, C | count, kind, bcast_period | `C[i] = ew(A[i], B[i])` (binary) or `C[i] = ew(A[i])` (unary) for `count` elements. `kind` selects 1 of 9 element-wise kinds (0 = ADD … 8 = POW); only `RELU`(6) and `COPY`(7) are unary and take `n_buf = 2` (no B). Every other kind is binary and takes `n_buf = 3`. The kernel cross-checks `n_buf` against `kind` itself, via emunpu's own `emunpu_ew_is_binary(kind)` — a mismatch is a clean rejected `LAUNCH`. `bcast_period = 0` means B has the same shape as A (no broadcast); a non-zero period means B holds only `bcast_period` elements, repeated. |
 
 (The CUDA path still has its own four kernels — `vec_mm_Kernel`, `vec_add_Kernel`, `relu_Kernel`, `bias_add_Kernel` — matching op ids 0 to 3. These are a separate, device-local table and were not changed by ACTIVATION's addition on the emunpu side.)
 
@@ -263,7 +264,7 @@ flowchart TD
 |---|---|---|
 | `DIM` | `> 0` | `M`, `count`, `rows`, `width` |
 | `FLAG` | `0` or `1` | `log_softmax` |
-| `PARAM` | any int, negative allowed | reserved; nothing uses it yet |
+| `PARAM` | any int, negative allowed | `bcast_period` on VECTOR_OP (op id 8) — its common/default value is `0`, which `DIM` would wrongly reject |
 | `ENUM` | `0` to a per-scalar count, declared with the scalar (`ScalarSpec::enum_count`) | `kind` on ACTIVATION (op id 7), 24 values |
 | `FLOAT_BITS` | any 32-bit pattern (not range-checked) | `alpha_bits`/`beta_bits` on ACTIVATION — a `float`'s raw bits, carried through an `int` scalar via `memcpy`, not a cast |
 
