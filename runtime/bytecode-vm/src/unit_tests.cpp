@@ -866,6 +866,241 @@ static void test_reduce_count_exceeds_buffer_rejected(){
     result(name, !e.ok, "REDUCE_OP with rows=width=100 on 16-byte buffers was accepted");
 }
 
+// MATVEC_OP (op_id 10). y = A . x. A is 2x3 (M=2, K=3), x is a 3-length
+// vector, y is the 2-length result. Non-square, distinct values per the same
+// convention as test_transpose_values.
+static void test_matvec_values(){
+    const char* name = "matvec_matches_cpu";
+    const uint32_t M = 2, K = 3;
+    float a[M * K] = {1, 2, 3,
+                      4, 5, 6};
+    float x[K]     = {1, 0, 2};
+    float want[M];
+    for(uint32_t i = 0; i < M; i++){
+        float s = 0;
+        for(uint32_t k = 0; k < K; k++) s += a[i*K+k] * x[k];
+        want[i] = s;
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 24 a\n.input 1 12 x\n.output 0 8 y\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {24},                      1),   // A: 6 floats
+        op("ALLOC",    {12},                      2),   // x: 3 floats
+        op("ALLOC",    {8},                       3),   // y: 2 floats
+        op("COPY_H2D", {0, 0, 24},                4),
+        op("COPY_H2D", {1, 1, 12},                5),
+        op("LAUNCH",   {10, 3, 0, 1, 2, 2, M, K}, 6),   // op_id=10, n_buf=3 (a,x,y), n_scalar=2 (M,K)
+        op("COPY_D2H", {0, 2, 8},                 7),
+        op("FREE",     {0},                       8),
+        op("FREE",     {1},                       9),
+        op("FREE",     {2},                      10),
+        op("EOF",      {},                       11),
+    };
+    float got[M] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, x, sizeof(x));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, M, why), why);
+}
+
+// Error path: A/X/Y sized for M=K=100 but allocated at only 16 bytes each.
+// requireElements must still catch this, the same guarantee every other
+// kernel gives.
+static void test_matvec_dims_exceed_buffer_rejected(){
+    const char* name = "matvec_dims_exceed_buffer_rejected";
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    DeviceHandle a, x, y;
+    if(!npu.allocate(16, 1, a).ok || !npu.allocate(16, 1, x).ok || !npu.allocate(16, 1, y).ok){
+        result(name, false, "could not allocate 16-byte buffers"); return;
+    }
+    Error e = npu.dispatch({10, 3, a, x, y, 2, 100, 100}, 1);   // M=100, K=100 on 4-float buffers
+    result(name, !e.ok, "MATVEC_OP with M=K=100 on 16-byte buffers was accepted");
+}
+
+// FMA_OP (op_id 11). c[i] = a[i]*b[i] + c[i], in-place on C -- C is uploaded
+// with a real starting value (not left at whatever ALLOC happens to give it),
+// since FMA reads C as an input too. Distinct nonzero values throughout so a
+// dropped term (missing *, or missing +c) cannot hide behind a zero.
+static void test_fma_values(){
+    const char* name = "fma_matches_cpu";
+    float a[4] = {1, 2, 3, 4};
+    float b[4] = {5, 6, 7, 8};
+    float c[4] = {10, 20, 30, 40};   // C's starting value -- FMA must add onto this, not overwrite it
+    float want[4];
+    for(int i = 0; i < 4; i++) want[i] = a[i] * b[i] + c[i];
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 16 a\n.input 1 16 b\n.input 2 16 c\n.output 0 16 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {16},                   1),
+        op("ALLOC",    {16},                   2),
+        op("ALLOC",    {16},                   3),
+        op("COPY_H2D", {0, 0, 16},             4),
+        op("COPY_H2D", {1, 1, 16},             5),
+        op("COPY_H2D", {2, 2, 16},             6),
+        op("LAUNCH",   {11, 3, 0, 1, 2, 1, 4}, 7),   // op_id=11, n_buf=3 (a,b,c), n_scalar=1 (count=4)
+        op("COPY_D2H", {0, 2, 16},             8),
+        op("FREE",     {0},                    9),
+        op("FREE",     {1},                   10),
+        op("FREE",     {2},                   11),
+        op("EOF",      {},                    12),
+    };
+    float got[4] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, b, sizeof(b));
+    if(e.ok) e = vm.setInput(2, c, sizeof(c));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, 4, why), why);
+}
+
+// Error path: count exceeding the allocated buffers. requireElements must
+// still catch it, the same guarantee every other kernel gives.
+static void test_fma_count_exceeds_buffer_rejected(){
+    const char* name = "fma_count_exceeds_buffer_rejected";
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    DeviceHandle a, b, c;
+    if(!npu.allocate(16, 1, a).ok || !npu.allocate(16, 1, b).ok || !npu.allocate(16, 1, c).ok){
+        result(name, false, "could not allocate 16-byte buffers"); return;
+    }
+    Error e = npu.dispatch({11, 3, a, b, c, 1, 1000}, 1);   // count=1000 on 4-float buffers
+    result(name, !e.ok, "FMA_OP with count=1000 on 16-byte buffers was accepted");
+}
+
+// GEMM_OP (op_id 12). C = relu?(A*B + bias). M=2, K=3, N=2, no transpose,
+// no bias, no relu -- the plain-matmul case, checked against a hand-computed
+// CPU reference.
+static void test_gemm_plain_values(){
+    const char* name = "gemm_plain_matches_cpu";
+    const int M = 2, K = 3, N = 2;
+    float a[M*K] = {1, 2, 3,   4, 5, 6};        // 2x3
+    float b[K*N] = {1, 0,   0, 1,   1, 1};      // 3x2
+    float want[M*N];
+    for(int i = 0; i < M; i++){
+        for(int j = 0; j < N; j++){
+            double acc = 0;
+            for(int k = 0; k < K; k++) acc += a[i*K+k] * b[k*N+j];
+            want[i*N+j] = (float)acc;
+        }
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 24 a\n.input 1 24 b\n.output 0 16 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {24},                              1),   // a: M*K=6 floats
+        op("ALLOC",    {24},                              2),   // b: K*N=6 floats
+        op("ALLOC",    {16},                              3),   // c: M*N=4 floats
+        op("COPY_H2D", {0, 0, 24},                        4),
+        op("COPY_H2D", {1, 1, 24},                        5),
+        // op_id=12, n_buf=3 (a,b,c), n_scalar=5 (M,K,N,transpose_b,fuse_relu)
+        op("LAUNCH",   {12, 3, 0, 1, 2, 5, M, K, N, 0, 0}, 6),
+        op("COPY_D2H", {0, 2, 16},                        7),
+        op("FREE",     {0},                               8),
+        op("FREE",     {1},                               9),
+        op("FREE",     {2},                              10),
+        op("EOF",      {},                               11),
+    };
+    float got[M*N] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, b, sizeof(b));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, M*N, why), why);
+}
+
+// GEMM_OP with bias (4 buffers) and fuse_relu=1. Bias is negative enough on
+// one column to drive that column negative before ReLU, so a missing or
+// no-op ReLU would show up as a mismatch, not hide behind a zero.
+static void test_gemm_bias_relu_values(){
+    const char* name = "gemm_bias_relu_matches_cpu";
+    const int M = 2, K = 2, N = 2;
+    float a[M*K] = {1, 1,   2, 2};               // 2x2
+    float b[K*N] = {1, 1,   1, 1};               // 2x2
+    float bias[N] = {-10, 1};                    // column 0 goes negative, column 1 stays positive
+    float want[M*N];
+    for(int i = 0; i < M; i++){
+        for(int j = 0; j < N; j++){
+            double acc = bias[j];
+            for(int k = 0; k < K; k++) acc += a[i*K+k] * b[k*N+j];
+            want[i*N+j] = acc > 0 ? (float)acc : 0.0f;
+        }
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 16 a\n.input 1 16 b\n.input 2 8 bias\n.output 0 16 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {16},                                1),   // a: 4 floats
+        op("ALLOC",    {16},                                2),   // b: 4 floats
+        op("ALLOC",    {8},                                 3),   // bias: 2 floats
+        op("ALLOC",    {16},                                4),   // c: 4 floats
+        op("COPY_H2D", {0, 0, 16},                          5),
+        op("COPY_H2D", {1, 1, 16},                          6),
+        op("COPY_H2D", {2, 2, 8},                           7),
+        // op_id=12, n_buf=4 (a,b,bias,c), n_scalar=5 (M,K,N,transpose_b,fuse_relu)
+        op("LAUNCH",   {12, 4, 0, 1, 3, 2, 5, M, K, N, 0, 1}, 8),
+        op("COPY_D2H", {0, 3, 16},                          9),
+        op("FREE",     {0},                                10),
+        op("FREE",     {1},                                11),
+        op("FREE",     {2},                                12),
+        op("FREE",     {3},                                13),
+        op("EOF",      {},                                 14),
+    };
+    float got[M*N] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, b, sizeof(b));
+    if(e.ok) e = vm.setInput(2, bias, sizeof(bias));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, M*N, why), why);
+}
+
+// Error path: M=K=N=100 but all buffers allocated at only 16 bytes.
+// requireElements must still catch it, the same guarantee every other
+// kernel gives.
+static void test_gemm_dims_exceed_buffer_rejected(){
+    const char* name = "gemm_dims_exceed_buffer_rejected";
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    DeviceHandle a, b, c;
+    if(!npu.allocate(16, 1, a).ok || !npu.allocate(16, 1, b).ok || !npu.allocate(16, 1, c).ok){
+        result(name, false, "could not allocate 16-byte buffers"); return;
+    }
+    Error e = npu.dispatch({12, 3, a, b, c, 5, 100, 100, 100, 0, 0}, 1);   // M=K=N=100 on 4-float buffers
+    result(name, !e.ok, "GEMM_OP with M=K=N=100 on 16-byte buffers was accepted");
+}
+
 static void test_vec_add_values(){
     const char* name = "vec_add_matches_cpu";
     float a[4]    = {1, 2, 3, 4};
@@ -1184,6 +1419,13 @@ int main(){
     test_reduce_argmax_values();
     test_reduce_kind_out_of_range_rejected();
     test_reduce_count_exceeds_buffer_rejected();
+    test_matvec_values();
+    test_matvec_dims_exceed_buffer_rejected();
+    test_fma_values();
+    test_fma_count_exceeds_buffer_rejected();
+    test_gemm_plain_values();
+    test_gemm_bias_relu_values();
+    test_gemm_dims_exceed_buffer_rejected();
     test_vec_add_values();
     test_bias_add_values();
     test_rmsnorm_no_gamma_values();

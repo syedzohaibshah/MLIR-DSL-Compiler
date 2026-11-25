@@ -95,7 +95,17 @@ class emunpuDevice:public Device{
     Error do_vector_op(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
     Error do_reduce_op(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+        //  c=A*v   (A -> matrix , v -> vector)
+        Error do_matvec(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
+      //  c += a * b, in-place
+        Error do_fma(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
+        //C = relu?( A*B + bias ) 
+        Error do_gemm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
+
+   
 public:
     emunpuDevice();
     ~emunpuDevice() override;

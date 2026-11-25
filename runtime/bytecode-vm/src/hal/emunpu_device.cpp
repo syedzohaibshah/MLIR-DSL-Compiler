@@ -7,13 +7,11 @@
 #include <iostream>
 
 
+//// Scalar Arguments specs
 
-//----------------
-// Kernel signature table. One row per op_id, indexed by op_id.
-// Add a kernel here first, then write its do_* body. dispatch() checks the
-// buffer count and every scalar range from this row, so no do_* repeats them.
-//-----------------
-// Every non-ENUM entry leaves enum_count unused; 0 is the convention for "not an enum".
+////////// Scalar argeuments are validated against these specs, which are per-kernel. The
+////////// specs are used by checkScalar to validate the range of each scalar.
+
 static const ScalarSpec MATMUL_SCALARS[]   = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
 static const ScalarSpec VEC_ADD_SCALARS[]  = {{ScalarKind::DIM,0}};
 static const ScalarSpec RELU_SCALARS[]     = {{ScalarKind::DIM,0}};
@@ -21,6 +19,7 @@ static const ScalarSpec BIAS_ADD_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::
 static const ScalarSpec RMS_NORM_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
 static const ScalarSpec SOFTMAX_SCALARS[]  = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::FLAG,0}};
 static const ScalarSpec TRANSPOSE_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+
 
 
 
@@ -58,7 +57,29 @@ static const ScalarSpec REDUCE_OP_SCALARS[] = {
                      
 };
 
+static const ScalarSpec MATVEC_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //M
+    {ScalarKind::DIM,0},        //K                                         
+};
 
+
+static const ScalarSpec FMA_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //count
+    };
+
+static const ScalarSpec GEMM_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //M
+    {ScalarKind::DIM,0}, //K
+    {ScalarKind::DIM,0}, //N
+    {ScalarKind::FLAG,0}, //transpose_b
+    {ScalarKind::FLAG,0}, //fuse_relu
+    };
+
+
+
+
+
+////////////// @brief A table of all available kernel signatures.
 static const KernelSignature KERNEL_TABLE[] = {
     {"MATMUL",     3, 3, MATMUL_SCALARS,     3},
     {"VEC_ADD",    3, 3, VEC_ADD_SCALARS,    1},
@@ -72,6 +93,9 @@ static const KernelSignature KERNEL_TABLE[] = {
     // kind.
     {"VECTOR_OP",  2, 3, VECTOR_OP_SCALARS, 3},   // op_id 8. count, kind, broadcast period
     {"REDUCE_OP",  2, 2, REDUCE_OP_SCALARS, 3},   // op_id 9. rows, width, kind
+    {"MATVEC_OP",  3, 3, MATVEC_OP_SCALARS, 2},   // op_id 10. M, K
+    {"FMA_OP",     3, 3, FMA_OP_SCALARS, 1},      // op_id 11. count
+    {"GEMM_OP",    3, 4, GEMM_OP_SCALARS, 5},     // op_id 12. M, K, N, transpose_b, fuse_relu
 };
 
 static const int KERNEL_TABLE_SIZE = (int)(sizeof(KERNEL_TABLE) / sizeof(KERNEL_TABLE[0]));
@@ -334,6 +358,18 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
 
         return do_reduce_op(num_buffers,scalars_start,buffer_start,args,line);
     }
+    else if(op_id==10){
+
+        return  do_matvec( num_buffers,scalars_start, buffer_start,args,line);
+
+    }
+    else if(op_id==11){
+
+        return do_fma(num_buffers,scalars_start, buffer_start,args,line);
+    }else if(op_id==12){
+
+        return  do_gemm(num_buffers,scalars_start, buffer_start,args,line);
+    }
     else {
         return makeError("unknown op_id", line);
     }
@@ -379,7 +415,7 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
         RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)M * K, "MATMUL A", line));
         RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)K * N, "MATMUL B", line));
         RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)M * N, "MATMUL C", line));
-        emunpu_status_t status = emunpu_matmul(emu_device, nullptr, c, a, b, M, N, K, 0);
+        emunpu_status_t status = emunpu_matmul(emu_device, nullptr, c, a, b, M, N, K, 0);  //se what we have to do of 0(transpose)
         if (status != EMUNPU_OK) {
         
             return makeError("emunpu_matmul failed", line);
@@ -632,6 +668,116 @@ if(status != EMUNPU_OK){
 
 return ok();
     }
+
+
+
+
+        Error emunpuDevice:: do_matvec(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+           emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+           emunpu_tensor_id_t x = buffer_table[args[buffer_start+1]].real_id;
+           emunpu_tensor_id_t y = buffer_table[args[buffer_start+2]].real_id;
+           uint32_t M = args[scalars_start+0];
+           uint32_t K = args[scalars_start+1];
+
+           RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)M*K, "MATVEC A", line));
+           RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)K, "MATVEC X", line));
+           RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)M, "MATVEC Y", line));    
+
+
+
+
+
+emunpu_status_t status = emunpu_matvec(emu_device, nullptr,
+                              y,  a,
+                               x,  M, K);
+
+        if(status != EMUNPU_OK){
+            return makeError("emunpu_matvec failed", line); 
+        }
+
+
+        return ok();
+
+
+        }
+
+
+             //  c += a * b, in-place
+Error emunpuDevice::do_fma(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+
+emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+        emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
+        emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
+        uint32_t count = args[scalars_start+0];
+
+        RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)count, "FMA A", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)count, "FMA B", line));
+        RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)count, "FMA C", line));
+
+
+
+emunpu_status_t status = emunpu_fma(emu_device, nullptr,
+                           c,a,b, count);
+
+
+        if(status != EMUNPU_OK){
+            return makeError("emunpu_fma failed", line); 
+        }
+
+
+        return ok();
+
+
+        }
+             //C = relu? relu( A*B + bias ) : ( A*B + bias )  // no relu
+          Error emunpuDevice:: do_gemm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+            uint32_t M = args[scalars_start+0];
+            uint32_t K = args[scalars_start+1];
+            uint32_t N = args[scalars_start+2];
+            int transpose_b = args[scalars_start+3];
+            int fuse_relu = args[scalars_start+4];
+
+
+
+
+            emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+            emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
+            emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
+
+
+            RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)M*K, "GEMM A", line));
+            RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)K*N, "GEMM B", line));
+            RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)M*N, "GEMM C", line));  
+
+            bool has_bais = (num_buffers == 4);
+            emunpu_tensor_id_t bias=0; // 0 tells emunpu "no bias"
+
+            if(has_bais){
+
+            bias = buffer_table[args[buffer_start+3]].real_id;
+            RETURN_IF_ERROR(requireElements(args[buffer_start+3], (int64_t)N, "GEMM bias", line));
+
+            }
+
+
+ 
+
+
+
+
+emunpu_status_t  status = emunpu_gemm(emu_device, nullptr,
+                          c, a, b,  bias,M,  N,  K,  transpose_b, fuse_relu);
+                if(status != EMUNPU_OK){
+                    return makeError("emunpu_gemm failed", line); 
+                }
+
+                return ok();
+
+          }
+
+
 
 std::string emunpuDevice::name() const {
 
