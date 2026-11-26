@@ -1,0 +1,66 @@
+{
+    "body": [
+        {
+            "col": 5,
+            "kind": "Assign",
+            "line": 5,
+            "op": "=",
+            "target": {
+                "col": 5,
+                "kind": "Variable",
+                "line": 5,
+                "name": "B"
+            },
+            "value": {
+                "args": [
+                    {
+                        "col": 17,
+                        "kind": "Variable",
+                        "line": 5,
+                        "name": "A"
+                    },
+                    {
+                        "col": 20,
+                        "kind": "Constant",
+                        "line": 5,
+                        "value": 0
+                    }
+                ],
+                "col": 9,
+                "kind": "BuiltinCall",
+                "line": 5,
+                "op": "softmax"
+            }
+        }
+    ],
+    "col": 1,
+    "funcname": "softmax_kernel",
+    "line": 1,
+    "params": [
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 2,
+            "name": "A",
+            "shape": [
+                2,
+                4
+            ]
+        },
+        {
+            "col": 5,
+            "dtype": "f32",
+            "kind": "Parameter",
+            "line": 3,
+            "name": "B",
+            "shape": [
+                2,
+                4
+            ]
+        }
+    ],
+    "returns": [
+        "B"
+    ]
+}

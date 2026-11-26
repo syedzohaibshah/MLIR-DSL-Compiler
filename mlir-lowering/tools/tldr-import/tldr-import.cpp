@@ -84,8 +84,27 @@ Value lowerBuiltinCall(OpBuilder &builder, Location loc, const json &call,
     return builder.create<tldr::ReluOp>(loc, input.getType(), input);
   }
 
+  if (op == "softmax") {
+    if (args.size() != 2)
+      die("softmax expects exactly 2 arguments, got " +
+          std::to_string(args.size()));
+    Value input = lookupVariable(args[0], symtab);
+    const json &flag = args[1];
+    if (flag.at("kind").get<std::string>() != "Constant")
+      die("the importer only supports a literal constant as softmax's "
+          "second argument right now, got AST kind '" +
+          flag.at("kind").get<std::string>() + "'");
+    double flagValue = flag.at("value").get<double>();
+    if (flagValue != 0.0 && flagValue != 1.0)
+      die("softmax's second argument must be 0 (softmax) or 1 "
+          "(log_softmax), got " +
+          std::to_string(flagValue));
+    return builder.create<tldr::SoftmaxOp>(loc, input.getType(), input,
+                                            flagValue != 0.0);
+  }
+
   die("the importer does not lower builtin op '" + op +
-      "' yet (only relu is wired up so far)");
+      "' yet (only relu/softmax are wired up so far)");
 }
 
 } // namespace

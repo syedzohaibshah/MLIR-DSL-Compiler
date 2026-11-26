@@ -2,9 +2,9 @@
 // half of the middle: tldr-import goes JSON AST -> MLIR, this tool goes
 // MLIR -> the exact text format runtime/bytecode-vm reads.
 //
-// Deliberately narrow, same spirit as tldr-import: only tldr.relu is wired
-// up as a LAUNCH-able op right now. Anything else in the function body is a
-// named error, not a guess.
+// Deliberately narrow, same spirit as tldr-import: only tldr.relu and
+// tldr.softmax are wired up as LAUNCH-able ops right now. Anything else in
+// the function body is a named error, not a guess.
 
 #include "tldr/TldrDialect.h"
 #include "tldr/TldrOps.h"
@@ -160,8 +160,26 @@ int main(int argc, char **argv) {
       emitter.bufferOf[relu.getResult()] = outputBuffer;
       continue;
     }
+    // LAUNCH op_id 5 (SOFTMAX). Scalars are rows, width, log_softmax, in
+    // that order -- see hal/emunpu_device.cpp's do_softmax. rows/width come
+    // from the input's shape, not a scalar: SoftmaxOp::verify() already
+    // guarantees rank 2 by the time this tool ever sees it.
+    if (auto softmax = llvm::dyn_cast<tldr::SoftmaxOp>(op)) {
+      int inputBuffer = lookupBuffer(emitter, softmax.getInput());
+      auto inputType = llvm::cast<RankedTensorType>(softmax.getInput().getType());
+      int64_t rows = inputType.getDimSize(0);
+      int64_t width = inputType.getDimSize(1);
+      int64_t outBytes = byteSizeOf(softmax.getResult().getType());
+      int outputBuffer = emitter.emitAlloc(outBytes);
+      emitter.emitLaunch("5 2 " + std::to_string(inputBuffer) + " " +
+                          std::to_string(outputBuffer) + " 3 " +
+                          std::to_string(rows) + " " + std::to_string(width) +
+                          " " + std::to_string(softmax.getLogSoftmax() ? 1 : 0));
+      emitter.bufferOf[softmax.getResult()] = outputBuffer;
+      continue;
+    }
     die("tldr-export does not lower op '" + op.getName().getStringRef().str() +
-        "' yet (only tldr.relu is wired up so far)");
+        "' yet (only tldr.relu/tldr.softmax are wired up so far)");
   }
   returnOp = llvm::cast<func::ReturnOp>(entry.getTerminator());
 
