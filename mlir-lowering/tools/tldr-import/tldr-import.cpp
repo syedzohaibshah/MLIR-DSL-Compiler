@@ -146,12 +146,25 @@ int main(int argc, char **argv) {
   auto funcOp = builder.create<func::FuncOp>(loc, funcname, funcType);
   Block *entry = funcOp.addEntryBlock();
 
+  // MLIR's own printed form only keeps %arg0, %arg1, ... -- the DSL's real
+  // parameter names ("A", "B", ...) would otherwise be lost here forever.
+  // The bytecode-contract header needs those names, so they're carried as
+  // explicit attributes rather than relied on implicitly.
   llvm::StringMap<Value> symtab;
   for (size_t i = 0; i < argNames.size(); ++i) {
     symtab[argNames[i]] = entry->getArgument(i);
+    funcOp.setArgAttr(i, "tldr.name", builder.getStringAttr(argNames[i]));
     if (outputSet.count(argNames[i]))
       funcOp.setArgAttr(i, "tldr.output", builder.getUnitAttr());
   }
+  // Likewise, "which function result is named what" only exists in the
+  // JSON's "returns" list right now; outputOrder is that list, in exactly
+  // the order the function's result types (and so `return`'s operands)
+  // were built from above, so it can be attached as-is.
+  llvm::SmallVector<llvm::StringRef> outputOrderRefs(outputOrder.begin(),
+                                                      outputOrder.end());
+  funcOp->setAttr("tldr.output_names",
+                   builder.getStrArrayAttr(outputOrderRefs));
 
   builder.setInsertionPointToStart(entry);
 

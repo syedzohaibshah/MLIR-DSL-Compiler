@@ -82,6 +82,12 @@ target_link_libraries(emunpu_test PRIVATE vm_core_lib)
 add_executable(test_runner src/test_runner.cpp)
 target_link_libraries(test_runner PRIVATE vm_core_lib)
 
+# Generic runner for compiler-emitted bytecode: reads the file's own
+# declared .input/.output signature instead of assuming a fixed one, so it
+# can run any program the compiler emits, not just one hardcoded demo.
+add_executable(run_program src/run_program.cpp)
+target_link_libraries(run_program PRIVATE vm_core_lib)
+
 # Host-API and kernel-numeric tests that bytecode files cannot reach.
 # Run with: ./build/unit_tests
 add_executable(unit_tests src/unit_tests.cpp)
