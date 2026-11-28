@@ -250,11 +250,17 @@ flowchart TD
 | 1 | VEC_ADD | A, B, C | count | `C[i] = A[i] + B[i]` |
 | 2 | RELU | A, C | count | `C[i] = max(0, A[i])`. Kept as its own LAUNCH shape for compatibility, but `do_relu` is a thin wrapper that calls the same `emunpu_activation` path as ACTIVATION, with `kind` fixed to RELU instead of read from `args`. Not a duplicate implementation. |
 | 3 | BIAS_ADD | A, bias, C | count, out_features | `C[i] = A[i] + bias[i mod out_features]` |
-| 4 | RMS_NORM | A, C *or* A, gamma, C | rows, width | `C[r][i] = A[r][i] / sqrt(mean(A[r]²) + eps) * gamma[i]`; `eps` fixed at `1e-5` |
+| 4 | RMS_NORM | A, C *or* A, gamma, C | rows, width, eps_bits | `C[r][i] = A[r][i] / sqrt(mean(A[r]²) + eps) * gamma[i]`; `eps_bits` is a `FLOAT_BITS` scalar (was hardcoded to `1e-5` until this was wired) |
 | 5 | SOFTMAX | A, C | rows, width, log_softmax | Row-wise softmax; `log_softmax = 1` gives log-softmax |
 | 6 | TRANSPOSE | A, C | rows, cols | `C[cols×rows] = transpose(A[rows×cols])`; `rows`/`cols` describe the input |
 | 7 | ACTIVATION | A, C | count, kind, alpha_bits, beta_bits | `C[i] = act(A[i], alpha, beta)`; `kind` selects 1 of 24 emunpu activation kinds (0 = RELU, 8 = SiLU, …). `alpha_bits`/`beta_bits` are `FLOAT_BITS` scalars, always present; only `LEAKY_RELU`/`ELU` (alpha) and `CLAMP` (both) actually use them. |
 | 8 | VECTOR_OP | A, C *or* A, B, C | count, kind, bcast_period | `C[i] = ew(A[i], B[i])` (binary) or `C[i] = ew(A[i])` (unary) for `count` elements. `kind` selects 1 of 9 element-wise kinds (0 = ADD … 8 = POW); only `RELU`(6) and `COPY`(7) are unary and take `n_buf = 2` (no B). Every other kind is binary and takes `n_buf = 3`. The kernel cross-checks `n_buf` against `kind` itself, via emunpu's own `emunpu_ew_is_binary(kind)` — a mismatch is a clean rejected `LAUNCH`. `bcast_period = 0` means B has the same shape as A (no broadcast); a non-zero period means B holds only `bcast_period` elements, repeated. |
+| 9 | REDUCE_OP | A, C | rows, width, kind | `C[r] = reduce(A[r])`, one value per row of `width` elements. `kind` selects 1 of 7 reduce kinds (0 = SUM, 1 = MAX, 2 = MIN, 3 = MEAN, 4 = PROD, 5 = ARGMAX, 6 = ARGMIN). ARGMAX/ARGMIN store an integer row-index through the same fp32-typed `C` buffer every other kind uses — exact for realistic row widths, but a real type-system gap shared with the GATHER dtype issue (B3). |
+| 10 | MATVEC_OP | A, X, Y | M, K | `Y[M] = A[M×K] · X[K]` — matrix × vector |
+| 11 | FMA_OP | A, B, C | count | `C[i] = A[i]*B[i] + C[i]`, in-place over `count` elements — purely elementwise, not matrix-aware. `C` is read **and** written: the first in-place kernel. Nothing tracks whether `C` was uploaded to before the `LAUNCH`; an uninitialized `C` is silently accumulated onto. |
+| 12 | GEMM_OP | A, B, C *or* A, B, bias, C | M, K, N, transpose_b, fuse_relu | `C = relu?(A*B + bias)`; `bias` broadcasts per output column, `n_buf = 3` skips it. Real `transpose_b` support (unlike MATMUL, which always passes 0). Internally: `emunpu_matmul` then (if bias) an `EW_ADD` with `bcast_period = N`, then (if `fuse_relu`) an `EW_RELU` — three device calls fused behind one op id. |
+| 13 | LAYER_NORM | A, C *or* A, C, gamma *or* A, C, gamma, beta | rows, width, eps_bits | `C[r][i] = (A[r][i] - mean(A[r])) / sqrt(var(A[r]) + eps) * gamma[i] + beta[i]`. `n_buf = 3` applies gamma only (beta stays 0); `n_buf = 4` applies both. |
+| 14 | LINEAR_OP | A, B, C *or* A, B, bias, C | M, K, N, transpose_b, has_activation, kind, alpha_bits, beta_bits | `C = act?(A*B + bias)` — GEMM generalized from ReLU-only to any of the 24 ACTIVATION kinds. `has_activation = 0` passes `nullptr` for emunpu's `act` epilogue struct; `=1` builds `{kind, alpha, beta}` from the trailing 3 scalars, the same `FLOAT_BITS` decode ACTIVATION uses. Scalar order is `M, K, N` (matching GEMM/MATMUL), not `M, N, K`. |
 
 (The CUDA path still has its own four kernels — `vec_mm_Kernel`, `vec_add_Kernel`, `relu_Kernel`, `bias_add_Kernel` — matching op ids 0 to 3. These are a separate, device-local table and were not changed by ACTIVATION's addition on the emunpu side.)
 
@@ -266,7 +272,7 @@ flowchart TD
 | `FLAG` | `0` or `1` | `log_softmax` |
 | `PARAM` | any int, negative allowed | `bcast_period` on VECTOR_OP (op id 8) — its common/default value is `0`, which `DIM` would wrongly reject |
 | `ENUM` | `0` to a per-scalar count, declared with the scalar (`ScalarSpec::enum_count`) | `kind` on ACTIVATION (op id 7), 24 values |
-| `FLOAT_BITS` | any 32-bit pattern (not range-checked) | `alpha_bits`/`beta_bits` on ACTIVATION — a `float`'s raw bits, carried through an `int` scalar via `memcpy`, not a cast |
+| `FLOAT_BITS` | any 32-bit pattern (not range-checked) | `alpha_bits`/`beta_bits` on ACTIVATION and LINEAR_OP, `eps_bits` on RMS_NORM/LAYER_NORM — a `float`'s raw bits, carried through an `int` scalar via `memcpy`, not a cast |
 
 `dispatch()` reads the row, checks the buffer count and every scalar against its kind, and only then calls the kernel. Because the table has already guaranteed the counts, no `do_*` function repeats that check — each one just reads arguments it knows are well-formed. Adding a kernel is one table row, one `do_*` body, one dispatch branch; the shared validation never changes.
 

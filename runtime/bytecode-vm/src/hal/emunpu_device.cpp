@@ -16,7 +16,7 @@ static const ScalarSpec MATMUL_SCALARS[]   = {{ScalarKind::DIM,0}, {ScalarKind::
 static const ScalarSpec VEC_ADD_SCALARS[]  = {{ScalarKind::DIM,0}};
 static const ScalarSpec RELU_SCALARS[]     = {{ScalarKind::DIM,0}};
 static const ScalarSpec BIAS_ADD_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
-static const ScalarSpec RMS_NORM_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
+static const ScalarSpec RMS_NORM_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::FLOAT_BITS,0}};   // rows, width, eps_bits
 static const ScalarSpec SOFTMAX_SCALARS[]  = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}, {ScalarKind::FLAG,0}};
 static const ScalarSpec TRANSPOSE_SCALARS[] = {{ScalarKind::DIM,0}, {ScalarKind::DIM,0}};
 
@@ -76,6 +76,22 @@ static const ScalarSpec GEMM_OP_SCALARS[] = {
     };
 
 
+    static const ScalarSpec LAYER_NORM_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //rows
+    {ScalarKind::DIM,0}, //width
+    {ScalarKind::FLOAT_BITS,0}, //eps_bits
+    };
+
+     static const ScalarSpec LINEAR_OP_SCALARS[] = {
+    {ScalarKind::DIM,0}, //M
+    {ScalarKind::DIM,0}, //K
+    {ScalarKind::DIM,0}, //N
+    {ScalarKind::FLAG,0}, //transpose_b
+    {ScalarKind::FLAG,0}, // has_activation
+    {ScalarKind::ENUM, EMUNPU_ACTIVATION_KIND_COUNT}, //kind
+    {ScalarKind::FLOAT_BITS,0}, //alpha
+    {ScalarKind::FLOAT_BITS,0}, //beta
+    };
 
 
 
@@ -85,7 +101,7 @@ static const KernelSignature KERNEL_TABLE[] = {
     {"VEC_ADD",    3, 3, VEC_ADD_SCALARS,    1},
     {"RELU",       2, 2, RELU_SCALARS,       1},   // scalars: count only. dispatch forwards to do_activation(kind=RELU)
     {"BIAS_ADD",   3, 3, BIAS_ADD_SCALARS,   2},
-    {"RMS_NORM",   2, 3, RMS_NORM_SCALARS,   2},   // 2 buffers skips gamma, 3 applies it
+    {"RMS_NORM",   2, 3, RMS_NORM_SCALARS,   3},   // 2 buffers skips gamma, 3 applies it. scalars: rows, width, eps_bits
     {"SOFTMAX",    2, 2, SOFTMAX_SCALARS,    3},
     {"TRANSPOSE",  2, 2, TRANSPOSE_SCALARS, 2},
     {"ACTIVATION", 2, 2, ACTIVATION_SCALARS, 4},   // op_id 7. count, kind, alpha_bits, beta_bits
@@ -96,6 +112,8 @@ static const KernelSignature KERNEL_TABLE[] = {
     {"MATVEC_OP",  3, 3, MATVEC_OP_SCALARS, 2},   // op_id 10. M, K
     {"FMA_OP",     3, 3, FMA_OP_SCALARS, 1},      // op_id 11. count
     {"GEMM_OP",    3, 4, GEMM_OP_SCALARS, 5},     // op_id 12. M, K, N, transpose_b, fuse_relu
+    {"LAYER_NORM", 2, 4, LAYER_NORM_OP_SCALARS, 3}, // op_id 13. rows, width, eps_bits
+    {"LINEAR_OP",     3, 4, LINEAR_OP_SCALARS, 8},   // op_id 14. M, K, N, transpose_b, has_activation, kind, alpha_bits, beta_bits
 };
 
 static const int KERNEL_TABLE_SIZE = (int)(sizeof(KERNEL_TABLE) / sizeof(KERNEL_TABLE[0]));
@@ -369,6 +387,12 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
     }else if(op_id==12){
 
         return  do_gemm(num_buffers,scalars_start, buffer_start,args,line);
+    }else if(op_id==13){
+
+        return  do_layer_norm(num_buffers,scalars_start, buffer_start,args,line);
+    }
+    else if(op_id==14){
+         return do_linear(num_buffers,scalars_start, buffer_start,args,line);
     }
     else {
         return makeError("unknown op_id", line);
@@ -474,10 +498,13 @@ if (elements > buffer_table[h].bytes / (int64_t)sizeof(float)) {
 
     Error emunpuDevice::do_rms_norm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
 
-        const double eps = 1e-5;
         bool has_gamma = (num_buffers == 3);
         uint32_t rows = args[scalars_start+0];
         uint32_t width = args[scalars_start+1];
+        int32_t eps_bits = args[scalars_start+2];
+        float eps_f;
+        memcpy(&eps_f, &eps_bits, sizeof(float));   // reinterpret the bits, not convert the value
+        const double eps = double(eps_f);
 
         emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
         RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*width, "RMS_NORM input", line));
@@ -776,6 +803,113 @@ emunpu_status_t  status = emunpu_gemm(emu_device, nullptr,
                 return ok();
 
           }
+
+
+
+
+        Error  emunpuDevice::do_layer_norm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+
+            emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+            emunpu_tensor_id_t c = buffer_table[args[buffer_start+1]].real_id;
+
+            uint32_t rows = args[scalars_start+0];
+            uint32_t width = args[scalars_start+1];
+            int32_t eps_bits = args[scalars_start+2];
+            float eps_f;
+            memcpy(&eps_f, &eps_bits, sizeof(float));   // reinterpret the bits, not convert the value
+            double eps = double(eps_f);
+
+            bool has_beta = (num_buffers == 4);
+            bool has_gamma = (num_buffers == 3 || num_buffers == 4);
+            emunpu_tensor_id_t gamma=0; // 0 tells emunpu "no gamma"
+            emunpu_tensor_id_t beta=0;  // 0 tells emunpu "no beta"
+
+            if(has_gamma){
+                gamma = buffer_table[args[buffer_start+2]].real_id;
+                RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)width, "LAYER_NORM gamma", line));
+            }
+            if(has_beta){
+                beta = buffer_table[args[buffer_start+3]].real_id;
+                RETURN_IF_ERROR(requireElements(args[buffer_start+3], (int64_t)width, "LAYER_NORM beta", line));
+            }
+
+            RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)rows*width, "LAYER_NORM input", line));
+            RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)rows*width, "LAYER_NORM output", line));
+
+
+
+emunpu_status_t  status = emunpu_layernorm(emu_device,
+                                 nullptr, c,
+                                  a, gamma,
+                                  beta, rows,
+                                 width, eps);
+            if(status != EMUNPU_OK){
+                return makeError("emunpu_layernorm failed", line); 
+            }
+            return ok();
+
+
+        }
+
+
+
+        // A full linear layer: C = act?( A*B (+ bias) ), i.e. emunpu_gemm generalized
+// from ReLU-only to any activation. |bias| may be 0 and |act| may be NULL.
+   Error  emunpuDevice::do_linear(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line){
+
+  emunpu_tensor_id_t a = buffer_table[args[buffer_start+0]].real_id;
+  emunpu_tensor_id_t b = buffer_table[args[buffer_start+1]].real_id;
+  emunpu_tensor_id_t c = buffer_table[args[buffer_start+2]].real_id;
+  
+
+  emunpu_tensor_id_t bias = (num_buffers == 4) ? buffer_table[args[buffer_start+3]].real_id : 0;  // 0 tells emunpu "no bias"
+
+  
+
+
+    uint32_t M = args[scalars_start+0];
+    uint32_t K = args[scalars_start+1];
+    uint32_t N = args[scalars_start+2];
+    int transpose_b = args[scalars_start+3];
+    bool has_activation = args[scalars_start+4] != 0;
+
+    RETURN_IF_ERROR(requireElements(args[buffer_start+0], (int64_t)M*K, "LINEAR A", line));
+    RETURN_IF_ERROR(requireElements(args[buffer_start+1], (int64_t)K*N, "LINEAR B", line));
+    RETURN_IF_ERROR(requireElements(args[buffer_start+2], (int64_t)M*N, "LINEAR C", line));
+    if(num_buffers == 4){
+        RETURN_IF_ERROR(requireElements(args[buffer_start+3], (int64_t)N, "LINEAR bias", line));
+    }
+
+
+
+    uint32_t kind = args[scalars_start+5];     
+    int32_t alpha_bits = args[scalars_start+6];     
+    int32_t beta_bits = args[scalars_start+7];     
+
+    float alpha_f, beta_f;
+    memcpy(&alpha_f, &alpha_bits, sizeof(float));   // reinterpret the bits, not convert the value
+    memcpy(&beta_f,  &beta_bits,  sizeof(float));
+
+
+emunpu_act_t act;
+act.kind = (emunpu_act_kind_t)kind;
+act.alpha = alpha_f;
+act.beta = beta_f;
+
+
+    emunpu_status_t status = emunpu_linear(emu_device,
+                              nullptr,  c, a, b, bias,  M,  N, K,transpose_b,
+                               has_activation? &act :nullptr);
+
+    if(status != EMUNPU_OK){
+        return makeError("emunpu_linear failed", line); 
+    }
+
+    return ok();
+
+   }
+
 
 
 

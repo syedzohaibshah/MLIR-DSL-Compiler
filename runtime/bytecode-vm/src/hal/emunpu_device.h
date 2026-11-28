@@ -104,6 +104,17 @@ class emunpuDevice:public Device{
         //C = relu?( A*B + bias ) 
         Error do_gemm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
 
+        // Layer normalization over the last dimension:
+//   c = (a - mean(a)) / sqrt(var(a) + eps) * gamma + beta
+// |gamma| / |beta| are length-|width| vectors broadcast across rows; either may
+// be 0 to skip that term.
+        Error do_layer_norm(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
+
+        // A full linear layer: C = act?( A*B (+ bias) ), i.e. emunpu_gemm generalized
+// from ReLU-only to any activation. |bias| may be 0 and |act| may be NULL.
+        Error do_linear(int num_buffers,int scalars_start,int buffer_start,const std::vector<int>& args,int line);
+
 
    
 public:

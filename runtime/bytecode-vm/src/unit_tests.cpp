@@ -1101,6 +1101,254 @@ static void test_gemm_dims_exceed_buffer_rejected(){
     result(name, !e.ok, "GEMM_OP with M=K=N=100 on 16-byte buffers was accepted");
 }
 
+// LAYER_NORM (op_id 13). c = (a - mean(a)) / sqrt(var(a) + eps) * gamma + beta,
+// normalized per row over `width`. eps is passed as a FLOAT_BITS scalar.
+// rows=2, width=4, no gamma/beta (2-buffer form).
+static void test_layer_norm_plain_values(){
+    const char* name = "layer_norm_plain_matches_cpu";
+    const int rows = 2, width = 4;
+    const double eps = 1e-5;
+    float a[rows*width] = {1, 2, 3, 4,   10, 20, 30, 40};
+    float want[rows*width];
+    for(int r = 0; r < rows; r++){
+        double mean = 0;
+        for(int k = 0; k < width; k++) mean += a[r*width+k];
+        mean /= width;
+        double var = 0;
+        for(int k = 0; k < width; k++){
+            double d = a[r*width+k] - mean;
+            var += d*d;
+        }
+        var /= width;
+        double inv = 1.0 / sqrt(var + eps);
+        for(int k = 0; k < width; k++) want[r*width+k] = (float)((a[r*width+k] - mean) * inv);
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 32 a\n.output 0 32 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {32},                   1),   // a: rows*width=8 floats
+        op("ALLOC",    {32},                   2),   // c: rows*width=8 floats
+        op("COPY_H2D", {0, 0, 32},             3),
+        // op_id=13, n_buf=2 (a,c), n_scalar=3 (rows, width, eps_bits)
+        op("LAUNCH",   {13, 2, 0, 1, 3, rows, width, floatBits((float)eps)}, 4),
+        op("COPY_D2H", {0, 1, 32},             5),
+        op("FREE",     {0},                    6),
+        op("FREE",     {1},                    7),
+        op("EOF",      {},                     8),
+    };
+    float got[rows*width] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, rows*width, why), why);
+}
+
+// LAYER_NORM with gamma and beta (4-buffer form). gamma/beta chosen as
+// non-trivial, distinct-per-column values so a dropped gamma-multiply or
+// beta-add cannot hide behind an identity value.
+static void test_layer_norm_gamma_beta_values(){
+    const char* name = "layer_norm_gamma_beta_matches_cpu";
+    const int rows = 2, width = 3;
+    const double eps = 1e-5;
+    float a[rows*width] = {1, 2, 3,   4, 5, 6};
+    float gamma[width] = {2, 0.5f, 3};
+    float beta[width]  = {1, -2, 0.5f};
+    float want[rows*width];
+    for(int r = 0; r < rows; r++){
+        double mean = 0;
+        for(int k = 0; k < width; k++) mean += a[r*width+k];
+        mean /= width;
+        double var = 0;
+        for(int k = 0; k < width; k++){
+            double d = a[r*width+k] - mean;
+            var += d*d;
+        }
+        var /= width;
+        double inv = 1.0 / sqrt(var + eps);
+        for(int k = 0; k < width; k++){
+            double normed = (a[r*width+k] - mean) * inv;
+            want[r*width+k] = (float)(normed * gamma[k] + beta[k]);
+        }
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 24 a\n.input 1 12 gamma\n.input 2 12 beta\n.output 0 24 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {24},                                1),   // a: rows*width=6 floats
+        op("ALLOC",    {24},                                2),   // c: rows*width=6 floats
+        op("ALLOC",    {12},                                3),   // gamma: width=3 floats
+        op("ALLOC",    {12},                                4),   // beta: width=3 floats
+        op("COPY_H2D", {0, 0, 24},                          5),
+        op("COPY_H2D", {2, 1, 12},                          6),
+        op("COPY_H2D", {3, 2, 12},                          7),
+        // op_id=13, n_buf=4 (a,c,gamma,beta), n_scalar=3 (rows, width, eps_bits)
+        op("LAUNCH",   {13, 4, 0, 1, 2, 3, 3, rows, width, floatBits((float)eps)},    8),
+        op("COPY_D2H", {0, 1, 24},                          9),
+        op("FREE",     {0},                                10),
+        op("FREE",     {1},                                11),
+        op("FREE",     {2},                                12),
+        op("FREE",     {3},                                13),
+        op("EOF",      {},                                 14),
+    };
+    float got[rows*width] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, gamma, sizeof(gamma));
+    if(e.ok) e = vm.setInput(2, beta, sizeof(beta));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, rows*width, why), why);
+}
+
+// Error path: rows=width=100 but buffers allocated at only 32 bytes.
+// requireElements must still catch it, the same guarantee every other
+// kernel gives.
+static void test_layer_norm_dims_exceed_buffer_rejected(){
+    const char* name = "layer_norm_dims_exceed_buffer_rejected";
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    DeviceHandle a, c;
+    if(!npu.allocate(32, 1, a).ok || !npu.allocate(32, 1, c).ok){
+        result(name, false, "could not allocate 32-byte buffers"); return;
+    }
+    Error e = npu.dispatch({13, 2, a, c, 3, 100, 100, floatBits(1e-5f)}, 1);   // rows=width=100 on 8-float buffers
+    result(name, !e.ok, "LAYER_NORM with rows=width=100 on 32-byte buffers was accepted");
+}
+
+// LINEAR_OP (op_id 14). C = act?(A*B + bias). M=2, K=3, N=2, no transpose,
+// no bias, no activation -- the plain-matmul case, same shape as GEMM's own
+// plain test. Scalar order here is M, N, K (not GEMM's M, K, N) -- do_linear
+// reads and calls emunpu_linear in that same order, so this is not a repeat
+// of the earlier GEMM M/N/K mixup, just a different convention to watch for.
+static void test_linear_plain_values(){
+    const char* name = "linear_plain_matches_cpu";
+    const int M = 2, K = 3, N = 2;
+    float a[M*K] = {1, 2, 3,   4, 5, 6};        // 2x3
+    float b[K*N] = {1, 0,   0, 1,   1, 1};      // 3x2
+    float want[M*N];
+    for(int i = 0; i < M; i++){
+        for(int j = 0; j < N; j++){
+            double acc = 0;
+            for(int k = 0; k < K; k++) acc += a[i*K+k] * b[k*N+j];
+            want[i*N+j] = (float)acc;
+        }
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 24 a\n.input 1 24 b\n.output 0 16 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {24},                                     1),   // a: M*K=6 floats
+        op("ALLOC",    {24},                                     2),   // b: K*N=6 floats
+        op("ALLOC",    {16},                                     3),   // c: M*N=4 floats
+        op("COPY_H2D", {0, 0, 24},                               4),
+        op("COPY_H2D", {1, 1, 24},                               5),
+        // op_id=14, n_buf=3 (a,b,c), n_scalar=8 (M,K,N,transpose_b,has_activation,kind,alpha_bits,beta_bits)
+        op("LAUNCH",   {14, 3, 0, 1, 2, 8, M, K, N, 0, 0, 0, 0, 0}, 6),
+        op("COPY_D2H", {0, 2, 16},                               7),
+        op("FREE",     {0},                                      8),
+        op("FREE",     {1},                                      9),
+        op("FREE",     {2},                                     10),
+        op("EOF",      {},                                      11),
+    };
+    float got[M*N] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, b, sizeof(b));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, M*N, why), why);
+}
+
+// LINEAR_OP with bias (4 buffers) and fused SiLU activation (kind=8). Bias is
+// chosen so neither output goes to the exact value RELU would give, so a
+// kernel that silently fell back to RELU (or skipped the activation) would
+// show up as a mismatch.
+static void test_linear_bias_silu_values(){
+    const char* name = "linear_bias_silu_matches_cpu";
+    const int M = 2, K = 2, N = 2;
+    float a[M*K] = {1, 1,   2, 2};               // 2x2
+    float b[K*N] = {1, 1,   1, 1};               // 2x2
+    float bias[N] = {-1, 2};
+    float want[M*N];
+    for(int i = 0; i < M; i++){
+        for(int j = 0; j < N; j++){
+            double acc = bias[j];
+            for(int k = 0; k < K; k++) acc += a[i*K+k] * b[k*N+j];
+            double sigmoid = 1.0 / (1.0 + std::exp(-acc));
+            want[i*N+j] = (float)(acc * sigmoid);
+        }
+    }
+
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    VM vm(&npu);
+    if(!bindHeader(vm, ".input 0 16 a\n.input 1 16 b\n.input 2 8 bias\n.output 0 16 c_out\n").ok){
+        result(name, false, "could not bind signature"); return;
+    }
+    std::vector<opcode> prog = {
+        op("ALLOC",    {16},                                          1),   // a: 4 floats
+        op("ALLOC",    {16},                                          2),   // b: 4 floats
+        op("ALLOC",    {8},                                           3),   // bias: 2 floats
+        op("ALLOC",    {16},                                          4),   // c: 4 floats
+        op("COPY_H2D", {0, 0, 16},                                    5),
+        op("COPY_H2D", {1, 1, 16},                                    6),
+        op("COPY_H2D", {2, 2, 8},                                     7),
+        // op_id=14, n_buf=4 (a,b,bias,c), n_scalar=8 (M,K,N,transpose_b,has_activation,kind,alpha_bits,beta_bits)
+        op("LAUNCH",   {14, 4, 0, 1, 3, 2, 8, M, K, N, 0, 1, 8, 0, 0}, 8),
+        op("COPY_D2H", {0, 3, 16},                                    9),
+        op("FREE",     {0},                                          10),
+        op("FREE",     {1},                                          11),
+        op("FREE",     {2},                                          12),
+        op("FREE",     {3},                                          13),
+        op("EOF",      {},                                           14),
+    };
+    float got[M*N] = {0};
+    Error e = vm.setInput(0, a, sizeof(a));
+    if(e.ok) e = vm.setInput(1, b, sizeof(b));
+    if(e.ok) e = vm.setInput(2, bias, sizeof(bias));
+    if(e.ok) e = vm.execute(prog);
+    if(e.ok) e = vm.getOutput(0, got, sizeof(got));
+    if(!e.ok){ result(name, false, e.msg); return; }
+
+    std::string why;
+    result(name, sameFloats(got, want, M*N, why), why);
+}
+
+// Error path: M=N=K=100 but all buffers allocated at only 16 bytes.
+// requireElements must still catch it -- this is also the regression test
+// for the missing-bounds-check issue found in do_linear.
+static void test_linear_dims_exceed_buffer_rejected(){
+    const char* name = "linear_dims_exceed_buffer_rejected";
+    emunpuDevice npu;
+    if(!npu.status().ok){ result(name, false, "device not created"); return; }
+    DeviceHandle a, b, c;
+    if(!npu.allocate(16, 1, a).ok || !npu.allocate(16, 1, b).ok || !npu.allocate(16, 1, c).ok){
+        result(name, false, "could not allocate 16-byte buffers"); return;
+    }
+    Error e = npu.dispatch({14, 3, a, b, c, 8, 100, 100, 100, 0, 0, 0, 0, 0}, 1);   // M=K=N=100 on 4-float buffers
+    result(name, !e.ok, "LINEAR_OP with M=N=K=100 on 16-byte buffers was accepted");
+}
+
 static void test_vec_add_values(){
     const char* name = "vec_add_matches_cpu";
     float a[4]    = {1, 2, 3, 4};
@@ -1201,7 +1449,7 @@ static void test_rmsnorm_no_gamma_values(){
         op("ALLOC",    {16},                   1),
         op("ALLOC",    {16},                   2),
         op("COPY_H2D", {0, 0, 16},             3),
-        op("LAUNCH",   {4, 2, 0, 1, 2, 2, 2},  4),   // op_id=4, n_buf=2 (a,c), n_scalar=2 (rows,width)
+        op("LAUNCH",   {4, 2, 0, 1, 3, 2, 2, floatBits((float)eps)},  4),   // op_id=4, n_buf=2 (a,c), n_scalar=3 (rows,width,eps_bits)
         op("COPY_D2H", {0, 1, 16},             5),
         op("FREE",     {0},                    6),
         op("FREE",     {1},                    7),
@@ -1247,7 +1495,7 @@ static void test_rmsnorm_with_gamma_values(){
         op("ALLOC",    {16},                         3),
         op("COPY_H2D", {0, 0, 16},                   4),
         op("COPY_H2D", {1, 1, 8},                    5),
-        op("LAUNCH",   {4, 3, 0, 1, 2, 2, 2, 2},     6),   // op_id=4, n_buf=3 (a,gamma,c), n_scalar=2 (rows,width)
+        op("LAUNCH",   {4, 3, 0, 1, 2, 3, 2, 2, floatBits((float)eps)},     6),   // op_id=4, n_buf=3 (a,gamma,c), n_scalar=3 (rows,width,eps_bits)
         op("COPY_D2H", {0, 2, 16},                   7),
         op("FREE",     {0},                          8),
         op("FREE",     {1},                          9),
@@ -1426,6 +1674,12 @@ int main(){
     test_gemm_plain_values();
     test_gemm_bias_relu_values();
     test_gemm_dims_exceed_buffer_rejected();
+    test_layer_norm_plain_values();
+    test_layer_norm_gamma_beta_values();
+    test_layer_norm_dims_exceed_buffer_rejected();
+    test_linear_plain_values();
+    test_linear_bias_silu_values();
+    test_linear_dims_exceed_buffer_rejected();
     test_vec_add_values();
     test_bias_add_values();
     test_rmsnorm_no_gamma_values();
